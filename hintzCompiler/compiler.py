@@ -2,9 +2,13 @@ import sys
 import argparse
 from lark import Lark
 from hintzCompiler.src.transformer import IRTransformer
+import os
+
 
 def compile_source(code: str, debug=False):
-    with open("grammar/c89.lark") as f:
+
+    grammar_path = os.path.join(os.path.dirname(__file__), "grammar", "c89.lark")
+    with open(grammar_path) as f:
         grammar = f.read()
 
     parser = Lark(grammar, parser="lalr", start="start")
