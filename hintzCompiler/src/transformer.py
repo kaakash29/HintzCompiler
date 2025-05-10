@@ -1,6 +1,6 @@
 from lark import Transformer, Token, Tree
-from src.ir_nodes import *
-from src.symbol_table import Symbol, ScopedSymbolTableManager
+from hintzCompiler.src.ir_nodes import *
+from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
 
 class IRTransformer(Transformer):
 

@@ -1,0 +1,18 @@
+[project]
+name = "hintzcompiler"
+version = "0.1.0"
+description = "C89-inspired compiler for the Hintz language"
+authors = [
+    { name="Kumar Aakash" }
+]
+requires-python = ">=3.7"
+dependencies = [
+    "lark",
+]
+
+[project.scripts]
+hintz = "hintzCompiler.compiler:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
