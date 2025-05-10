@@ -1,5 +1,5 @@
 import unittest
-from compiler import compile_source  # You’ll implement this function
+from hintzCompiler.compiler import compile_source  # You’ll implement this function
 
 class TestCompiler(unittest.TestCase):
 

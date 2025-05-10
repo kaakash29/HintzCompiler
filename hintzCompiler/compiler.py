@@ -1,7 +1,7 @@
 import sys
 import argparse
 from lark import Lark
-from src.transformer import IRTransformer
+from hintzCompiler.src.transformer import IRTransformer
 
 def compile_source(code: str, debug=False):
     with open("grammar/c89.lark") as f:
@@ -30,7 +30,7 @@ def compile_file(path: str, debug=False):
         code = f.read()
     return compile_source(code, debug=debug)
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Hintz Compiler")
     parser.add_argument("source", help="Path to .hz source file")
     parser.add_argument("-s", "--save-ir", help="Path to write IR output")
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         if args.save_ir:
             with open(args.save_ir, "w") as f:
                 f.write("=== IR DUMP ===\n")
-                f.write(ir.to_string() if hasattr(ir, "to_string") else str(ir))
+                f.write(ir.to_string())
             print(f"✅ IR written to {args.save_ir}")
         else:
             print("=== IR DUMP ===")
@@ -53,3 +53,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Compilation failed: {e}")
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()
