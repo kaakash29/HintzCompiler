@@ -3,8 +3,14 @@ from src.ir_nodes import *
 from src.symbol_table import Symbol, ScopedSymbolTableManager
 
 class IRTransformer(Transformer):
+
     def __init__(self):
         self.symtab_manager = ScopedSymbolTableManager()
+
+    def __default__(self, data, children, meta):
+        print(f"DEFAULT HANDLER: Rule `{data}` with children: {children}")
+        print(f"META: {meta}")
+        return children
 
     def get_global_symbol_table(self):
         return self.symtab_manager.global_scope
@@ -19,11 +25,6 @@ class IRTransformer(Transformer):
             else:
                 flat.append(item)
         return Program(declarations=flat)
-
-    def __default__(self, data, children, meta):
-        print(f"DEFAULT HANDLER: Rule `{data}` with children: {children}")
-        print(f"META: {meta}")
-        return children
 
     def start(self, items):
         return items[0]
@@ -43,8 +44,6 @@ class IRTransformer(Transformer):
         name = str(items[0])  # items[1] is IDENT
         struct_body = items[2]  # items[3] is Tree('struct_body', [...])
 
-        #print(f"StructName: ", name)
-        #print(f"StructBody: ", struct_body)
         fields = {}
         for field_type, field_name in struct_body:
             fields[field_name] = field_type
@@ -72,7 +71,6 @@ class IRTransformer(Transformer):
 
 
     def struct_type(self, items):
-        #print(f"in struct_type", items);
         return items[0]  # CNAME
 
     def declarator_list(self, items):
@@ -85,7 +83,6 @@ class IRTransformer(Transformer):
         return Variable(name=name, type_spec=None)
 
     def declaration(self, items):
-        #print(f"in declaration", items);
         type_spec = items[0]
         vars = []
         declarators = items[1]
@@ -124,11 +121,9 @@ class IRTransformer(Transformer):
         return items
 
     def compound_stmt(self, items):
-        #print(f"in compound_stmt", items);
         return Block(statements=items)
 
     def expr_stmt(self, items):
-        #print(f"in expr_stmt", items);
         return items[0]
 
     def assignment(self, items):
@@ -147,15 +142,12 @@ class IRTransformer(Transformer):
         return self.reduce_ops(items)
 
     def add(self, items):
-        #print(f"in add", items);
         return self.reduce_ops(items)
 
     def mul(self, items):
-        #print(f"in mul", items);
         return self.reduce_ops(items)
 
     def reduce_ops(self, items):
-        #print(f"in reduce_ops", items);
         if len(items) == 1:
             return items[0]
         node = items[0]
