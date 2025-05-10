@@ -1,0 +1,116 @@
+start: program
+
+program: (struct_def | function_def | declaration)*
+
+function_def: type_specifier IDENT LPAR param_list? RPAR compound_stmt
+declaration: type_specifier declarator_list SEMI
+
+declarator_list: declarator (COMMA declarator)*
+declarator: IDENT
+          | IDENT LSQB NUMBER RSQB
+
+type_specifier: TYPE_INT
+              | TYPE_VOID
+              | TYPE_FLOAT
+              | TYPE_DOUBLE
+              | TYPE_CHAR
+              | struct_type
+              | TYPE_MATRIX
+
+struct_type: "struct" IDENT
+
+struct_def: "struct" IDENT LBRACE struct_body RBRACE SEMI
+struct_body: (type_specifier IDENT SEMI)+
+
+param_list: param (COMMA param)*
+param: type_specifier IDENT
+
+compound_stmt: LBRACE (stmt)* RBRACE
+
+stmt: declaration
+    | expr_stmt
+    | compound_stmt
+    | if_stmt
+    | while_stmt
+    | do_while_stmt
+    | return_stmt
+    | SEMI
+
+expr_stmt: expr SEMI
+return_stmt: "return" expr? SEMI
+
+if_stmt: "if" LPAR expr RPAR stmt ("else" stmt)?
+while_stmt: "while" LPAR expr RPAR stmt
+do_while_stmt: "do" stmt "while" LPAR expr RPAR SEMI
+
+expr: assignment
+
+assignment: unary "=" assignment
+          | logic_or
+
+logic_or: logic_and (OR_OP logic_and)*
+logic_and: equality (AND_OP equality)*
+equality: relational ((EQ_OP | NE_OP) relational)*
+relational: add ((LT_OP | GT_OP | LE_OP | GE_OP) add)*
+add: mul ((ADD_OP | SUB_OP) mul)*
+mul: unary ((MUL_OP | DIV_OP | MOD_OP) unary)*
+
+unary: (NOT_OP | ADD_OP | SUB_OP) unary
+     | primary
+     | unary DOT IDENT        -> field_access
+     | unary LSQB expr RSQB   -> array_access
+
+primary: IDENT
+       | NUMBER
+       | STRING
+       | LPAR expr RPAR
+       | func_call
+
+func_call: IDENT LPAR (expr (COMMA expr)*)? RPAR
+
+// Operators
+EQUAL: "="
+OR_OP: "||"
+AND_OP: "&&"
+EQ_OP: "=="
+NE_OP: "!="
+LT_OP: "<"
+GT_OP: ">"
+LE_OP: "<="
+GE_OP: ">="
+ADD_OP: "+"
+SUB_OP: "-"
+MUL_OP: "*"
+DIV_OP: "/"
+MOD_OP: "%"
+NOT_OP: "!"
+
+// Punctuation
+LPAR: "("
+RPAR: ")"
+LSQB: "["
+RSQB: "]"
+LBRACE: "{"
+RBRACE: "}"
+SEMI: ";"
+COMMA: ","
+DOT: "."
+
+// Literals
+STRING: /"[^"]*"/
+NUMBER: /\d+(\.\d+)?/
+
+// Keywords (higher priority)
+TYPE_INT.2: "int"
+TYPE_VOID.2: "void"
+TYPE_FLOAT.2: "float"
+TYPE_DOUBLE.2: "double"
+TYPE_CHAR.2: "char"
+TYPE_MATRIX.2: "matrix"
+
+// Identifiers
+IDENT: /[a-zA-Z_][a-zA-Z0-9_]*/
+
+// Whitespace
+%import common.WS
+%ignore WS
