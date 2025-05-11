@@ -2,6 +2,7 @@ import sys
 import argparse
 from lark import Lark
 from hintzCompiler.src.transformer import IRTransformer
+from hintzCompiler.preprocessor import Preprocessor
 import os
 
 
@@ -12,6 +13,7 @@ def compile_source(code: str, debug=False):
         grammar = f.read()
 
     parser = Lark(grammar, parser="lalr", start="start")
+    
     tree = parser.parse(code)
 
     if debug:
@@ -27,12 +29,15 @@ def compile_source(code: str, debug=False):
 
     return ir
 
+
 def compile_file(path: str, debug=False):
     if not path.endswith(".hz"):
         raise ValueError(f"❌ Only .hz files are supported: {path}")
-    with open(path) as f:
-        code = f.read()
+    fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "includes") 
+    preprocessor = Preprocessor(include_paths=[fullIncludePath])
+    code = preprocessor.preprocess(path)
     return compile_source(code, debug=debug)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Hintz Compiler")

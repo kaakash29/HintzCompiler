@@ -1,0 +1,13 @@
+#define PI 3.14
+#include "utils.hz"
+
+int main() {
+    int sum;
+    float radius;
+    float area;
+
+    radius = 2.0;
+    area = PI * radius * radius;
+    sum = add(3, 4);
+    return 0;
+}
