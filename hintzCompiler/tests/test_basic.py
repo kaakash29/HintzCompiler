@@ -50,3 +50,23 @@ class TestCompiler(unittest.TestCase):
         """
         ir = compile_source(code)
         self.assertTrue("FieldAccess" in str(ir))
+
+    def test_simple_if_stmt(self):
+        code = """
+        struct Vec2 {
+            int x;
+        };
+
+        int main() {
+            struct Vec2 v;
+            v.x = 1;
+            if(v.x == 1) {
+                v.x = 0;
+            } else {
+                v.x = 29;
+            }
+        }
+        """
+        ir = compile_source(code)
+        print(ir.to_string())
+        self.assertTrue("if" in str(ir))
