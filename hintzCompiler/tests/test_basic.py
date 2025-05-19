@@ -68,5 +68,24 @@ class TestCompiler(unittest.TestCase):
         }
         """
         ir = compile_source(code)
-        print(ir.to_string())
+        #print(ir.to_string())
         self.assertTrue("if" in str(ir))
+
+    def test_simple_for_stmt(self):
+        code = """
+        struct Vec2 {
+            int x;
+        };
+
+        int main() {
+            struct Vec2 v;
+            int i;
+
+            for (i = 0; i < 5; i++) {
+                v.x = v.x + 1;
+            }
+        }
+        """
+        ir = compile_source(code)
+        #print(ir.to_string())
+        self.assertTrue("For" in str(ir))

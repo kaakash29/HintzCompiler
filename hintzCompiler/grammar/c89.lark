@@ -34,6 +34,7 @@ stmt: declaration
     | while_stmt
     | do_while_stmt
     | return_stmt
+    | for_stmt
     | SEMI
 
 expr_stmt: expr SEMI
@@ -42,6 +43,13 @@ return_stmt: "return" expr? SEMI
 if_stmt: "if" LPAR expr RPAR stmt ("else" stmt)?
 while_stmt: "while" LPAR expr RPAR stmt
 do_while_stmt: "do" stmt "while" LPAR expr RPAR SEMI
+
+for_stmt: "for" LPAR for_init for_cond for_update RPAR stmt
+
+for_init: expr SEMI | SEMI
+for_cond: expr SEMI | SEMI
+for_update: expr?
+
 
 expr: assignment
 
@@ -55,8 +63,8 @@ relational: add ((LT_OP | GT_OP | LE_OP | GE_OP) add)*
 add: mul ((ADD_OP | SUB_OP) mul)*
 mul: unary ((MUL_OP | DIV_OP | MOD_OP) unary)*
 
-unary: (NOT_OP | ADD_OP | SUB_OP) unary
-     | primary
+unary: (INCREMENT | DECREMENT | NOT_OP | ADD_OP | SUB_OP) unary
+     | primary (INCREMENT | DECREMENT)?
      | unary DOT IDENT        -> field_access
      | unary LSQB expr RSQB   -> array_access
 
@@ -69,6 +77,8 @@ primary: IDENT
 func_call: IDENT LPAR (expr (COMMA expr)*)? RPAR
 
 // Operators
+INCREMENT: "++"
+DECREMENT: "--"
 EQUAL: "="
 OR_OP: "||"
 AND_OP: "&&"
@@ -84,6 +94,7 @@ MUL_OP: "*"
 DIV_OP: "/"
 MOD_OP: "%"
 NOT_OP: "!"
+
 
 // Punctuation
 LPAR: "("
