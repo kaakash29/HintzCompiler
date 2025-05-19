@@ -249,3 +249,8 @@ class IRTransformer(Transformer):
         cond = children[1];
         body = children[3];
         return While(condition=cond, body=body)
+
+    def do_while_stmt(self, children):
+        body = children[1];
+        cond = children[4];
+        return DoWhile(body=body, condition=cond)

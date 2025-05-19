@@ -112,3 +112,25 @@ class TestCompiler(unittest.TestCase):
         #print(ir.to_string())
         self.assertTrue("While" in str(ir))
 
+    def test_simple_do_while_stmt(self):
+        code = """
+        struct Vec2 {
+            int x;
+        };
+
+        int main() {
+            struct Vec2 v;
+            int i;
+
+            i = 0;
+            do {
+                v.x = v.x + 1;
+                i = i + 1;
+            } while(i < 5);
+        }
+        """
+        ir = compile_source(code)
+        #print(ir.to_string())
+        self.assertTrue("While" in str(ir))
+
+
