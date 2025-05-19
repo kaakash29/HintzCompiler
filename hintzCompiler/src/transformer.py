@@ -245,3 +245,7 @@ class IRTransformer(Transformer):
             return None
         return children[0]  # could be Identifier, UnaryOp, etc.
 
+    def while_stmt(self, children):
+        cond = children[1];
+        body = children[3];
+        return While(condition=cond, body=body)
