@@ -89,3 +89,26 @@ class TestCompiler(unittest.TestCase):
         ir = compile_source(code)
         #print(ir.to_string())
         self.assertTrue("For" in str(ir))
+
+
+    def test_simple_while_stmt(self):
+        code = """
+        struct Vec2 {
+            int x;
+        };
+
+        int main() {
+            struct Vec2 v;
+            int i;
+
+            i = 0;
+            while(i < 5) {
+                v.x = v.x + 1;
+                i = i + 1;
+            }
+        }
+        """
+        ir = compile_source(code)
+        #print(ir.to_string())
+        self.assertTrue("While" in str(ir))
+
