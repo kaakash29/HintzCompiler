@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional, Union
+from lark import Token
 
 class IRNode:
     def dump(self, indent=0):
@@ -56,8 +57,9 @@ class BinaryOp(IRNode):
 
 @dataclass
 class UnaryOp(IRNode):
-    op: str
+    op: Token
     operand: IRNode
+    is_postfix: bool = False
 
 @dataclass
 class Assignment(IRNode):
@@ -115,3 +117,24 @@ class ArrayAccess:
 class FunctionCall:
     name: str
     args: list
+
+@dataclass
+class For(IRNode):
+    init: Optional[IRNode]
+    condition: Optional[IRNode]
+    update: Optional[IRNode]
+    body: IRNode
+    '''
+    def dump(self, indent=0):
+        pad = " " * indent
+        out = f"{pad}For:\n"
+        if self.init:
+            out += f"{pad}  Init:\n{self.init.dump(indent + 4)}"
+        if self.condition:
+            out += f"{pad}  Condition:\n{self.condition.dump(indent + 4)}"
+        if self.update:
+            out += f"{pad}  Update:\n{self.update.dump(indent + 4)}"
+        out += f"{pad}  Body:\n{self.body.dump(indent + 4)}"
+        print out
+    '''
+

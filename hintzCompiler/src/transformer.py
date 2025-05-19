@@ -169,8 +169,17 @@ class IRTransformer(Transformer):
     def param(self, items):
         return Variable(name=str(items[1]), type_spec=str(items[0]))
 
-    def unary(self, items):
-        return items[0]  # unwrap Identifier or Literal
+    def unary(self, children):
+        if len(children) == 2 and isinstance(children[1], Token):
+            # postfix: primary ++ or primary --
+            expr, op = children
+            return UnaryOp(op=op, operand=expr, is_postfix=True)
+        elif len(children) == 2 and isinstance(children[0], Token):
+            # prefix: ++ expr
+            op, expr = children
+            return UnaryOp(op=op, operand=expr, is_postfix=False)
+        else:
+            return children[0]
 
     def expr(self, items):
         return items[0]  # usually an assignment
@@ -203,4 +212,36 @@ class IRTransformer(Transformer):
             args = []
 
         return FunctionCall(name=name, args=args)
+
+    def if_stmt(self, children):
+        # children: ['(', condition, ')', then_stmt, (optional) else_stmt]
+        condition = children[1]
+        then_branch = children[3]
+        else_branch = children[4] if len(children) == 5 else None
+        return If(condition=condition, then_branch=then_branch, else_branch=else_branch)
+
+    def for_stmt(self, children):
+        # children layout:
+        # [init_stmt, cond_expr, update_expr, body_stmt]
+        init = children[1]
+        cond = children[2]
+        update = children[3]
+        body = children[5]
+
+        return For(init=init, condition=cond, update=update, body=body)
+
+    def for_init(self, children):
+        if len(children) == 0:
+            return None
+        return children[0]  # usually an Assignment
+
+    def for_cond(self, children):
+        if len(children) == 0:
+            return None
+        return children[0]  # usually a BinaryOp
+
+    def for_update(self, children):
+        if len(children) == 0:
+            return None
+        return children[0]  # could be Identifier, UnaryOp, etc.
 
