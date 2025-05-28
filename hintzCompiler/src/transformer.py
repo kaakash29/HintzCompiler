@@ -254,3 +254,13 @@ class IRTransformer(Transformer):
         body = children[1];
         cond = children[4];
         return DoWhile(body=body, condition=cond)
+
+    def goto_stmt(self, children):
+        label = children[0].value  # IDENT
+        return Goto(label=label)
+
+    def label_stmt(self, children):
+        label = children[0].value  # IDENT
+        return Label(name=label)
+
+
