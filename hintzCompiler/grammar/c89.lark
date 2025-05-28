@@ -34,6 +34,7 @@ stmt: declaration
     | while_stmt
     | do_while_stmt
     | for_stmt
+    | switch_stmt
     | goto_stmt
     | label_stmt
     | return_stmt
@@ -48,7 +49,9 @@ for_stmt: "for" LPAR for_init for_cond for_update RPAR stmt
 for_init: expr SEMI | SEMI
 for_cond: expr SEMI | SEMI
 for_update: expr?
-
+switch_stmt: "switch" LPAR expr RPAR LBRACE case_block+ RBRACE
+case_block: "case" expr COLON stmt*
+          | "default" COLON stmt*
 goto_stmt: "goto" IDENT SEMI
 label_stmt: IDENT ":" 
 
@@ -113,6 +116,10 @@ STRING: /"[^"]*"/
 NUMBER: /\d+(\.\d+)?/
 
 // Keywords (higher priority)
+CASE.2: "case"
+DEFAULT.2: "default"
+SWITCH.2: "switch"
+COLON: ":"
 GOTO.2: "goto"
 TYPE_INT.2: "int"
 TYPE_VOID.2: "void"

@@ -263,4 +263,18 @@ class IRTransformer(Transformer):
         label = children[0].value  # IDENT
         return Label(name=label)
 
+    def switch_stmt(self, children):
+        expr = children[0]
+        cases = []
+        for child in children[1:]:
+            cases.append(child)
+        return Switch(expr=expr, cases=cases)
 
+    def case_block(self, children):
+        value = children[0]
+        stmts = children[1:]
+        return Case(value=value, body=Block(statements=stmts))
+
+    def default_block(self, children):
+        stmts = children
+        return Case(value=None, body=Block(statements=stmts))
