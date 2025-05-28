@@ -124,17 +124,11 @@ class For(IRNode):
     condition: Optional[IRNode]
     update: Optional[IRNode]
     body: IRNode
-    '''
-    def dump(self, indent=0):
-        pad = " " * indent
-        out = f"{pad}For:\n"
-        if self.init:
-            out += f"{pad}  Init:\n{self.init.dump(indent + 4)}"
-        if self.condition:
-            out += f"{pad}  Condition:\n{self.condition.dump(indent + 4)}"
-        if self.update:
-            out += f"{pad}  Update:\n{self.update.dump(indent + 4)}"
-        out += f"{pad}  Body:\n{self.body.dump(indent + 4)}"
-        print out
-    '''
 
+@dataclass
+class Goto(IRNode):
+    label: str
+
+@dataclass
+class Label(IRNode):
+    name: str

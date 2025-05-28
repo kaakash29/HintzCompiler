@@ -1,0 +1,15 @@
+int main() {
+    int x;
+    x = 0;
+
+    if (x == 0) {
+        goto skip;
+    }
+
+    x = 1;
+
+    skip:
+    x = x + 10;
+
+    return x;
+}

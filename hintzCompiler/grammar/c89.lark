@@ -33,23 +33,24 @@ stmt: declaration
     | if_stmt
     | while_stmt
     | do_while_stmt
-    | return_stmt
     | for_stmt
+    | goto_stmt
+    | label_stmt
+    | return_stmt
     | SEMI
 
 expr_stmt: expr SEMI
 return_stmt: "return" expr? SEMI
-
 if_stmt: "if" LPAR expr RPAR stmt ("else" stmt)?
 while_stmt: "while" LPAR expr RPAR stmt
 do_while_stmt: "do" stmt "while" LPAR expr RPAR SEMI
-
 for_stmt: "for" LPAR for_init for_cond for_update RPAR stmt
-
 for_init: expr SEMI | SEMI
 for_cond: expr SEMI | SEMI
 for_update: expr?
 
+goto_stmt: "goto" IDENT SEMI
+label_stmt: IDENT ":" 
 
 expr: assignment
 
@@ -112,6 +113,7 @@ STRING: /"[^"]*"/
 NUMBER: /\d+(\.\d+)?/
 
 // Keywords (higher priority)
+GOTO.2: "goto"
 TYPE_INT.2: "int"
 TYPE_VOID.2: "void"
 TYPE_FLOAT.2: "float"
