@@ -3,7 +3,6 @@ import argparse
 from lark import Lark
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.preprocessor import Preprocessor
-from hintzCompiler.src.cfg import ControlFlowGraph
 
 import os
 

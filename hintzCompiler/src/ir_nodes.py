@@ -132,3 +132,13 @@ class Goto(IRNode):
 @dataclass
 class Label(IRNode):
     name: str
+
+@dataclass
+class Switch(IRNode):
+    expr: IRNode
+    cases: List["Case"]
+
+@dataclass
+class Case(IRNode):
+    value: Optional[IRNode]  # None for default
+    body: Block
