@@ -213,5 +213,5 @@ class ControlFlowGraph:
                 dot.edge(str(node.id), str(succ.id))
 
         # Render graph
-        dot.render(output_path, view=view)
+        dot.render(output_path, view=view, cleanup=True)
 
