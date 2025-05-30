@@ -3,6 +3,9 @@ import argparse
 from lark import Lark
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.preprocessor import Preprocessor
+from hintzCompiler.src.cfg import ControlFlowGraph
+from hintzCompiler.src.ir_nodes import Function
+from typing import cast
 
 import os
 
@@ -45,7 +48,8 @@ def main():
     parser.add_argument("source", help="Path to .hz source file")
     parser.add_argument("-s", "--save-ir", help="Path to write IR output")
     parser.add_argument("-n", "--debug", action="store_true", help="Dump parse tree and symbol table")
-
+    parser.add_argument("--cfg", help="Dump control flow graph HTML", action="store_true")
+    
     args = parser.parse_args()
 
     try:
@@ -60,7 +64,18 @@ def main():
             print("=== IR DUMP ===")
             ir.dump()
 
+        if args.cfg:
+
+            if len(ir.declarations) == 0 or not isinstance(ir.declarations[0], Function):
+                raise ValueError("❌ CFG generation requires a function declaration.")
+            
+            cfg = ControlFlowGraph(cast(Function, ir.declarations[0]))
+            cfg.dump();
+            cfg.to_graphviz();
+
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         print(f"❌ Compilation failed: {e}")
         sys.exit(1)
 

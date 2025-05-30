@@ -38,6 +38,7 @@ stmt: declaration
     | goto_stmt
     | label_stmt
     | return_stmt
+    | break_stmt
     | SEMI
 
 expr_stmt: expr SEMI
@@ -49,11 +50,14 @@ for_stmt: "for" LPAR for_init for_cond for_update RPAR stmt
 for_init: expr SEMI | SEMI
 for_cond: expr SEMI | SEMI
 for_update: expr?
-switch_stmt: "switch" LPAR expr RPAR LBRACE case_block+ RBRACE
+
+switch_stmt: "switch" LPAR expr RPAR LBRACE case_block+ default_block? RBRACE
 case_block: "case" expr COLON stmt*
-          | "default" COLON stmt*
+default_block: "default" COLON stmt*
+
 goto_stmt: "goto" IDENT SEMI
 label_stmt: IDENT ":" 
+break_stmt: "break" SEMI
 
 expr: assignment
 
@@ -116,6 +120,7 @@ STRING: /"[^"]*"/
 NUMBER: /\d+(\.\d+)?/
 
 // Keywords (higher priority)
+BREAK.2: "break"
 CASE.2: "case"
 DEFAULT.2: "default"
 SWITCH.2: "switch"
