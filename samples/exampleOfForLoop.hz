@@ -1,0 +1,8 @@
+int main() {
+	int i;
+	int l;
+	for(i = 0; i < 12 ; i++) {
+		l = l + i;
+	}
+	return l;
+}

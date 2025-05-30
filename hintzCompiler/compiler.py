@@ -68,10 +68,12 @@ def main():
 
             if len(ir.declarations) == 0 or not isinstance(ir.declarations[0], Function):
                 raise ValueError("❌ CFG generation requires a function declaration.")
-            
-            cfg = ControlFlowGraph(cast(Function, ir.declarations[0]))
-            cfg.dump();
-            cfg.to_graphviz();
+
+            for decl in ir.declarations:
+                if isinstance(decl, Function):
+                    cfg = ControlFlowGraph(cast(Function, decl))
+                    cfg.dump();
+                    cfg.to_graphviz(output_path=cfg._fcnName, view=False);
 
     except Exception as e:
         import traceback

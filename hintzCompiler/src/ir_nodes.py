@@ -22,16 +22,6 @@ class IRNode:
             else:
                 print(f"{pad}  {field}: {value}")
 
-
-    def to_string(self, indent=0):
-        import io, sys
-        buffer = io.StringIO()
-        original_stdout = sys.stdout
-        sys.stdout = buffer
-        self.dump(indent)
-        sys.stdout = original_stdout
-        return buffer.getvalue()
-
 @dataclass
 class Program(IRNode):
     declarations: List[IRNode]
@@ -125,6 +115,9 @@ class For(IRNode):
     update: Optional[IRNode]
     body: IRNode
 
+    def __str__(self):
+        return "for(init; cond; update)"
+
 @dataclass
 class Goto(IRNode):
     label: str
@@ -137,6 +130,9 @@ class Label(IRNode):
 class Switch(IRNode):
     expr: IRNode
     cases: List["Case"]
+
+    def __str__(self):
+        return f"switch {self.expr}"
 
 @dataclass
 class Case(IRNode):

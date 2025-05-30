@@ -10,6 +10,7 @@ class CFGNode:
     stmt: IRNode
     successors: List["CFGNode"] = field(default_factory=list)
     compositeNodeExit : Optional["CFGNode"] = None
+    compositeNodeEntry : Optional["CFGNode"] = None
 
     def add_successor(self, succ: "CFGNode"):
         if succ not in self.successors:
@@ -22,6 +23,7 @@ class CFGNode:
 
 class ControlFlowGraph:
     def __init__(self, function: Function):
+        self._fcnName = function.name
         self.nodes: List[CFGNode] = []
         self.label_map: Dict[str, CFGNode] = {}
         self.goto_links: List[Tuple[CFGNode, str]] = []
@@ -34,14 +36,34 @@ class ControlFlowGraph:
         prev_node = None
 
         for stmt in block.statements:
+
+            #print(f"Curr Stmt: {stmt}")
+
             curr_node = self._handle_stmt(stmt)
 
-            if prev_node and isinstance(prev_node.stmt, Switch):
-                if prev_node.compositeNodeExit is not None:
-                    prev_node.compositeNodeExit.add_successor(curr_node)
-            
-            elif prev_node and not isinstance(prev_node.stmt, (Goto, Return)):
-                prev_node.add_successor(curr_node)
+            #print(f"Curr Node: {curr_node}")
+            #print(f"Prev Node: {prev_node}")
+
+            if prev_node:
+                
+                if isinstance(prev_node.stmt, Switch):
+                    if prev_node.compositeNodeExit is not None:
+                        prev_node.compositeNodeExit.add_successor(curr_node)
+                    else:
+                        prev_node.add_successor(curr_node)
+
+                elif isinstance(stmt, For):
+                    if curr_node.compositeNodeEntry is not None:
+                        prev_node.add_successor(curr_node.compositeNodeEntry)
+                    else:
+                        prev_node.add_successor(curr_node)
+
+                elif isinstance(prev_node.stmt, (Goto, Return)):
+                    prev_node = curr_node
+                    continue;
+
+                else:
+                    prev_node.add_successor(curr_node)
 
             prev_node = curr_node
 
@@ -75,6 +97,8 @@ class ControlFlowGraph:
             last.add_successor(node)
 
         elif isinstance(stmt, For):
+
+            orignode = node;
             if stmt.init:
                 init_node = CFGNode(id=self.stmt_id, stmt=stmt.init)
                 self.nodes.append(init_node)
@@ -90,6 +114,8 @@ class ControlFlowGraph:
             else:
                 node.add_successor(cond_node)
 
+            node = cond_node
+
             body_entry = self._build_branch(cast(Block, stmt.body))
             cond_node.add_successor(body_entry)
             after_body = self._last_node(body_entry)
@@ -102,7 +128,10 @@ class ControlFlowGraph:
                 update_node.add_successor(cond_node)
             else:
                 after_body.add_successor(cond_node)
-        
+
+            node.compositeNodeEntry = orignode;
+            return node;
+
         #Handling for Switch Stmt.
         elif isinstance(stmt, Switch):
             switch_node = node
@@ -112,13 +141,12 @@ class ControlFlowGraph:
             self._pending_breaks = []
 
             exit_node = CFGNode(id=self.stmt_id, stmt=IRNode())  # dummy "join" node
-            
+
             self.nodes.append(exit_node)
             self.stmt_id += 1
 
             for case in stmt.cases:
                 case_entry = self._build_branch(case.body)
-
                 switch_node.add_successor(case_entry)
 
             # All breaks in the switch go to the exit node
@@ -126,7 +154,7 @@ class ControlFlowGraph:
                 break_node.add_successor(exit_node)
 
             self._pending_breaks = prev_pending_breaks
-            
+
             node.compositeNodeExit = exit_node;
 
             return node
@@ -165,15 +193,18 @@ class ControlFlowGraph:
                 print(f"⚠️ Warning: unresolved label '{label}' at node {node.id}")
 
     def dump(self):
+        print(f"=== CFG ===" )
+        print(f"Fcn : {self._fcnName}" )
         for node in self.nodes:
             print(node)
 
     def to_graphviz(self, output_path="cfg", view=False):
-        dot = graphviz.Digraph(format="png")
+        dot = graphviz.Digraph(format="jpeg")
 
         # Add nodes with labels
         for node in self.nodes:
-            label = f"[{node.id}]\\n{type(node.stmt).__name__}"
+            #label = f"[{node.id}]\\n{type(node.stmt).__name__}"
+            label = f"[{node.id}]\\n{str(node.stmt)}"
             dot.node(str(node.id), label)
 
         # Add edges
