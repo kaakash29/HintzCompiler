@@ -121,7 +121,8 @@ class IRTransformer(Transformer):
         return items
 
     def compound_stmt(self, items):
-        return Block(statements=items)
+        innerS = items[1:-1]
+        return Block(statements=innerS)
 
     def expr_stmt(self, items):
         return items[0]
@@ -215,6 +216,7 @@ class IRTransformer(Transformer):
 
     def if_stmt(self, children):
         # children: ['(', condition, ')', then_stmt, (optional) else_stmt]
+
         condition = children[1]
         then_branch = children[3]
         else_branch = children[4] if len(children) == 5 else None
@@ -263,18 +265,19 @@ class IRTransformer(Transformer):
         label = children[0].value  # IDENT
         return Label(name=label)
 
-    def switch_stmt(self, children):
-        expr = children[0]
-        cases = []
-        for child in children[1:]:
-            cases.append(child)
-        return Switch(expr=expr, cases=cases)
+    def break_stmt(self, _):
+        return Break()
 
     def case_block(self, children):
         value = children[0]
-        stmts = children[1:]
+        stmts = children[2:]
         return Case(value=value, body=Block(statements=stmts))
 
     def default_block(self, children):
-        stmts = children
+        stmts = children[1:]
         return Case(value=None, body=Block(statements=stmts))
+
+    def switch_stmt(self, children):
+        expr = children[1]
+        cases = children[4:-1]
+        return Switch(expr=expr, cases=cases)

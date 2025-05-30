@@ -142,3 +142,7 @@ class Switch(IRNode):
 class Case(IRNode):
     value: Optional[IRNode]  # None for default
     body: Block
+
+@dataclass
+class Break(IRNode):
+    pass
