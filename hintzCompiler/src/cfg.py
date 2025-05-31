@@ -198,6 +198,18 @@ class ControlFlowGraph:
         for node in self.nodes:
             print(node)
 
+    def __str__(self):
+        retStr = ""
+        retStr += f"=== CFG ===\n"
+        retStr += f"Fcn : {self._fcnName}\n"
+
+        for node in self.nodes:
+            retStr += str(node)
+            retStr += "\n"
+
+        return retStr
+
+
     def to_graphviz(self, output_path="cfg", view=False):
         dot = graphviz.Digraph(format="jpeg")
 
