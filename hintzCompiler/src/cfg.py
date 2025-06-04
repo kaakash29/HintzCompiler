@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional
-from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Case, Break
+from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Case, Break, SwitchJoin, IfJoin
+
 from typing import cast
 import graphviz
 
@@ -22,6 +23,7 @@ class CFGNode:
         return f"[{self.id}] {stmt_str} -> {succs}"
 
 class ControlFlowGraph:
+
     def __init__(self, function: Function):
         self._fcnName = function.name
         self.nodes: List[CFGNode] = []
@@ -46,7 +48,7 @@ class ControlFlowGraph:
 
             if prev_node:
                 
-                if isinstance(prev_node.stmt, Switch):
+                if isinstance(prev_node.stmt, (Switch, If)):
                     if prev_node.compositeNodeExit is not None:
                         prev_node.compositeNodeExit.add_successor(curr_node)
                     else:
@@ -78,20 +80,31 @@ class ControlFlowGraph:
             self.goto_links.append((node, stmt.label))
 
         elif isinstance(stmt, If):
-            then_entry = self._build_branch(cast(Block, stmt.then_branch))
+
+            exit_node = CFGNode(id=self.stmt_id, stmt=IfJoin())  # dummy "join" node
+            self.nodes.append(exit_node)
+            self.stmt_id += 1
+
+            then_entry, then_last_node = self._build_branch(cast(Block, stmt.then_branch))
             node.add_successor(then_entry)
+            then_last_node.add_successor(exit_node);
+
             if stmt.else_branch:
-                else_entry = self._build_branch(cast(Block, stmt.else_branch))
+                else_entry, else_last = self._build_branch(cast(Block, stmt.else_branch))
                 node.add_successor(else_entry)
+                else_last.add_successor(exit_node)
+
+            node.compositeNodeExit = exit_node;
+            return node
 
         elif isinstance(stmt, While):
-            body_entry = self._build_branch(cast(Block, stmt.body))
+            body_entry, body_last = self._build_branch(cast(Block, stmt.body))
             node.add_successor(body_entry)
             last = self._last_node(body_entry)
             last.add_successor(node)
 
         elif isinstance(stmt, DoWhile):
-            body_entry = self._build_branch(cast(Block, stmt.body))
+            body_entry, dowhile_last = self._build_branch(cast(Block, stmt.body))
             node.stmt = stmt  # node represents the condition
             last = self._last_node(body_entry)
             last.add_successor(node)
@@ -116,7 +129,7 @@ class ControlFlowGraph:
 
             node = cond_node
 
-            body_entry = self._build_branch(cast(Block, stmt.body))
+            body_entry, body_last = self._build_branch(cast(Block, stmt.body))
             cond_node.add_successor(body_entry)
             after_body = self._last_node(body_entry)
 
@@ -140,13 +153,13 @@ class ControlFlowGraph:
             prev_pending_breaks = self._pending_breaks
             self._pending_breaks = []
 
-            exit_node = CFGNode(id=self.stmt_id, stmt=IRNode())  # dummy "join" node
+            exit_node = CFGNode(id=self.stmt_id, stmt=SwitchJoin())  # dummy "join" node
 
             self.nodes.append(exit_node)
             self.stmt_id += 1
 
             for case in stmt.cases:
-                case_entry = self._build_branch(case.body)
+                case_entry, last_node = self._build_branch(case.body)
                 switch_node.add_successor(case_entry)
 
             # All breaks in the switch go to the exit node
@@ -164,17 +177,28 @@ class ControlFlowGraph:
 
         return node
 
-    def _build_branch(self, block: Block) -> CFGNode:
+    def _build_branch(self, block: Block) -> tuple[CFGNode, CFGNode] :
         entry = None
         prev = None
         for stmt in block.statements:
             node = self._handle_stmt(stmt)
-            if prev and not isinstance(prev.stmt, (Goto, Return)):
-                prev.add_successor(node)
+
+            if prev:
+                if isinstance(stmt, For):
+                    if node.compositeNodeEntry is not None:
+                        prev.add_successor(node.compositeNodeEntry)
+                    else:
+                        prev.add_successor(node)
+
+                elif not isinstance(prev.stmt, (Goto, Return)):
+                    prev.add_successor(node)
+
             if entry is None:
                 entry = node
+
             prev = node
-        return entry
+
+        return entry, prev
 
     def _last_node(self, start: CFGNode) -> CFGNode:
         current = start
