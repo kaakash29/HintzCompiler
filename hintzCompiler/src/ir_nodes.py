@@ -62,6 +62,9 @@ class If(IRNode):
     then_branch: IRNode
     else_branch: Optional[IRNode] = None
 
+    def __str__(self):
+        return f"If {self.condition}"
+
 @dataclass
 class While(IRNode):
     condition: IRNode
@@ -141,4 +144,12 @@ class Case(IRNode):
 
 @dataclass
 class Break(IRNode):
+    pass
+
+@dataclass
+class SwitchJoin(IRNode):
+    pass
+
+@dataclass
+class IfJoin(IRNode):
     pass
