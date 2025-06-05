@@ -130,7 +130,7 @@ class TestCFG(unittest.TestCase):
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip())
 
 
-    def test_if_stmt_simple_ifs(self):
+    def test_simple_ifs(self):
         code = """
         int main() {
             int x;
@@ -171,7 +171,7 @@ class TestCFG(unittest.TestCase):
             self.assertIn(expected, mock_stdout.getvalue().strip())
 
 
-    def test_if_stmt_if_then_for(self):
+    def test_for_in_if(self):
         code = """
         int main() {
             int x;
@@ -227,7 +227,7 @@ class TestCFG(unittest.TestCase):
 
         self.assertIn(expected, actual);
  
-    def test_if_stmt_ifs_for(self):
+    def test_for_in_else(self):
         code = """
         int main() {
             int x;
@@ -283,6 +283,37 @@ class TestCFG(unittest.TestCase):
 
 
     def test_for_in_for(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+                for(j = 0; j < 10; j++) {
+                    x = j;
+                }
+            }
+
+            return x;
+        }
+        """
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        expected = """something""";
+
+        # Optional: Print to visually confirm
+        cfg.dump()
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected, mock_stdout.getvalue().strip())
+
+
+    def test_if_in_if(self):
         code = """
         int main() {
             int x;
