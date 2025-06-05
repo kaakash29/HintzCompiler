@@ -5,7 +5,6 @@ from io import StringIO
 from unittest.mock import patch
 import difflib
 
-
 class TestCFG(unittest.TestCase):
 
     def test_simple_empty_body(self):
@@ -271,11 +270,7 @@ class TestCFG(unittest.TestCase):
             cfg.dump()
             self.assertIn(expected, mock_stdout.getvalue().strip())
 
-
-
-
-
-
+#############################################################################
 if __name__ == '__main__':
     unittest.main()
 
