@@ -1,0 +1,14 @@
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+                for(j = 0; j < 10; j++) {
+                    x = j;
+                }
+            }
+
+            return x;
+        }

@@ -227,9 +227,6 @@ class TestCFG(unittest.TestCase):
 
         self.assertIn(expected, actual);
  
-
-
-    @unittest.skip("Skipping till we lock other things down")
     def test_if_stmt_ifs_for(self):
         code = """
         int main() {
@@ -261,14 +258,63 @@ class TestCFG(unittest.TestCase):
         self.assertEqual(len(if_node), 1)
         self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
 
-        expected = """something""";
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 3
+[3] If BinaryOp(op=Token('EQ_OP', '=='), left=Identifier(name='x'), right=Literal(value=1.0)) -> 5, 6
+[4] IfJoin() -> 13
+[5] Assignment(target=Identifier(name='x'), value=Literal(value=2.0)) -> 4
+[6] Assignment(target=Identifier(name='x'), value=Literal(value=3.0)) -> 7
+[7] for(init; cond; update) -> 8
+[8] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 9
+[9] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 10, 12
+[10] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 11
+[11] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 9
+[12] Assignment(target=Identifier(name='x'), value=Literal(value=5.0)) -> 4
+[13] Return(value=Identifier(name='x')) ->""";
 
         # Optional: Print to visually confirm
-        #cfg.dump()
+        # cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
             self.assertIn(expected, mock_stdout.getvalue().strip())
+
+
+    def test_for_in_for(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+                for(j = 0; j < 10; j++) {
+                    x = j;
+                }
+            }
+
+            return x;
+        }
+        """
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        expected = """something""";
+
+        # Optional: Print to visually confirm
+        cfg.dump()
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected, mock_stdout.getvalue().strip())
+
+
+
+
 
 #############################################################################
 if __name__ == '__main__':
