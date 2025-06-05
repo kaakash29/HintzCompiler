@@ -131,7 +131,8 @@ class ControlFlowGraph:
 
             body_entry, body_last = self._build_branch(cast(Block, stmt.body))
             cond_node.add_successor(body_entry)
-            after_body = self._last_node(body_entry)
+            #after_body = self._last_node(body_entry)
+            after_body = body_last
 
             if stmt.update:
                 update_node = CFGNode(id=self.stmt_id, stmt=stmt.update)
