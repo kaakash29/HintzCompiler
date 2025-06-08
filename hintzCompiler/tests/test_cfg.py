@@ -22,7 +22,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     def test_simple_straight_line(self):
@@ -51,7 +51,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
     def test_simple_for(self):
         code = """
@@ -83,7 +83,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
     def test_simple_switch(self):
         code = """
@@ -127,7 +127,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     def test_simple_ifs(self):
@@ -168,7 +168,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     def test_simple_if_no_else(self):
@@ -294,12 +294,9 @@ Fcn : main
 
         # Optional: Print to visually confirm
         self.maxDiff = None
-        actual = "";
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            actual = mock_stdout.getvalue().strip();
-
-        self.assertIn(expected, actual);
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
  
     def test_for_in_else(self):
         code = """
@@ -353,7 +350,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     def test_for_in_for(self):
@@ -398,7 +395,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     #@unittest.skip("Skipping this test for now")
@@ -440,7 +437,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
     #@unittest.skip("Skipping this test for now")
     def test_if_in_for(self):
@@ -481,11 +478,11 @@ Fcn : main
 [11] Return(value=Identifier(name='x')) ->""";
 
         # Optional: Print to visually confirm
-        cfg.dump()
+        # cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
 
