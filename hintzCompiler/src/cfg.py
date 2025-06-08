@@ -20,7 +20,7 @@ class CFGNode:
     def __str__(self):
         stmt_str = str(self.stmt).replace("\n", " ")
         succs = ", ".join(str(s.id) for s in self.successors)
-        return f"[{self.id}] {stmt_str} -> {succs}"
+        return f"[{self.id}] {stmt_str} -> {succs}".rstrip()
 
 class ControlFlowGraph:
 
@@ -85,14 +85,19 @@ class ControlFlowGraph:
             self.nodes.append(exit_node)
             self.stmt_id += 1
 
-            then_entry, then_last_node = self._build_branch(cast(Block, stmt.then_branch))
-            node.add_successor(then_entry)
-            then_last_node.add_successor(exit_node);
+            if stmt.then_branch:
+                then_entry, then_last = self._build_branch(cast(Block, stmt.then_branch))
+                node.add_successor(then_entry)
+                then_last.add_successor(exit_node);
+            else:
+                node.add_successor(exit_node)
 
             if stmt.else_branch:
                 else_entry, else_last = self._build_branch(cast(Block, stmt.else_branch))
                 node.add_successor(else_entry)
                 else_last.add_successor(exit_node)
+            else:
+                node.add_successor(exit_node)
 
             node.compositeNodeExit = exit_node;
             return node
@@ -191,6 +196,11 @@ class ControlFlowGraph:
                     else:
                         prev.add_successor(node)
 
+                elif isinstance(node.stmt, (Switch, If)):
+                    prev.add_successor(node)
+                    prev = node.compositeNodeExit
+                    continue;
+
                 elif not isinstance(prev.stmt, (Goto, Return)):
                     prev.add_successor(node)
 
@@ -218,7 +228,6 @@ class ControlFlowGraph:
                 print(f"⚠️ Warning: unresolved label '{label}' at node {node.id}")
 
     def dump(self):
-        print(f"=== CFG ===" )
         print(f"Fcn : {self._fcnName}" )
         for node in self.nodes:
             print(node)

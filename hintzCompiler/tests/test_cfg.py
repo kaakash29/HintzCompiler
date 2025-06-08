@@ -171,6 +171,80 @@ class TestCFG(unittest.TestCase):
             self.assertIn(expected, mock_stdout.getvalue().strip())
 
 
+    def test_simple_if_no_else(self):
+        code = """
+        int main() {
+            int x;
+            x = 1;
+            if (x == 1) {
+                x = 2;
+            }
+        }
+        """
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        # Check that there are expected number of nodes
+        self.assertGreaterEqual(len(cfg.nodes), 5)
+
+        # Optional: Assert branching from the if statement
+        if_node = [n for n in cfg.nodes if type(n.stmt).__name__ == "If"]
+        self.assertEqual(len(if_node), 1)
+        self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
+
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 2
+[2] If BinaryOp(op=Token('EQ_OP', '=='), left=Identifier(name='x'), right=Literal(value=1.0)) -> 4, 3
+[3] IfJoin() ->
+[4] Assignment(target=Identifier(name='x'), value=Literal(value=2.0)) -> 3""";
+
+        #cfg.dump()
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_simple_if_no_else_2(self):
+        code = """
+        int main() {
+            int x;
+            x = 1;
+            if (x == 1) {
+                x = 2;
+            }
+            return x;
+        }
+        """
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        # Check that there are expected number of nodes
+        self.assertGreaterEqual(len(cfg.nodes), 5)
+
+        # Optional: Assert branching from the if statement
+        if_node = [n for n in cfg.nodes if type(n.stmt).__name__ == "If"]
+        self.assertEqual(len(if_node), 1)
+        self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
+
+
+        expected = """
+Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 2
+[2] If BinaryOp(op=Token('EQ_OP', '=='), left=Identifier(name='x'), right=Literal(value=1.0)) -> 4, 3
+[3] IfJoin() -> 5
+[4] Assignment(target=Identifier(name='x'), value=Literal(value=2.0)) -> 3
+[5] Return(value=Identifier(name='x')) ->""";
+        
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
     def test_for_in_if(self):
         code = """
         int main() {
@@ -303,16 +377,31 @@ class TestCFG(unittest.TestCase):
         function = ir.declarations[0]
         cfg = ControlFlowGraph(function)
 
-        expected = """something""";
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 5
+[5] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 6, 13
+[6] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 7
+[7] for(init; cond; update) -> 8
+[8] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 9
+[9] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='j'), right=Literal(value=10.0)) -> 10, 12
+[10] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 11
+[11] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='j'), is_postfix=True) -> 9
+[12] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 5
+[13] Return(value=Identifier(name='x')) ->""";
 
         # Optional: Print to visually confirm
-        cfg.dump()
+        # cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
             self.assertIn(expected, mock_stdout.getvalue().strip())
 
 
+    #@unittest.skip("Skipping this test for now")
     def test_if_in_if(self):
         code = """
         int main() {
@@ -320,9 +409,9 @@ class TestCFG(unittest.TestCase):
             int i;
             int j;
 
-            for(i = 0; i < 5; i++) {
+            if(i < 5) {
                 x = i;
-                for(j = 0; j < 10; j++) {
+                if(j < 10) {
                     x = j;
                 }
             }
@@ -334,7 +423,62 @@ class TestCFG(unittest.TestCase):
         function = ir.declarations[0]
         cfg = ControlFlowGraph(function)
 
-        expected = """something""";
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
+[3] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 5, 4
+[4] IfJoin() -> 9
+[5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
+[6] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='j'), right=Literal(value=10.0)) -> 8, 7
+[7] IfJoin() -> 4
+[8] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 7
+[9] Return(value=Identifier(name='x')) ->""";
+
+        # Optional: Print to visually confirm
+        #cfg.dump()
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected, mock_stdout.getvalue().strip())
+
+    #@unittest.skip("Skipping this test for now")
+    def test_if_in_for(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+
+                if(x == 12) {
+                    x = 12;
+                }
+
+            }
+
+            return x;
+        }
+        """
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 5
+[5] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 6, 11
+[6] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 7
+[7] If BinaryOp(op=Token('EQ_OP', '=='), left=Identifier(name='x'), right=Literal(value=12.0)) -> 9, 8
+[8] IfJoin() -> 10
+[9] Assignment(target=Identifier(name='x'), value=Literal(value=12.0)) -> 8
+[10] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 5
+[11] Return(value=Identifier(name='x')) ->""";
 
         # Optional: Print to visually confirm
         cfg.dump()
@@ -342,8 +486,6 @@ class TestCFG(unittest.TestCase):
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
             self.assertIn(expected, mock_stdout.getvalue().strip())
-
-
 
 
 

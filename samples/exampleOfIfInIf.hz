@@ -1,0 +1,14 @@
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            if(i < 5) {
+                x = i;
+                if(j < 10) {
+                    x = j;
+                }
+            }
+
+            return x;
+        }
