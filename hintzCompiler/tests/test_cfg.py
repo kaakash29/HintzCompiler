@@ -352,52 +352,6 @@ Fcn : main
             cfg.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
-
-    def test_for_in_for(self):
-        code = """
-        int main() {
-            int x;
-            int i;
-            int j;
-
-            for(i = 0; i < 5; i++) {
-                x = i;
-                for(j = 0; j < 10; j++) {
-                    x = j;
-                }
-            }
-
-            return x;
-        }
-        """
-        ir = compile_source(code)
-        function = ir.declarations[0]
-        cfg = ControlFlowGraph(function)
-
-        expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
-[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
-[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
-[3] for(init; cond; update) -> 4
-[4] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 5
-[5] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 6, 13
-[6] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 7
-[7] for(init; cond; update) -> 8
-[8] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 9
-[9] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='j'), right=Literal(value=10.0)) -> 10, 12
-[10] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 11
-[11] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='j'), is_postfix=True) -> 9
-[12] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 5
-[13] Return(value=Identifier(name='x')) ->""";
-
-        # Optional: Print to visually confirm
-        # cfg.dump()
-        self.maxDiff = None
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
-
-
     #@unittest.skip("Skipping this test for now")
     def test_if_in_if(self):
         code = """
@@ -438,6 +392,147 @@ Fcn : main
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_if_in_if_2(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            if(i < 5) {
+                x = i;
+                if(j < 10) {
+                    x = j;
+                } else {
+                    x = j;
+                }
+            }
+
+            return x;
+        }
+        """
+
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
+[3] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 5, 4
+[4] IfJoin() -> 10
+[5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
+[6] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='j'), right=Literal(value=10.0)) -> 8, 9
+[7] IfJoin() -> 4
+[8] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 7
+[9] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 7
+[10] Return(value=Identifier(name='x')) ->""";
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_switch_in_if(self):
+        code = """
+        int main() {
+            int l;
+            int out;
+
+            if(l > 12) {
+
+                switch(l) {
+                    case 13:
+                        out = 0;
+                        break;
+                    case 14:
+                        out = 1;
+                        break;
+                    default:
+                        out = 99;
+                        break;
+                }
+
+            } else {
+                out = 11;
+            } 
+
+            return out;
+        }"""
+
+        expected = """Fcn : main
+[0] [Variable(name='l', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='out', type_spec='int', attributes=None)] -> 2
+[2] If BinaryOp(op=Token('GT_OP', '>'), left=Identifier(name='l'), right=Literal(value=12.0)) -> 4, 12
+[3] IfJoin() -> 13
+[4] switch Identifier(name='l') -> 6, 8, 10
+[5] SwitchJoin() -> 3
+[6] Assignment(target=Identifier(name='out'), value=Literal(value=0.0)) -> 7
+[7] Break() -> 5
+[8] Assignment(target=Identifier(name='out'), value=Literal(value=1.0)) -> 9
+[9] Break() -> 5
+[10] Assignment(target=Identifier(name='out'), value=Literal(value=99.0)) -> 11
+[11] Break() -> 5
+[12] Assignment(target=Identifier(name='out'), value=Literal(value=11.0)) -> 3
+[13] Return(value=Identifier(name='out')) ->"""
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_for_in_for(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+                for(j = 0; j < 10; j++) {
+                    x = j;
+                }
+            }
+
+            return x;
+        }"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 5
+[5] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 6, 13
+[6] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 7
+[7] for(init; cond; update) -> 8
+[8] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 9
+[9] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='j'), right=Literal(value=10.0)) -> 10, 12
+[10] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 11
+[11] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='j'), is_postfix=True) -> 9
+[12] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 5
+[13] Return(value=Identifier(name='x')) ->""";
+
+        # Optional: Print to visually confirm
+        # cfg.dump()
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
 
     #@unittest.skip("Skipping this test for now")
     def test_if_in_for(self):

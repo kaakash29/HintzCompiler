@@ -198,14 +198,15 @@ class ControlFlowGraph:
 
                 elif isinstance(node.stmt, (Switch, If)):
                     prev.add_successor(node)
-                    prev = node.compositeNodeExit
-                    continue;
 
                 elif not isinstance(prev.stmt, (Goto, Return)):
                     prev.add_successor(node)
-
+            
             if entry is None:
                 entry = node
+
+            if node.compositeNodeExit is not None:
+                node = node.compositeNodeExit;
 
             prev = node
 
