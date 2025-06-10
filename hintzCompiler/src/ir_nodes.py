@@ -70,10 +70,16 @@ class While(IRNode):
     condition: IRNode
     body: IRNode
 
+    def __str__(self):
+        return f"While {self.condition}";
+
 @dataclass
 class DoWhile(IRNode):
     body: IRNode
     condition: IRNode
+
+    def __str__(self):
+        return f"DoWhile {self.condition}";
 
 @dataclass
 class Return(IRNode):
@@ -152,4 +158,8 @@ class SwitchJoin(IRNode):
 
 @dataclass
 class IfJoin(IRNode):
+    pass
+
+@dataclass
+class DoJoin(IRNode):
     pass

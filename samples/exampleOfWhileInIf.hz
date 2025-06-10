@@ -1,0 +1,13 @@
+        int main() {
+            int x;
+            int i;
+
+            if(x < 0) {
+
+                while(i < 20) {
+                    x = i;
+                    i = i + 1; 
+                }
+
+            }
+        }

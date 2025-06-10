@@ -253,8 +253,8 @@ class IRTransformer(Transformer):
         return While(condition=cond, body=body)
 
     def do_while_stmt(self, children):
-        body = children[1];
-        cond = children[4];
+        body = children[0];
+        cond = children[2];
         return DoWhile(body=body, condition=cond)
 
     def goto_stmt(self, children):

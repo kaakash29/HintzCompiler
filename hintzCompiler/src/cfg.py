@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional
-from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Case, Break, SwitchJoin, IfJoin
+from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Case, Break, SwitchJoin, IfJoin, DoJoin
 
 from typing import cast
 import graphviz
@@ -54,7 +54,7 @@ class ControlFlowGraph:
                     else:
                         prev_node.add_successor(curr_node)
 
-                elif isinstance(stmt, For):
+                elif isinstance(stmt, (For, DoWhile)):
                     if curr_node.compositeNodeEntry is not None:
                         prev_node.add_successor(curr_node.compositeNodeEntry)
                     else:
@@ -105,14 +105,15 @@ class ControlFlowGraph:
         elif isinstance(stmt, While):
             body_entry, body_last = self._build_branch(cast(Block, stmt.body))
             node.add_successor(body_entry)
-            last = self._last_node(body_entry)
-            last.add_successor(node)
+            #last = self._last_node(body_entry)
+            body_last.add_successor(node)
 
         elif isinstance(stmt, DoWhile):
             body_entry, dowhile_last = self._build_branch(cast(Block, stmt.body))
             node.stmt = stmt  # node represents the condition
-            last = self._last_node(body_entry)
-            last.add_successor(node)
+            node.compositeNodeEntry = body_entry
+            dowhile_last.add_successor(node)
+            node.add_successor(body_entry)
 
         elif isinstance(stmt, For):
 
@@ -190,7 +191,7 @@ class ControlFlowGraph:
             node = self._handle_stmt(stmt)
 
             if prev:
-                if isinstance(stmt, For):
+                if isinstance(stmt, (For, DoWhile)):
                     if node.compositeNodeEntry is not None:
                         prev.add_successor(node.compositeNodeEntry)
                     else:
@@ -203,7 +204,7 @@ class ControlFlowGraph:
                     prev.add_successor(node)
             
             if entry is None:
-                entry = node
+                entry = node if node.compositeNodeEntry is None else node.compositeNodeEntry;
 
             if node.compositeNodeExit is not None:
                 node = node.compositeNodeExit;

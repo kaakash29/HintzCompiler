@@ -7,6 +7,8 @@ import difflib
 
 class TestCFG(unittest.TestCase):
 
+    ## Simple singular control structures.
+
     def test_simple_empty_body(self):
         code = """
         int main() {
@@ -244,6 +246,72 @@ Fcn : main
             cfg.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
+    def test_simple_while_loop(self):
+        code = """int main() {
+            int i;
+            i = 0;
+            while(i < 10) {
+                i = i + 1;
+            }
+
+            return i;
+        }"""
+
+        expected = """Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
+[1] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 2
+[2] While BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=10.0)) -> 3, 4
+[3] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 2
+[4] Return(value=Identifier(name='i')) ->"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_simple_do_while_loop(self):
+        code = """int main() {
+            int i;
+            int j;
+            i = 0;
+            do {
+                j = 0;
+                i = i + 1;
+                j = 1;
+            } while (i < 10);
+
+            return i;
+        }"""
+
+        expected = """Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='j', type_spec='int', attributes=None)] -> 2
+[2] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 4
+[3] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=10.0)) -> 4, 7
+[4] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 5
+[5] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 6
+[6] Assignment(target=Identifier(name='j'), value=Literal(value=1.0)) -> 3
+[7] Return(value=Identifier(name='i')) ->"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    ## Nesting control structures inside IF/ELSE.
 
     def test_for_in_if(self):
         code = """
@@ -488,6 +556,76 @@ Fcn : main
                           \nExpected:||{expected.strip()}||\
                           \nActual:||{mock_stdout.getvalue().strip()}||")
 
+    def test_while_in_if(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+
+            if(x < 0) {
+
+                while(i < 20) {
+                    x = i;
+                    i = i + 1; 
+                }
+
+            }
+        }
+        """
+
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='x'), right=Literal(value=0.0)) -> 4, 3
+[3] IfJoin() ->
+[4] While BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=20.0)) -> 5, 3
+[5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
+[6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_do_while_in_if(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+
+            if(x < 0) {
+
+                do {
+                    x = i;
+                    i = i + 1; 
+                } while(i < 20);
+    
+            }
+
+            return x;
+        }
+        """
+
+        expected = """something"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+    ## Nesting control structures inside FOR-LOOPS.
 
     def test_for_in_for(self):
         code = """
