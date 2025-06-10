@@ -1,0 +1,19 @@
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+
+                while(x < 22) {
+                    j = 0;
+                    x = x + 1;
+                    j = 99;
+                }
+
+                x = j;
+            }
+
+            return x;
+        }

@@ -612,7 +612,15 @@ Fcn : main
         }
         """
 
-        expected = """something"""
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='x'), right=Literal(value=0.0)) -> 5, 3
+[3] IfJoin() -> 7
+[4] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=20.0)) -> 5, 3
+[5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
+[6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4
+[7] Return(value=Identifier(name='x')) ->"""
 
         ir = compile_source(code)
         function = ir.declarations[0]
@@ -712,6 +720,41 @@ Fcn : main
 
         # Optional: Print to visually confirm
         # cfg.dump()
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_while_in_for(self):
+        code = """
+        int main() {
+            int x;
+            int i;
+            int j;
+
+            for(i = 0; i < 5; i++) {
+                x = i;
+
+                while(x < 22) {
+                    j = 0;
+                    x = x + 1;
+                    j = 99;
+                }
+
+                x = j;
+            }
+
+            return x;
+        }
+        """
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+
+        cfg.to_graphviz()
+
+        expected = """something""";
+
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
