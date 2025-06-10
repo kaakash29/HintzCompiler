@@ -72,7 +72,7 @@ def main():
             for decl in ir.declarations:
                 if isinstance(decl, Function):
                     cfg = ControlFlowGraph(cast(Function, decl))
-                    cfg.dump();
+                    #cfg.dump();
                     print(cfg);
                     cfg.to_graphviz(output_path=cfg._fcnName, view=False);
 

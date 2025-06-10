@@ -751,9 +751,21 @@ Fcn : main
         function = ir.declarations[0]
         cfg = ControlFlowGraph(function)
 
-        cfg.to_graphviz()
-
-        expected = """something""";
+        expected = """Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='j', type_spec='int', attributes=None)] -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 5
+[5] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=5.0)) -> 6, 13
+[6] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 7
+[7] While BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='x'), right=Literal(value=22.0)) -> 8, 11
+[8] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 9
+[9] Assignment(target=Identifier(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='x'), right=Literal(value=1.0))) -> 10
+[10] Assignment(target=Identifier(name='j'), value=Literal(value=99.0)) -> 7
+[11] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 12
+[12] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 5
+[13] Return(value=Identifier(name='x')) ->""";
 
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:

@@ -211,15 +211,8 @@ class ControlFlowGraph:
 
             prev = node
 
-        return entry, prev
+        return entry, prev # pyright: ignore
 
-    def _last_node(self, start: CFGNode) -> CFGNode:
-        current = start
-        visited = set()
-        while current.successors and len(current.successors) == 1 and current not in visited:
-            visited.add(current)
-            current = current.successors[0]
-        return current
 
     def _resolve_gotos(self):
         for node, label in self.goto_links:
@@ -234,7 +227,7 @@ class ControlFlowGraph:
         for node in self.nodes:
             print(node)
 
-    def __str__(self):
+    def __str__(self): # pragma: no cover
         retStr = ""
         retStr += f"=== CFG ===\n"
         retStr += f"Fcn : {self._fcnName}\n"
@@ -246,7 +239,7 @@ class ControlFlowGraph:
         return retStr
 
 
-    def to_graphviz(self, output_path="cfg", view=False):
+    def to_graphviz(self, output_path="cfg", view=False): # pragma: no cover
         dot = graphviz.Digraph(format="jpeg")
 
         # Add nodes with labels
