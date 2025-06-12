@@ -9,6 +9,8 @@ __pycache__/
 # GraphViz Graphs
 *.jpeg
 *.png
+*.dot
+*.svg
 
 # Distribution / packaging
 .Python
