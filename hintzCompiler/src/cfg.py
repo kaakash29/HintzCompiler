@@ -38,14 +38,7 @@ class ControlFlowGraph:
         prev_node = None
 
         for stmt in block.statements:
-
-            #print(f"Curr Stmt: {stmt}")
-
             curr_node = self._handle_stmt(stmt)
-
-            #print(f"Curr Node: {curr_node}")
-            #print(f"Prev Node: {prev_node}")
-
             if prev_node:
                 
                 if isinstance(prev_node.stmt, (Switch, If)):
@@ -238,24 +231,6 @@ class ControlFlowGraph:
 
         return retStr
 
-    def to_graphviz_svg(self, output_path="cfg", view=False): # pragma: no cover
-        dot = graphviz.Digraph(format="svg")
-
-        # Add nodes with labels
-        for node in self.nodes:
-            #label = f"[{node.id}]\\n{type(node.stmt).__name__}"
-            label = f"[{node.id}]\\n{str(node.stmt)}"
-            dot.node(str(node.id), label)
-
-        # Add edges
-        for node in self.nodes:
-            for succ in node.successors:
-                dot.edge(str(node.id), str(succ.id))
-
-        # Render graph
-        dot.render(output_path, view=view, cleanup=False)
-
-
     def to_graphviz(self, output_path="cfg", view=False): # pragma: no cover
         dot = graphviz.Digraph(format="jpeg")
 
@@ -272,4 +247,21 @@ class ControlFlowGraph:
 
         # Render graph
         dot.render(output_path, view=view, cleanup=True)
+
+    def to_graphviz_svg(self, output_path="cfg", view=False): # pragma: no cover
+        dot = graphviz.Digraph(format="svg")
+
+        # Add nodes with labels
+        for node in self.nodes:
+            #label = f"[{node.id}]\\n{type(node.stmt).__name__}"
+            label = f"[{node.id}]\\n{str(node.stmt)}"
+            dot.node(str(node.id), label)
+
+        # Add edges
+        for node in self.nodes:
+            for succ in node.successors:
+                dot.edge(str(node.id), str(succ.id))
+
+        # Render graph
+        dot.render(output_path, view=view, cleanup=False)
 

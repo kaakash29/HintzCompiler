@@ -772,7 +772,38 @@ Fcn : main
             cfg.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
+    def test_do_for_without_init_cond_update(self):
+        code = """
+int main() {
+   int i;
+   int j;
+   i = 0;
+   
+   for(;;) {
+      j = i;
+   }
+   
+   return i;
+}"""
 
+        expected = """Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='j', type_spec='int', attributes=None)] -> 2
+[2] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 3
+[3] for(init; cond; update) -> 3, 4, 5
+[4] Assignment(target=Identifier(name='j'), value=Identifier(name='i')) -> 3
+[5] Return(value=Identifier(name='i')) ->"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
 
 #############################################################################
 if __name__ == '__main__':

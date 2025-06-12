@@ -25,7 +25,7 @@ def index():
                 cfg = ControlFlowGraph(function)
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
-                cfg.to_graphviz(dot_path)
+                cfg.to_graphviz_svg(dot_path)
                 os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
                 cfg_generated = True
         except Exception as e:

@@ -28,8 +28,21 @@ class TestCompiler(unittest.TestCase):
             result = add(1, 2);
         }
         """
+
+        expected = """statements: [
+            [Variable(name='result', type_spec='int', attributes=None)]
+            Assignment:
+              target:
+                Identifier:
+                  name: result
+              value: FunctionCall(name='add', args=[Literal(value=1.0), Literal(value=2.0)])
+          ]"""
+
         ir = compile_source(code)
-        self.assertTrue(any("add" in str(stmt) for stmt in ir.declarations[1].body.statements))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
     def test_array_access(self):
         code = """
@@ -38,8 +51,33 @@ class TestCompiler(unittest.TestCase):
             m[0] = 10;
         }
         """
+
+        expected = """Program:
+  declarations: [
+    Function:
+      return_type: int
+      name: main
+      params: [
+      ]
+      body:
+        Block:
+          statements: [
+            [Variable(name='m', type_spec='float', attributes={'dimensions': [3]})]
+            Assignment:
+              target: ArrayAccess(base=Identifier(name="Identifier(name='m')"), index=Literal(value=0.0))
+              value:
+                Literal:
+                  value: 10.0
+          ]
+  ]"""
+
         ir = compile_source(code)
-        self.assertTrue("ArrayAccess" in str(ir))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
 
     def test_struct_field_access(self):
         code = """
@@ -52,8 +90,23 @@ class TestCompiler(unittest.TestCase):
             v.x = 1;
         }
         """
+
+        expected = """statements: [
+            [Variable(name='v', type_spec='Vec2', attributes=None)]
+            Assignment:
+              target: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+              value:
+                Literal:
+                  value: 1.0
+          ]"""
+
         ir = compile_source(code)
-        self.assertTrue("FieldAccess" in str(ir))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
 
     def test_simple_if_stmt(self):
         code = """
@@ -71,9 +124,30 @@ class TestCompiler(unittest.TestCase):
             }
         }
         """
+        expected = """If:
+              condition:
+                BinaryOp:
+                  op: ==
+                  left: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                  right:
+                    Literal:
+                      value: 1.0
+              then_branch:
+                Block:
+                  statements: [
+                    Assignment:
+                      target: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                      value:
+                        Literal:
+                          value: 0.0""";
+
         ir = compile_source(code)
-        #print(ir.to_string())
-        self.assertTrue("if" in str(ir))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
 
     def test_simple_for_stmt(self):
         code = """
@@ -90,9 +164,39 @@ class TestCompiler(unittest.TestCase):
             }
         }
         """
+
+        expected = """For:
+              init:
+                Assignment:
+                  target:
+                    Identifier:
+                      name: i
+                  value:
+                    Literal:
+                      value: 0.0
+              condition:
+                BinaryOp:
+                  op: <
+                  left:
+                    Identifier:
+                      name: i
+                  right:
+                    Literal:
+                      value: 5.0
+              update:
+                UnaryOp:
+                  op: ++
+                  operand:
+                    Identifier:
+                      name: i
+                  is_postfix: True
+              body:"""
+
         ir = compile_source(code)
-        #print(ir.to_string())
-        self.assertTrue("For" in str(ir))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     def test_simple_while_stmt(self):
@@ -112,9 +216,25 @@ class TestCompiler(unittest.TestCase):
             }
         }
         """
+        expected = """While:
+              condition:
+                BinaryOp:
+                  op: <
+                  left:
+                    Identifier:
+                      name: i
+                  right:
+                    Literal:
+                      value: 5.0"""
+        
         ir = compile_source(code)
-        #print(ir.to_string())
-        self.assertTrue("While" in str(ir))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+
 
     def test_simple_do_while_stmt(self):
         code = """
@@ -133,9 +253,28 @@ class TestCompiler(unittest.TestCase):
             } while(i < 5);
         }
         """
+
+        expected = """DoWhile:
+              body:
+                Block:
+                  statements: [
+                    Assignment:
+                      target: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                      value:
+                        BinaryOp:
+                          op: +
+                          left: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                          right:
+                            Literal:
+                              value: 1.0"""
+
         ir = compile_source(code)
-        #print(ir.to_string())
-        self.assertTrue("While" in str(ir))
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
 
     def test_simple_switch_stmt(self):
         code = """
@@ -161,7 +300,6 @@ class TestCompiler(unittest.TestCase):
 
         }
         """
-        ir = compile_source(code)
         expected = """Switch:
               expr: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
               cases: [
@@ -181,8 +319,7 @@ class TestCompiler(unittest.TestCase):
                               value: 0.0
                         Break:
                       ]"""
-        self.maxDiff = None
-        #ir.dump()
+        ir = compile_source(code)
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
             self.assertIn(expected, mock_stdout.getvalue().strip())
@@ -211,7 +348,7 @@ class TestCompiler(unittest.TestCase):
             return i;
         }
         """
-        ir = compile_source(code)
+
         expected = """If:
               condition:
                 BinaryOp:
@@ -249,8 +386,84 @@ class TestCompiler(unittest.TestCase):
             Label:
               name: label
             Assignment:"""
+
+        ir = compile_source(code)
         self.maxDiff = None
-        #ir.dump()
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_for_with_no_init(self):
+        code = """
+int main() {
+   int i;
+   int j;
+   i = 0;
+   
+   for(;i < 12; i++) {
+      j = i;
+   }
+   
+   return i;
+}"""
+
+        expected = """
+            For:
+              init: None
+              condition:
+                BinaryOp:
+                  op: <
+                  left:
+                    Identifier:
+                      name: i
+                  right:
+                    Literal:
+                      value: 12.0
+              update:
+                UnaryOp:
+                  op: ++
+                  operand:
+                    Identifier:
+                      name: i
+                  is_postfix: True
+              body:"""
+
+        ir = compile_source(code)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_void_void_function(self):
+        code = """
+        void foo() {
+            return;
+        }
+
+        int main() {
+            foo();
+            return;
+        }
+        """
+
+        expected = """Function:
+      return_type: int
+      name: main
+      params: [
+      ]
+      body:
+        Block:
+          statements: [
+            FunctionCall(name='foo', args=[])
+            Return:
+              value: None
+          ]
+  ]"""
+
+        ir = compile_source(code)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")

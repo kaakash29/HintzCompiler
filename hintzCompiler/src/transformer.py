@@ -7,9 +7,10 @@ class IRTransformer(Transformer):
     def __init__(self):
         self.symtab_manager = ScopedSymbolTableManager()
 
-    def __default__(self, data, children, meta):
-        print(f"DEFAULT HANDLER: Rule `{data}` with children: {children}")
-        print(f"META: {meta}")
+    def __default__(self, data, children, meta): # pragma: no cover
+        print(f"Unhandled Pattern")
+        print(f"Rule `{data}` with children: {children}")
+        print(f"Meta {meta}")
         return children
 
     def get_global_symbol_table(self):
@@ -28,15 +29,6 @@ class IRTransformer(Transformer):
 
     def start(self, items):
         return items[0]
-
-    def declaration_or_function(self, items):
-        flat = []
-        for item in items:
-            if isinstance(item, list):
-                flat.extend(item);
-            else:
-                flat.append(item);
-        return flat;
 
     def struct_def(self, items):
         # Expecting:
@@ -63,12 +55,8 @@ class IRTransformer(Transformer):
 
     def type_specifier(self, items):
         if not items:
-            raise ValueError("Empty type_specifier encountered. Check grammar or parser output.") 
-
-        if isinstance(items[0], Tree) and items[0].data == "struct_type":
-            return f"struct {items[0].children[0]}"
+            raise ValueError("Empty type_specifier encountered. Check grammar or parser output.")
         return str(items[0])
-
 
     def struct_type(self, items):
         return items[0]  # CNAME
@@ -78,8 +66,10 @@ class IRTransformer(Transformer):
 
     def declarator(self, items):
         name = str(items[0])
-        if len(items) == 2:
-            return Variable(name=name, type_spec="matrix", attributes={"dimensions": [int(items[1])]})
+
+        if len(items) == 4:
+            return Variable(name=name, type_spec="matrix", attributes={"dimensions": [int(items[2])]})
+
         return Variable(name=name, type_spec=None)
 
     def declaration(self, items):
@@ -199,16 +189,14 @@ class IRTransformer(Transformer):
         return ArrayAccess(base=base, index=index)
 
     def return_stmt(self, items):
-        if len(items) >= 1:
+        if len(items) >= 2:
             return Return(items[0])
         return Return(None);
 
     def func_call(self, items):
         name = str(items[0])
-        if len(items) > 1:
-            args = items[1:]
-            if isinstance(args[0], list):  # for grouped arguments
-                args = args[0]
+        if len(items) > 3:
+            args = [arg for arg in items[2:-1] if not (isinstance(arg, Token) and arg.type == "COMMA")]
         else:
             args = []
 
@@ -233,12 +221,12 @@ class IRTransformer(Transformer):
         return For(init=init, condition=cond, update=update, body=body)
 
     def for_init(self, children):
-        if len(children) == 0:
+        if len(children) == 1:
             return None
         return children[0]  # usually an Assignment
 
     def for_cond(self, children):
-        if len(children) == 0:
+        if len(children) == 1:
             return None
         return children[0]  # usually a BinaryOp
 
