@@ -805,7 +805,44 @@ int main() {
                           \nExpected:||{expected.strip()}||\
                           \nActual:||{mock_stdout.getvalue().strip()}||")
 
-#############################################################################
-if __name__ == '__main__':
-    unittest.main()
 
+    def test_simple_goto_label(self):
+        code = """
+        int main(int i, int j) {
+
+            if(i < j) {
+                goto l1;
+            }
+            
+            i = 112;
+            j = 123;
+
+        l1:
+            i = -1;
+            j = -1;
+            
+            return 0;
+        }
+        """
+
+        expected = """Fcn : main
+[0] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Identifier(name='j')) -> 2, 1
+[1] IfJoin() -> 3
+[2] Goto(label='l1') -> 1, 5
+[3] Assignment(target=Identifier(name='i'), value=Literal(value=112.0)) -> 4
+[4] Assignment(target=Identifier(name='j'), value=Literal(value=123.0)) -> 5
+[5] Label(name='l1') -> 6
+[6] Assignment(target=Identifier(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 7
+[7] Assignment(target=Identifier(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 8
+[8] Return(value=Literal(value=0.0)) ->"""
+
+        ir = compile_source(code)
+        function = ir.declarations[0]
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
