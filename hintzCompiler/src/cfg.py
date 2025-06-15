@@ -61,7 +61,6 @@ class ControlFlowGraph:
 
     def __str__(self): # pragma: no cover
         retStr = ""
-        retStr += f"=== CFG ===\n"
         retStr += f"Fcn : {self._fcnName}\n"
 
         for node in self.nodes:

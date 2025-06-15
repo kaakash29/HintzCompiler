@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, send_file
-from hintzCompiler.compiler import compile_source
+from hintzCompiler.compiler import Driver
+from hintzCompiler.src.ir_nodes import Function
 from hintzCompiler.src.cfg import ControlFlowGraph
+from typing import cast
 import os
 import pprint
 
@@ -17,11 +19,11 @@ def index():
         action = request.form["action"]
 
         try:
-            ir = compile_source(code)
+            ast = Driver(code).ast
             if action == "ast":
-                ir_output = pprint.pformat(ir, indent=2)
+                ir_output = pprint.pformat(ast, indent=2)
             elif action == "cfg":
-                function = ir.declarations[0]
+                function = cast(Function, ast.declarations[0])
                 cfg = ControlFlowGraph(function)
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")

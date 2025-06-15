@@ -1,14 +1,15 @@
+import os
 import sys
 import argparse
+
 from lark import Lark, ParseTree
-from typing import Optional, List, cast
+from typing import List, cast
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.preprocessor import Preprocessor
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.ir_nodes import Function, Program
 from hintzCompiler.src.symbol_table import SymbolTable
 from dataclasses import dataclass
-import os
 
 
 @dataclass
@@ -16,7 +17,7 @@ class CompilationContext:
     parseTree: ParseTree
     symbol_table: SymbolTable
     ast: Program
-    cfgs: Optional[ List[ControlFlowGraph] ]
+    cfgs: List[ControlFlowGraph]
 
 """
 Handles the compilation of a simplified compilation unit.
@@ -25,6 +26,7 @@ Top level driver for a hypothetical compiler written in python
 def Driver(code: str):
 
     """FRONT-END"""
+
     # Parse text to ParseTree
     grammar_path = os.path.join(os.path.dirname(__file__), "grammar", "c89.lark")
     with open(grammar_path) as f:
@@ -44,6 +46,8 @@ def Driver(code: str):
             cfg = ControlFlowGraph(cast(Function, decl))
             allCfgs.append(cfg)
 
+    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs)
+
     """MIDDLE-END"""
 
     # may be we want :
@@ -54,9 +58,9 @@ def Driver(code: str):
     # 4) none (rely solely on the backend optimizations?)
 
     """BACK-END"""
+    
     # may be lower to a well-supported ir MLIR/LLVM ir ?
 
-    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs)
     return compCtx
 
 """
@@ -72,7 +76,6 @@ def processInput(path: str) -> CompilationContext:
     cctx = Driver(code)
     return cctx
 
-
 ##############################################################################################
 
 """
@@ -81,10 +84,11 @@ Main function for the Hintz Compiler
 def main():
 
     parser = argparse.ArgumentParser(description="Hintz Compiler")
-    parser.add_argument("source", help="Path to .hz source file")
-    parser.add_argument("-s", "--save-ir", help="Path to write IR output")
-    parser.add_argument("-n", "--debug", action="store_true", help="Dump parse tree and symbol table")
-    parser.add_argument("--cfg", help="Dump control flow graph HTML", action="store_true")
+    parser.add_argument("-w", "--dumpProgramToFile" , action="store_true"   , help="Path to write IR output")
+    parser.add_argument("-s", "--dumpSymbolTable"   , action="store_true"   , help="Dump symbol table for debugging")
+    parser.add_argument("-p", "--dumpParseTree"     , action="store_true"   , help="Dump parse tree for debugging")
+    parser.add_argument("-c", "--dumpCfgs"          , action="store_true"   , help="Dump control flow graph")
+    parser.add_argument("source"                                            , help="Path to input .hz (hintz) source file")
     args = parser.parse_args()
 
     try:
@@ -95,25 +99,28 @@ def main():
         symbolTable = cctx.symbol_table;
         cfgs        = cctx.cfgs 
 
-        if args.debug:
-            print("=== PARSE TREE ===")
+        if args.dumpParseTree:
+            print("\n=== PARSE-TREE ===\n")
             print(parsetree.pretty())
-            print("=== SYMBOL TABLE ===")
+
+        if args.dumpSymbolTable:
+            print("\n=== SYMBOL-TABLE ===\n")
             symbolTable.dump()
             
-        if args.save_ir:
+        if args.dumpProgramToFile:
             with open(args.save_ir, "w") as f:
-                f.write("=== IR DUMP ===\n")
+                f.write("\n=== AST-DUMP ===\n")
                 f.write(ir.toString())
-                print(f"✅ IR written to {args.save_ir}")
+                print(f"✅ AST written to {args.save_ir}")
         else:
-            print("=== IR DUMP ===")
+            print("\n=== AST-DUMP ===\n")
             ir.dump()
 
-        if args.cfg:
+        if args.dumpCfgs:
             if len(ir.declarations) == 0 or not isinstance(ir.declarations[0], Function):
-                raise ValueError("❌ CFG generation requires a function declaration.")
-
+                raise ValueError("\n❌ CFG generation requires a function declaration.\n")
+            
+            print(f"\n=== CFG-DUMP ===\n")
             for cfg in cfgs:
                 print(cfg);
                 cfg.to_graphviz(output_path=cfg._fcnName, view=False);
@@ -121,7 +128,7 @@ def main():
     except Exception as e:
         import traceback
         print(traceback.format_exc())
-        print(f"❌ Compilation failed: {e}")
+        print(f"\n❌ Compilation failed: {e}\n")
         sys.exit(1)
 
 ##############################################################################################
