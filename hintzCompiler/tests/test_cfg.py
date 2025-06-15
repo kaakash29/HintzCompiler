@@ -284,11 +284,12 @@ Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='j', type_spec='int', attributes=None)] -> 2
 [2] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 4
-[3] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=10.0)) -> 4, 7
-[4] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 5
-[5] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 6
-[6] Assignment(target=Identifier(name='j'), value=Literal(value=1.0)) -> 3
-[7] Return(value=Identifier(name='i')) ->"""
+[3] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=10.0)) -> 4, 8
+[4] DoJoin() -> 5
+[5] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 6
+[6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 7
+[7] Assignment(target=Identifier(name='j'), value=Literal(value=1.0)) -> 3
+[8] Return(value=Identifier(name='i')) ->"""
 
         ir = Driver(code).ast
         function = cast(Function, ir.declarations[0])
@@ -605,11 +606,12 @@ Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='i', type_spec='int', attributes=None)] -> 2
 [2] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='x'), right=Literal(value=0.0)) -> 5, 3
-[3] IfJoin() -> 7
+[3] IfJoin() -> 8
 [4] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=20.0)) -> 5, 3
-[5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
-[6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4
-[7] Return(value=Identifier(name='x')) ->"""
+[5] DoJoin() -> 6
+[6] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 7
+[7] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4
+[8] Return(value=Identifier(name='x')) ->"""
 
         ir = Driver(code).ast
         function = cast(Function, ir.declarations[0])

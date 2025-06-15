@@ -4,7 +4,7 @@ import graphviz
 from typing import cast
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional
-from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Break, SwitchJoin, IfJoin 
+from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Break, SwitchJoin, IfJoin, DoJoin 
 
 """
 This is a node in the control flow graph, encapsulates over an AstNode and its successors
@@ -193,11 +193,15 @@ class ControlFlowGraph:
             body_last.add_successor(node)
 
         elif isinstance(stmt, DoWhile):
+
+            entry_node = CFGNode(id=self.stmt_id, stmt=DoJoin())  # dummy "join" node
+            self.nodes.append(entry_node)
+            self.stmt_id += 1
             body_entry, dowhile_last = self._build_branch(cast(Block, stmt.body))
-            node.stmt = stmt  # node represents the condition
-            node.compositeNodeEntry = body_entry
+            entry_node.add_successor(body_entry)
+            node.compositeNodeEntry = entry_node
             dowhile_last.add_successor(node)
-            node.add_successor(body_entry)
+            node.add_successor(entry_node)
 
         elif isinstance(stmt, For):
 
