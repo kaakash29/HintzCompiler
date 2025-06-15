@@ -37,7 +37,7 @@ class ControlFlowGraph:
     #public:
 
     """
-    A doit contructor
+    A doit all constructor
     """
     def __init__(self, function: Function):
         self._fcnName = function.name
@@ -141,13 +141,15 @@ class ControlFlowGraph:
     Handles a single stmt in the Ast and encapsulates it into a Cfg node.
     """
     def _handle_stmt(self, stmt: IRNode) -> CFGNode:
+
         node = CFGNode(id=self.stmt_id, stmt=stmt)
         self.nodes.append(node)
         self.stmt_id += 1
+        
         if isinstance(stmt, Label):
             self.label_map[stmt.name] = node
 
-        if isinstance(stmt, Goto):
+        elif isinstance(stmt, Goto):
             self.goto_links.append((node, stmt.label))
 
         elif isinstance(stmt, If):
@@ -222,7 +224,6 @@ class ControlFlowGraph:
             node.compositeNodeEntry = orignode;
             return node;
 
-        #Handling for Switch Stmt.
         elif isinstance(stmt, Switch):
             switch_node = node
 
@@ -261,6 +262,7 @@ class ControlFlowGraph:
         entry = None
         prev = None
         for stmt in block.statements:
+
             node = self._handle_stmt(stmt)
 
             if prev:
