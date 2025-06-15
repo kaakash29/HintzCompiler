@@ -1,7 +1,9 @@
 import os
 import unittest
-from hintzCompiler.compiler import compile_source
+from hintzCompiler.compiler import Driver
 from hintzCompiler.preprocessor import Preprocessor
+from hintzCompiler.src.ir_nodes import Function, Block
+from typing import cast
 
 class TestCompiler(unittest.TestCase):
     def test_include_simplest(self):
@@ -22,12 +24,13 @@ class TestCompiler(unittest.TestCase):
             """)
 
         code = preprocessor.preprocess(test_file_path)
-        ir = compile_source(code)
+        cctx = Driver(code)
 
-        # Assert that there is an assignment statement in the body of main
-        body_stmts = ir.declarations[1].body.statements  # index 1 assumes helper comes first
-        self.assertTrue(
-            any(stmt.__class__.__name__ == "Assignment" for stmt in body_stmts)
+        prog = cctx.ast
+        mainF = cast(Function, prog.declarations[1])
+        block = cast(Block, mainF.body)
+
+        self.assertTrue(any(stmt.__class__.__name__ == "Assignment" for stmt in block.statements)
         )
 
 

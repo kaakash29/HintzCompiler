@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from typing import List, Optional, Union
 from lark import Token
+from io import StringIO
+from unittest.mock import patch
 
 class IRNode:
+
     def dump(self, indent=0):
         pad = '  ' * indent
         print(f"{pad}{self.__class__.__name__}:")
@@ -21,6 +24,15 @@ class IRNode:
                 value.dump(indent + 2)
             else:
                 print(f"{pad}  {field}: {value}")
+
+    def toString(self):
+        retVal = ""
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            self.dump()
+            retVal = mock_stdout.getvalue().strip()
+        return retVal;
+
+
 
 @dataclass
 class Program(IRNode):

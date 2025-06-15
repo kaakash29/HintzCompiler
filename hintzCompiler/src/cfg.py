@@ -5,6 +5,10 @@ from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Ret
 from typing import cast
 import graphviz
 
+"""
+This is a node in the control flow graph, encapsulates over an AstNode and its successors
+in the graph. 
+"""
 @dataclass
 class CFGNode:
     id: int
@@ -22,8 +26,19 @@ class CFGNode:
         succs = ", ".join(str(s.id) for s in self.successors)
         return f"[{self.id}] {stmt_str} -> {succs}".rstrip()
 
+
+
+"""
+Builds the control flow graph for a function, in the IR.
+"""
+
 class ControlFlowGraph:
 
+    #public:
+
+    """
+    A doit contructor
+    """
     def __init__(self, function: Function):
         self._fcnName = function.name
         self.nodes: List[CFGNode] = []
@@ -31,9 +46,70 @@ class ControlFlowGraph:
         self.goto_links: List[Tuple[CFGNode, str]] = []
         self.stmt_id = 0
         self._pending_breaks: List[CFGNode] = []
+
         self._build_cfg(cast(Block, function.body))
         self._resolve_gotos()
 
+    """
+    Methods for dumping and visualizing the CFG, used in the unit tester and the top level driver in compiler.py
+    """
+
+    def dump(self):
+        print(f"Fcn : {self._fcnName}" )
+        for node in self.nodes:
+            print(node)
+
+    def __str__(self): # pragma: no cover
+        retStr = ""
+        retStr += f"=== CFG ===\n"
+        retStr += f"Fcn : {self._fcnName}\n"
+
+        for node in self.nodes:
+            retStr += str(node)
+            retStr += "\n"
+
+        return retStr
+
+    def to_graphviz(self, output_path="cfg", view=False): # pragma: no cover
+        dot = graphviz.Digraph(format="jpeg")
+
+        # Add nodes with labels
+        for node in self.nodes:
+            label = f"[{node.id}]\\n{str(node.stmt)}"
+            dot.node(str(node.id), label)
+
+        # Add edges
+        for node in self.nodes:
+            for succ in node.successors:
+                dot.edge(str(node.id), str(succ.id))
+
+        # Render graph
+        dot.render(output_path, view=view, cleanup=True)
+
+    def to_graphviz_svg(self, output_path="cfg", view=False): # pragma: no cover
+        dot = graphviz.Digraph(format="svg")
+
+        # Add nodes with labels
+        for node in self.nodes:
+            label = f"[{node.id}]\\n{str(node.stmt)}"
+            dot.node(str(node.id), label)
+
+        # Add edges
+        for node in self.nodes:
+            for succ in node.successors:
+                dot.edge(str(node.id), str(succ.id))
+
+        # Render graph
+        dot.render(output_path, view=view, cleanup=False)
+
+
+    ############################################################
+
+    #private:
+
+    """
+    Top level method called from the constructor.
+    """
     def _build_cfg(self, block: Block):
         prev_node = None
 
@@ -62,6 +138,9 @@ class ControlFlowGraph:
 
             prev_node = curr_node
 
+    """
+    Handles a single stmt in the Ast and encapsulates it into a Cfg node.
+    """
     def _handle_stmt(self, stmt: IRNode) -> CFGNode:
         node = CFGNode(id=self.stmt_id, stmt=stmt)
         self.nodes.append(node)
@@ -98,7 +177,6 @@ class ControlFlowGraph:
         elif isinstance(stmt, While):
             body_entry, body_last = self._build_branch(cast(Block, stmt.body))
             node.add_successor(body_entry)
-            #last = self._last_node(body_entry)
             body_last.add_successor(node)
 
         elif isinstance(stmt, DoWhile):
@@ -177,6 +255,9 @@ class ControlFlowGraph:
 
         return node
 
+    """
+    Build control flow for branches in the graph, returns the entry and exit node
+    """
     def _build_branch(self, block: Block) -> tuple[CFGNode, CFGNode] :
         entry = None
         prev = None
@@ -215,53 +296,4 @@ class ControlFlowGraph:
             else:
                 print(f"⚠️ Warning: unresolved label '{label}' at node {node.id}")
 
-    def dump(self):
-        print(f"Fcn : {self._fcnName}" )
-        for node in self.nodes:
-            print(node)
-
-    def __str__(self): # pragma: no cover
-        retStr = ""
-        retStr += f"=== CFG ===\n"
-        retStr += f"Fcn : {self._fcnName}\n"
-
-        for node in self.nodes:
-            retStr += str(node)
-            retStr += "\n"
-
-        return retStr
-
-    def to_graphviz(self, output_path="cfg", view=False): # pragma: no cover
-        dot = graphviz.Digraph(format="jpeg")
-
-        # Add nodes with labels
-        for node in self.nodes:
-            #label = f"[{node.id}]\\n{type(node.stmt).__name__}"
-            label = f"[{node.id}]\\n{str(node.stmt)}"
-            dot.node(str(node.id), label)
-
-        # Add edges
-        for node in self.nodes:
-            for succ in node.successors:
-                dot.edge(str(node.id), str(succ.id))
-
-        # Render graph
-        dot.render(output_path, view=view, cleanup=True)
-
-    def to_graphviz_svg(self, output_path="cfg", view=False): # pragma: no cover
-        dot = graphviz.Digraph(format="svg")
-
-        # Add nodes with labels
-        for node in self.nodes:
-            #label = f"[{node.id}]\\n{type(node.stmt).__name__}"
-            label = f"[{node.id}]\\n{str(node.stmt)}"
-            dot.node(str(node.id), label)
-
-        # Add edges
-        for node in self.nodes:
-            for succ in node.successors:
-                dot.edge(str(node.id), str(succ.id))
-
-        # Render graph
-        dot.render(output_path, view=view, cleanup=False)
 

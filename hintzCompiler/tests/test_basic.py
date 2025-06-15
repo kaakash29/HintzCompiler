@@ -1,5 +1,5 @@
 import unittest
-from hintzCompiler.compiler import compile_source  # You’ll implement this function
+from hintzCompiler.compiler import Driver
 import unittest
 from io import StringIO
 from unittest.mock import patch
@@ -14,7 +14,7 @@ class TestCompiler(unittest.TestCase):
             x = 5;
         }
         """
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.assertTrue(any(stmt for stmt in ir.declarations[0].body.statements if stmt.__class__.__name__ == "Assignment"))
 
     def test_function_call(self):
@@ -38,7 +38,7 @@ class TestCompiler(unittest.TestCase):
               value: FunctionCall(name='add', args=[Literal(value=1.0), Literal(value=2.0)])
           ]"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -71,7 +71,7 @@ class TestCompiler(unittest.TestCase):
           ]
   ]"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -100,7 +100,7 @@ class TestCompiler(unittest.TestCase):
                   value: 1.0
           ]"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -141,7 +141,7 @@ class TestCompiler(unittest.TestCase):
                         Literal:
                           value: 0.0""";
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -192,7 +192,7 @@ class TestCompiler(unittest.TestCase):
                   is_postfix: True
               body:"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -227,7 +227,7 @@ class TestCompiler(unittest.TestCase):
                     Literal:
                       value: 5.0"""
         
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -268,7 +268,7 @@ class TestCompiler(unittest.TestCase):
                             Literal:
                               value: 1.0"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -319,7 +319,7 @@ class TestCompiler(unittest.TestCase):
                               value: 0.0
                         Break:
                       ]"""
-        ir = compile_source(code)
+        ir = Driver(code).ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
             self.assertIn(expected, mock_stdout.getvalue().strip())
@@ -387,7 +387,7 @@ class TestCompiler(unittest.TestCase):
               name: label
             Assignment:"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -429,7 +429,7 @@ int main() {
                   is_postfix: True
               body:"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -462,7 +462,7 @@ int main() {
           ]
   ]"""
 
-        ir = compile_source(code)
+        ir = Driver(code).ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()

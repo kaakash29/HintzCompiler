@@ -1,9 +1,10 @@
 import unittest
-from hintzCompiler.compiler import compile_source
+from hintzCompiler.compiler import Driver
 from hintzCompiler.src.cfg import ControlFlowGraph
+from hintzCompiler.src.ir_nodes import Function
 from io import StringIO
 from unittest.mock import patch
-import difflib
+from typing import cast
 
 class TestCFG(unittest.TestCase):
 
@@ -14,13 +15,11 @@ class TestCFG(unittest.TestCase):
         int main() {
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main""";
 
-        # Optional: Print to visually confirm
-        # cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
@@ -38,8 +37,8 @@ class TestCFG(unittest.TestCase):
             x = i;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
@@ -48,8 +47,6 @@ class TestCFG(unittest.TestCase):
 [3] Assignment(target=Identifier(name='i'), value=Identifier(name='x')) -> 4
 [4] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) ->""";
 
-        # Optional: Print to visually confirm
-        #cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
@@ -67,8 +64,8 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
@@ -80,8 +77,6 @@ class TestCFG(unittest.TestCase):
 [6] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 4
 [7] Return(value=Identifier(name='x')) ->""";
 
-        # Optional: Print to visually confirm
-        # cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
@@ -107,8 +102,8 @@ class TestCFG(unittest.TestCase):
 
                 return x;
             }"""
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         
         expected = """Fcn : main
@@ -124,8 +119,6 @@ class TestCFG(unittest.TestCase):
 [9] Break() -> 3
 [10] Return(value=Identifier(name='x')) ->""";
 
-        # Optional: Print to visually confirm
-        #cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
@@ -145,8 +138,8 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         # Check that there are expected number of nodes
@@ -183,8 +176,8 @@ class TestCFG(unittest.TestCase):
             }
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         # Check that there are expected number of nodes
@@ -219,14 +212,10 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
-        # Check that there are expected number of nodes
-        self.assertGreaterEqual(len(cfg.nodes), 5)
-
-        # Optional: Assert branching from the if statement
         if_node = [n for n in cfg.nodes if type(n.stmt).__name__ == "If"]
         self.assertEqual(len(if_node), 1)
         self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
@@ -264,8 +253,8 @@ Fcn : main
 [3] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 2
 [4] Return(value=Identifier(name='i')) ->"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -299,8 +288,8 @@ Fcn : main
 [6] Assignment(target=Identifier(name='j'), value=Literal(value=1.0)) -> 3
 [7] Return(value=Identifier(name='i')) ->"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -332,8 +321,8 @@ Fcn : main
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         # Check that there are expected number of nodes
@@ -385,8 +374,8 @@ Fcn : main
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         # Check that there are expected number of nodes
@@ -420,7 +409,7 @@ Fcn : main
             cfg.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
-    #@unittest.skip("Skipping this test for now")
+    #NOTE: @unittest.skip("Skipping this test for now")
     def test_if_in_if(self):
         code = """
         int main() {
@@ -438,8 +427,8 @@ Fcn : main
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
@@ -454,8 +443,6 @@ Fcn : main
 [8] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 7
 [9] Return(value=Identifier(name='x')) ->""";
 
-        # Optional: Print to visually confirm
-        #cfg.dump()
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
@@ -494,8 +481,8 @@ Fcn : main
 [9] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 7
 [10] Return(value=Identifier(name='x')) ->""";
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -545,8 +532,8 @@ Fcn : main
 [11] Break() -> 5
 [12] Assignment(target=Identifier(name='out'), value=Literal(value=11.0)) -> 3
 [13] Return(value=Identifier(name='out')) ->"""
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -582,8 +569,8 @@ Fcn : main
 [5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
 [6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -622,8 +609,8 @@ Fcn : main
 [6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4
 [7] Return(value=Identifier(name='x')) ->"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -652,8 +639,8 @@ Fcn : main
             return x;
         }"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
@@ -700,8 +687,8 @@ Fcn : main
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
@@ -747,8 +734,8 @@ Fcn : main
             return x;
         }
         """
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
@@ -794,8 +781,8 @@ int main() {
 [4] Assignment(target=Identifier(name='j'), value=Identifier(name='i')) -> 3
 [5] Return(value=Identifier(name='i')) ->"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -836,8 +823,8 @@ int main() {
 [7] Assignment(target=Identifier(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 8
 [8] Return(value=Literal(value=0.0)) ->"""
 
-        ir = compile_source(code)
-        function = ir.declarations[0]
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:

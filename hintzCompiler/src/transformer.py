@@ -2,6 +2,12 @@ from lark import Transformer, Token, Tree
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
 
+"""
+Inherits from the Lark Transformer class and provides a visitor like traversal f
+or every rule in the grammar, builds the AstNodes top down.
+
+Shouts if an unhandled rule is encountered while parsing
+"""
 class IRTransformer(Transformer):
 
     def __init__(self):
@@ -31,10 +37,8 @@ class IRTransformer(Transformer):
         return items[0]
 
     def struct_def(self, items):
-        # Expecting:
-        # [IDENT, ..., struct_body_tree, ...]
-        name = str(items[0])  # items[1] is IDENT
-        struct_body = items[2]  # items[3] is Tree('struct_body', [...])
+        name = str(items[0])
+        struct_body = items[2]
 
         fields = {}
         for field_type, field_name in struct_body:
@@ -43,7 +47,7 @@ class IRTransformer(Transformer):
         self.symtab_manager.current_scope.define(
             Symbol(name=name, type="struct", attributes={"fields": fields})
         )
-        return None  # You may not need to return anything
+        return None
 
     def struct_body(self, items):
         fields = []
@@ -103,7 +107,7 @@ class IRTransformer(Transformer):
         self.symtab_manager.push_scope()
         for param in params:
             if isinstance(param, Variable):
-                self.symtab_manager.current_scope.define(Symbol(name=param.name, type=param.type_spec))
+                self.symtab_manager.current_scope.define(Symbol(name=param.name, type=param.type_spec)) # pyright: ignore
         self.symtab_manager.pop_scope()
         return Function(return_type=return_type, name=name, params=params, body=body)
 
@@ -155,7 +159,7 @@ class IRTransformer(Transformer):
                 return Literal(value=str(tok)[1:-1])
             elif tok.type == "IDENT":
                 return Identifier(name=str(tok))
-        return tok  # already a transformed node (e.g., func_call, array_access, etc.)
+        return tok
 
     def param(self, items):
         return Variable(name=str(items[1]), type_spec=str(items[0]))
@@ -173,10 +177,10 @@ class IRTransformer(Transformer):
             return children[0]
 
     def expr(self, items):
-        return items[0]  # usually an assignment
+        return items[0]
 
     def stmt(self, items):
-        return items[0]  # usually an expr_stmt or compound_stmt
+        return items[0]
 
     def field_access(self, items):
         base = Identifier(name=str(items[0]))
@@ -203,16 +207,12 @@ class IRTransformer(Transformer):
         return FunctionCall(name=name, args=args)
 
     def if_stmt(self, children):
-        # children: ['(', condition, ')', then_stmt, (optional) else_stmt]
-
         condition = children[1]
         then_branch = children[3]
         else_branch = children[4] if len(children) == 5 else None
         return If(condition=condition, then_branch=then_branch, else_branch=else_branch)
 
     def for_stmt(self, children):
-        # children layout:
-        # [init_stmt, cond_expr, update_expr, body_stmt]
         init = children[1]
         cond = children[2]
         update = children[3]
@@ -223,17 +223,17 @@ class IRTransformer(Transformer):
     def for_init(self, children):
         if len(children) == 1:
             return None
-        return children[0]  # usually an Assignment
+        return children[0]
 
     def for_cond(self, children):
         if len(children) == 1:
             return None
-        return children[0]  # usually a BinaryOp
+        return children[0]
 
     def for_update(self, children):
         if len(children) == 0:
             return None
-        return children[0]  # could be Identifier, UnaryOp, etc.
+        return children[0]
 
     def while_stmt(self, children):
         cond = children[1];
@@ -246,11 +246,11 @@ class IRTransformer(Transformer):
         return DoWhile(body=body, condition=cond)
 
     def goto_stmt(self, children):
-        label = children[0].value  # IDENT
+        label = children[0].value
         return Goto(label=label)
 
     def label_stmt(self, children):
-        label = children[0].value  # IDENT
+        label = children[0].value
         return Label(name=label)
 
     def break_stmt(self, _):
