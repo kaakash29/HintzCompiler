@@ -1,9 +1,8 @@
+import graphviz
+from typing import cast
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional
-from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Case, Break, SwitchJoin, IfJoin, DoJoin
-
-from typing import cast
-import graphviz
+from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Break, SwitchJoin, IfJoin 
 
 """
 This is a node in the control flow graph, encapsulates over an AstNode and its successors
@@ -31,7 +30,6 @@ class CFGNode:
 """
 Builds the control flow graph for a function, in the IR.
 """
-
 class ControlFlowGraph:
 
     #public:
@@ -51,7 +49,8 @@ class ControlFlowGraph:
         self._resolve_gotos()
 
     """
-    Methods for dumping and visualizing the CFG, used in the unit tester and the top level driver in compiler.py
+    Methods for dumping and visualizing the CFG, used in the unit tester and
+    the top level driver in compiler.py
     """
 
     def dump(self):
@@ -136,6 +135,17 @@ class ControlFlowGraph:
                     prev_node.add_successor(curr_node)
 
             prev_node = curr_node
+
+    """
+    Connects the goto nodes to their corresponding labels.
+    """
+    def _resolve_gotos(self):
+        for node, label in self.goto_links:
+            target = self.label_map.get(label)
+            if target:
+                node.add_successor(target)
+            else:
+                print(f"⚠️ Warning: unresolved label '{label}' at node {node.id}")
 
     """
     Handles a single stmt in the Ast and encapsulates it into a Cfg node.
@@ -254,9 +264,10 @@ class ControlFlowGraph:
             self._pending_breaks.append(node)
 
         return node
-
+    
     """
-    Build control flow for branches in the graph, returns the entry and exit node
+    Build control flow for branches in the graph
+    returns the entry and exit node
     """
     def _build_branch(self, block: Block) -> tuple[CFGNode, CFGNode] :
         entry = None
@@ -277,7 +288,7 @@ class ControlFlowGraph:
 
                 elif not isinstance(prev.stmt, (Goto, Return)):
                     prev.add_successor(node)
-            
+
             if entry is None:
                 entry = node if node.compositeNodeEntry is None else node.compositeNodeEntry;
 
@@ -287,14 +298,3 @@ class ControlFlowGraph:
             prev = node
 
         return entry, prev # pyright: ignore
-
-
-    def _resolve_gotos(self):
-        for node, label in self.goto_links:
-            target = self.label_map.get(label)
-            if target:
-                node.add_successor(target)
-            else:
-                print(f"⚠️ Warning: unresolved label '{label}' at node {node.id}")
-
-

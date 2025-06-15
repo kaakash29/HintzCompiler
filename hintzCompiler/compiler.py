@@ -27,7 +27,7 @@ def Driver(code: str):
 
     """FRONT-END"""
 
-    # Parse text to ParseTree
+    # Text to ParseTree
     grammar_path = os.path.join(os.path.dirname(__file__), "grammar", "c89.lark")
     with open(grammar_path) as f:
         grammar = f.read()
@@ -39,7 +39,7 @@ def Driver(code: str):
     ir = transformer.transform(tree)
     symb_tab = transformer.get_global_symbol_table() 
 
-    # HintzAst to HintzCfgs
+    # HintzAst to Cfgs
     allCfgs = []
     for decl in ir.declarations:
         if isinstance(decl, Function):
