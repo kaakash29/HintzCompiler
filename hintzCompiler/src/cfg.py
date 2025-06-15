@@ -1,3 +1,5 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 import graphviz
 from typing import cast
 from dataclasses import dataclass, field
@@ -32,7 +34,7 @@ Builds the control flow graph for a function, in the IR.
 """
 class ControlFlowGraph:
 
-    #public:
+    # public:
 
     """
     A doit all constructor

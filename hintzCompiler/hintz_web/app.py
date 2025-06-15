@@ -1,10 +1,12 @@
-from flask import Flask, render_template, request, send_file
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+import os
+import pprint
+
+from typing import cast
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.ir_nodes import Function
 from hintzCompiler.src.cfg import ControlFlowGraph
-from typing import cast
-import os
-import pprint
+from flask import Flask, render_template, request, send_file
 
 app = Flask(__name__)
 UPLOAD_DIR = "static"

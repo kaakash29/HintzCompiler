@@ -1,8 +1,10 @@
-from dataclasses import dataclass
-from typing import List, Optional, Union
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 from lark import Token
 from io import StringIO
 from unittest.mock import patch
+from dataclasses import dataclass
+from typing import List, Optional, Union
 
 class IRNode:
 
@@ -49,7 +51,7 @@ class Function(IRNode):
 class Variable(IRNode):
     name: str
     type_spec: Optional[str]
-    attributes: dict = None
+    attributes: dict = None # pyright : ignore
 
 @dataclass
 class BinaryOp(IRNode):

@@ -1,9 +1,11 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 import os
 import unittest
+from typing import cast
 from hintzCompiler.compiler import Driver
 from hintzCompiler.preprocessor import Preprocessor
 from hintzCompiler.src.ir_nodes import Function, Block
-from typing import cast
 
 class TestCompiler(unittest.TestCase):
     def test_include_simplest(self):

@@ -1,4 +1,6 @@
-from lark import Transformer, Token, Tree
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
+from lark import Transformer, Token 
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
 
@@ -6,21 +8,26 @@ from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
 Inherits from the Lark Transformer class and provides a visitor like traversal f
 or every rule in the grammar, builds the AstNodes top down.
 
-Shouts if an unhandled rule is encountered while parsing
+Shouts if an unhandled rule is encountered while parsing.
 """
 class IRTransformer(Transformer):
+
+    # public:
 
     def __init__(self):
         self.symtab_manager = ScopedSymbolTableManager()
 
+    def get_global_symbol_table(self):
+        return self.symtab_manager.global_scope
+
+    ###############################################
+
+    #private:
     def __default__(self, data, children, meta): # pragma: no cover
         print(f"Unhandled Pattern")
         print(f"Rule `{data}` with children: {children}")
         print(f"Meta {meta}")
         return children
-
-    def get_global_symbol_table(self):
-        return self.symtab_manager.global_scope
 
     def program(self, items):
         flat = []

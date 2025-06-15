@@ -1,10 +1,12 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 import unittest
+from typing import cast
+from io import StringIO
+from unittest.mock import patch
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.ir_nodes import Function
-from io import StringIO
-from unittest.mock import patch
-from typing import cast
 
 class TestCFG(unittest.TestCase):
 

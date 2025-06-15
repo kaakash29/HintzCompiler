@@ -1,15 +1,16 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 import os
 import sys
 import argparse
-
-from lark import Lark, ParseTree
 from typing import List, cast
-from hintzCompiler.src.transformer import IRTransformer
-from hintzCompiler.preprocessor import Preprocessor
-from hintzCompiler.src.cfg import ControlFlowGraph
-from hintzCompiler.src.ir_nodes import Function, Program
-from hintzCompiler.src.symbol_table import SymbolTable
+from lark import Lark, ParseTree
 from dataclasses import dataclass
+from hintzCompiler.src.cfg import ControlFlowGraph
+from hintzCompiler.preprocessor import Preprocessor
+from hintzCompiler.src.symbol_table import SymbolTable
+from hintzCompiler.src.transformer import IRTransformer
+from hintzCompiler.src.ir_nodes import Function, Program
 
 
 @dataclass

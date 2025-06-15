@@ -1,9 +1,11 @@
-import unittest
-from hintzCompiler.compiler import Driver
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 import unittest
 from io import StringIO
+from typing import cast
 from unittest.mock import patch
-
+from hintzCompiler.src.ir_nodes import Function, Block
+from hintzCompiler.compiler import Driver
 
 class TestCompiler(unittest.TestCase):
 
@@ -15,7 +17,9 @@ class TestCompiler(unittest.TestCase):
         }
         """
         ir = Driver(code).ast
-        self.assertTrue(any(stmt for stmt in ir.declarations[0].body.statements if stmt.__class__.__name__ == "Assignment"))
+        fcn = cast(Function, ir.declarations[0])
+        body = cast(Block, fcn.body)
+        self.assertTrue(any(stmt for stmt in body.statements if stmt.__class__.__name__ == "Assignment"))
 
     def test_function_call(self):
         code = """
@@ -459,8 +463,7 @@ int main() {
             FunctionCall(name='foo', args=[])
             Return:
               value: None
-          ]
-  ]"""
+          ]"""
 
         ir = Driver(code).ast
         self.maxDiff = None

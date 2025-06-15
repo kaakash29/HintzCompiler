@@ -1,5 +1,7 @@
-from dataclasses import dataclass, field
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
+
 from typing import Dict, Optional, Any
+from dataclasses import dataclass, field
 
 @dataclass
 class Symbol:
@@ -11,6 +13,7 @@ class Symbol:
         return f"<Symbol {self.name}: type={self.type}, attrs={self.attributes}>"
 
 class SymbolTable:
+
     def __init__(self, parent: Optional['SymbolTable'] = None):
         self.symbols: Dict[str, Symbol] = {}
         self.parent = parent
@@ -36,6 +39,7 @@ class SymbolTable:
         return "\n".join(f"{name}: {sym}" for name, sym in self.symbols.items())
 
 class ScopedSymbolTableManager:
+
     def __init__(self):
         self.global_scope = SymbolTable()
         self.current_scope = self.global_scope
