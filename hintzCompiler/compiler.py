@@ -11,6 +11,7 @@ from hintzCompiler.preprocessor import Preprocessor
 from hintzCompiler.src.symbol_table import SymbolTable
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.src.ir_nodes import Function, Program
+from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
 
 @dataclass
@@ -19,6 +20,7 @@ class CompilationContext:
     symbol_table: SymbolTable
     ast: Program
     cfgs: List[ControlFlowGraph]
+    bbgs: List[BasicBlockGraph]
 
 """
 Handles the compilation of a simplified compilation unit.
@@ -47,7 +49,7 @@ def Driver(code: str):
             cfg = ControlFlowGraph(cast(Function, decl))
             allCfgs.append(cfg)
 
-    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs)
+    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs, bbgs=[])
 
     """MIDDLE-END"""
 

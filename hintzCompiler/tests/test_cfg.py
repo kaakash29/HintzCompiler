@@ -837,3 +837,141 @@ int main() {
                           msg=f"\n\n[[-- FAILED --]]\
                           \nExpected:||{expected.strip()}||\
                           \nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_traversal_orders_stright_line(self):
+        code = """
+        int main() {
+            int a;
+            int b;
+            int c;
+
+            a = b;
+            b = c;
+            c = a;
+
+            return c;
+        }
+        """
+        expected = """Fcn : main
+[0] [Variable(name='a', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='b', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='c', type_spec='int', attributes=None)] -> 3
+[3] Assignment(target=Identifier(name='a'), value=Identifier(name='b')) -> 4
+[4] Assignment(target=Identifier(name='b'), value=Identifier(name='c')) -> 5
+[5] Assignment(target=Identifier(name='c'), value=Identifier(name='a')) -> 6
+[6] Return(value=Identifier(name='c')) ->
+
+ BFS: [0, 1, 2, 3, 4, 5, 6]
+
+ DFS: [0, 1, 2, 3, 4, 5, 6]"""
+        
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
+        cfg = ControlFlowGraph(function)
+        border = cfg.get_bfs_traversal_order()
+        dorder = cfg.get_dfs_traversal_order()
+
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            print(f"\n BFS: {border}")
+            print(f"\n DFS: {dorder}")
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_traversal_orders_if_stmt(self):
+        code = """
+        int main() {
+            int a;
+            int b;
+            int c;
+
+            if(a < b) {
+                a = b;
+            } else {
+                b = c;
+            }
+            c = a;
+
+            return c;
+        }
+        """
+        expected = """Fcn : main
+[0] [Variable(name='a', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='b', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='c', type_spec='int', attributes=None)] -> 3
+[3] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='a'), right=Identifier(name='b')) -> 5, 6
+[4] IfJoin() -> 7
+[5] Assignment(target=Identifier(name='a'), value=Identifier(name='b')) -> 4
+[6] Assignment(target=Identifier(name='b'), value=Identifier(name='c')) -> 4
+[7] Assignment(target=Identifier(name='c'), value=Identifier(name='a')) -> 8
+[8] Return(value=Identifier(name='c')) ->
+
+ BFS: [0, 1, 2, 3, 5, 6, 4, 7, 8]
+
+ DFS: [0, 1, 2, 3, 5, 4, 7, 8, 6]"""
+        
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
+        cfg = ControlFlowGraph(function)
+        border = cfg.get_bfs_traversal_order()
+        dorder = cfg.get_dfs_traversal_order()
+
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            print(f"\n BFS: {border}")
+            print(f"\n DFS: {dorder}")
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_traversal_orders_while_loops(self):
+        code = """
+        int main() {
+            int a;
+            int b;
+            int c;
+            
+            while(a < b) {
+                a = a + 1;
+                b =c;
+            }
+            c = a;
+
+            return c;
+        }
+        """
+        expected = """Fcn : main
+[0] [Variable(name='a', type_spec='int', attributes=None)] -> 1
+[1] [Variable(name='b', type_spec='int', attributes=None)] -> 2
+[2] [Variable(name='c', type_spec='int', attributes=None)] -> 3
+[3] While BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='a'), right=Identifier(name='b')) -> 4, 6
+[4] Assignment(target=Identifier(name='a'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='a'), right=Literal(value=1.0))) -> 5
+[5] Assignment(target=Identifier(name='b'), value=Identifier(name='c')) -> 3
+[6] Assignment(target=Identifier(name='c'), value=Identifier(name='a')) -> 7
+[7] Return(value=Identifier(name='c')) ->
+
+ BFS: [0, 1, 2, 3, 4, 6, 5, 7]
+
+ DFS: [0, 1, 2, 3, 4, 5, 6, 7]"""
+        
+        ir = Driver(code).ast
+        function = cast(Function, ir.declarations[0])
+        cfg = ControlFlowGraph(function)
+        border = cfg.get_bfs_traversal_order()
+        dorder = cfg.get_dfs_traversal_order()
+
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            print(f"\n BFS: {border}")
+            print(f"\n DFS: {dorder}")
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")

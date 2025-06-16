@@ -15,12 +15,18 @@ class CFGNode:
     id: int
     stmt: IRNode
     successors: List["CFGNode"] = field(default_factory=list)
+    predecessors: List["CFGNode"] = field(default_factory=list)
     compositeNodeExit : Optional["CFGNode"] = None
     compositeNodeEntry : Optional["CFGNode"] = None
 
     def add_successor(self, succ: "CFGNode"):
         if succ not in self.successors:
             self.successors.append(succ)
+            succ.add_predecessor(self)
+    
+    def add_predecessor(self, pred:"CFGNode"):
+        if pred not in self.predecessors:
+            self.predecessors.append(pred)
 
     def __str__(self):
         stmt_str = str(self.stmt).replace("\n", " ")
@@ -30,7 +36,8 @@ class CFGNode:
 
 
 """
-Builds the control flow graph for a function, in the IR.
+Builds the control flow graph for a function, in the IR and provides various traversal
+paradigms.
 """
 class ControlFlowGraph:
 
@@ -49,6 +56,68 @@ class ControlFlowGraph:
 
         self._build_cfg(cast(Block, function.body))
         self._resolve_gotos()
+
+    """
+    Returns the list of CFGNode (or their indices/ids) in BFS traversal order starting from start_node.
+    If start_node is None, starts from what is likely the entry node (self.nodes[0]).
+    """
+    def get_bfs_traversal_order(self, start_node=None):
+        from collections import deque
+
+        if not hasattr(self, "nodes") or not self.nodes:
+            return []
+
+        visited = set()
+        order = []
+        queue = deque()
+
+        if start_node is None:
+            start = self.nodes[0]
+        else:
+            start = start_node
+
+        queue.append(start.id)
+        visited.add(start.id)
+
+        while queue:
+            node_id = queue.popleft()
+            node = self.nodes[node_id];
+
+            order.append(node_id)
+            for succ in getattr(node, "successors", []):
+                succ_id = succ.id
+                if succ_id not in visited:
+                    visited.add(succ_id)
+                    queue.append(succ_id)
+        return order
+
+    """
+    Returns the list of CFGNode (or their indices/ids) in DFS traversal order starting from start_node.
+    If start_node is None, starts from what is likely the entry node (self.nodes[0]).
+    """
+    def get_dfs_traversal_order(self, start_node=None):
+        if not hasattr(self, "nodes") or not self.nodes:
+            return []
+
+        visited = set()
+        order = []
+
+        def dfs(node):
+            visited.add(node.id)
+            order.append(node.id)
+            for succ in getattr(node, "successors", []):
+                succ_id = succ.id
+                if succ_id not in visited:
+                    dfs(succ)
+
+        if start_node is None:
+            start = self.nodes[0]
+        else:
+            start = start_node
+
+        dfs(start)
+        return order
+
 
     """
     Methods for dumping and visualizing the CFG, used in the unit tester and
@@ -165,7 +234,6 @@ class ControlFlowGraph:
             self.goto_links.append((node, stmt.label))
 
         elif isinstance(stmt, If):
-
             exit_node = CFGNode(id=self.stmt_id, stmt=IfJoin())  # dummy "join" node
             self.nodes.append(exit_node)
             self.stmt_id += 1
@@ -193,7 +261,6 @@ class ControlFlowGraph:
             body_last.add_successor(node)
 
         elif isinstance(stmt, DoWhile):
-
             entry_node = CFGNode(id=self.stmt_id, stmt=DoJoin())  # dummy "join" node
             self.nodes.append(entry_node)
             self.stmt_id += 1
@@ -204,7 +271,6 @@ class ControlFlowGraph:
             node.add_successor(entry_node)
 
         elif isinstance(stmt, For):
-
             orignode = node;
             if stmt.init:
                 init_node = CFGNode(id=self.stmt_id, stmt=stmt.init)
@@ -225,7 +291,6 @@ class ControlFlowGraph:
 
             body_entry, body_last = self._build_branch(cast(Block, stmt.body))
             cond_node.add_successor(body_entry)
-            #after_body = self._last_node(body_entry)
             after_body = body_last
 
             if stmt.update:
@@ -248,7 +313,6 @@ class ControlFlowGraph:
             self._pending_breaks = []
 
             exit_node = CFGNode(id=self.stmt_id, stmt=SwitchJoin())  # dummy "join" node
-
             self.nodes.append(exit_node)
             self.stmt_id += 1
 
@@ -261,9 +325,7 @@ class ControlFlowGraph:
                 break_node.add_successor(exit_node)
 
             self._pending_breaks = prev_pending_breaks
-
             node.compositeNodeExit = exit_node;
-
             return node
 
         elif isinstance(stmt, Break):
