@@ -1,6 +1,6 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
-from typing import List, Dict, Optional
+from typing import List, Dict
 from dataclasses import dataclass, field
 from hintzCompiler.src.ir_nodes import *
 
@@ -28,6 +28,9 @@ class BasicBlock:
 
 class BasicBlockGraph:
 
+    """
+    Initialize only constructor
+    """
     def __init__(self):
         self.blocks: List[BasicBlock] = []
         self.label_map: Dict[str, BasicBlock] = {}
@@ -121,6 +124,6 @@ class BasicBlockGraph:
                 succ_block = node_to_block.get(succ.id)
                 if succ_block and succ_block != block:
                     block.successors.append(succ_block)
+                    succ_block.predecessors.append(block)
                     
         self.blocks = basic_blocks
-        return basic_blocks
