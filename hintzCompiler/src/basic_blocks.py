@@ -41,6 +41,8 @@ class BasicBlockGraph:
     You may need to adjust this based on your IR.
     """
     def is_branch_node(self, node):
+        #TODO: This is not the best way to check this, use the isinstance method here instead aaku.
+
         return type(node.stmt).__name__ in {"If", "Switch", "Goto", "Return", "Break", "Continue"}
 
 

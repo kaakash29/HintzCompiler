@@ -42,14 +42,18 @@ def Driver(code: str):
     ir = transformer.transform(tree)
     symb_tab = transformer.get_global_symbol_table() 
 
-    # HintzAst to Cfgs
+    # HintzAst to Cfgs/Bbgs
     allCfgs = []
+    allBbgs = []
     for decl in ir.declarations:
         if isinstance(decl, Function):
             cfg = ControlFlowGraph(cast(Function, decl))
+            bbg = BasicBlockGraph()
+            bbg.build_basic_blocks_from_cfg(cfg)
             allCfgs.append(cfg)
+            allBbgs.append(bbg)
 
-    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs, bbgs=[])
+    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs, bbgs=allBbgs)
 
     """MIDDLE-END"""
 
