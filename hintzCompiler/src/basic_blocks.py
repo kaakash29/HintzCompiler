@@ -41,7 +41,7 @@ class BasicBlockGraph:
     You may need to adjust this based on your IR.
     """
     def is_branch_node(self, node):
-        return type(node.stmt).__name__ in {"If", "Switch", "Goto", "Return", "Break", "Continue"}   
+        return type(node.stmt).__name__ in {"If", "Switch", "Goto", "Return", "Break", "Continue"}
 
 
     """
