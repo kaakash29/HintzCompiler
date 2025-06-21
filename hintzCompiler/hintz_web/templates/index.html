@@ -61,6 +61,7 @@
     <textarea name="code" rows="20" cols="80">{{ request.form.code or '' }}</textarea><br>
     <button type="submit" name="action" value="ast">Generate IR</button>
     <button type="submit" name="action" value="cfg">Show CFG</button>
+    <button type="submit" name="action" value="bbg">Show BBG</button>
   </form>
 
   {% if ir_output %}

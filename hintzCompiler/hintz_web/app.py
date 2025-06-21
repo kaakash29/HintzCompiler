@@ -6,6 +6,7 @@ from typing import cast
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.ir_nodes import Function
 from hintzCompiler.src.cfg import ControlFlowGraph
+from hintzCompiler.src.basic_blocks import BasicBlockGraph
 from flask import Flask, render_template, request, send_file
 
 app = Flask(__name__)
@@ -14,6 +15,7 @@ UPLOAD_DIR = "static"
 @app.route("/", methods=["GET", "POST"])
 def index():
     ir_output = ""
+    cfg_generated = False
     cfg_generated = False
 
     if request.method == "POST":
@@ -30,6 +32,16 @@ def index():
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
                 cfg.to_graphviz_svg(dot_path)
+                os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
+                cfg_generated = True
+            elif action == "bbg":
+                function = cast(Function, ast.declarations[0])
+                cfg = ControlFlowGraph(function)
+                bbg = BasicBlockGraph()
+                bbg.build_basic_blocks_from_cfg(cfg);
+                dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
+                svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
+                bbg.to_graphviz(dot_path)
                 os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
                 cfg_generated = True
         except Exception as e:

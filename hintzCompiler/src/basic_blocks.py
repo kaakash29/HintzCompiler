@@ -1,5 +1,6 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
+import graphviz
 from typing import List, Dict
 from dataclasses import dataclass, field
 from hintzCompiler.src.ir_nodes import *
@@ -7,6 +8,7 @@ from hintzCompiler.src.ir_nodes import *
 @dataclass
 class BasicBlock:
     name: str
+    id: int
     nodes: List[int] = field(default_factory=list)
     successors: List["BasicBlock"] = field(default_factory=list)
     predecessors: List["BasicBlock"] = field(default_factory=list)
@@ -23,6 +25,12 @@ class BasicBlock:
         stmt_strs = f"Nodes: {self.nodes}"
         succ_names = ", ".join(s.name for s in self.successors)
         return f"{self.name}: {stmt_strs}  -> {succ_names}"
+
+    def __eq__(self, other):
+        return isinstance(other, BasicBlock) and self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
 
 ###########################################################################
 
@@ -87,7 +95,7 @@ class BasicBlockGraph:
 
             if node_id in leaders or not basic_blocks:
                 nextBBid = len(basic_blocks) + 1;
-                block = BasicBlock(f"BB{nextBBid}")
+                block = BasicBlock(f"BB{nextBBid}", nextBBid)
                 basic_blocks.append(block)
             else:
                 block = basic_blocks[-1]
@@ -129,3 +137,20 @@ class BasicBlockGraph:
                     succ_block.predecessors.append(block)
                     
         self.blocks = basic_blocks
+
+
+    def to_graphviz(self, output_path="cfg"):
+        dot = graphviz.Digraph(format="svg")
+
+        # Add nodes with labels
+        for node in self.blocks:
+            label = f"{node.name}\n{node.nodes}"
+            dot.node(str(node.name), label)
+
+        # Add edges
+        for node in self.blocks:
+            for succ in node.successors:
+                dot.edge(str(node.name), str(succ.name))
+
+        # Render graph
+        dot.render(output_path, view=False, cleanup=False)       
