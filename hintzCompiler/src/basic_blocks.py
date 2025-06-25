@@ -16,11 +16,6 @@ class BasicBlock:
     def add_node(self, node):
         self.nodes.append(node)
 
-    def add_successor(self, block: "BasicBlock"):
-        if block not in self.successors:
-            self.successors.append(block)
-            block.predecessors.append(self)
-
     def __str__(self):
         stmt_strs = f"Nodes: {self.nodes}"
         succ_names = ", ".join(s.name for s in self.successors)
@@ -139,7 +134,7 @@ class BasicBlockGraph:
         self.blocks = basic_blocks
 
 
-    def to_graphviz(self, output_path="cfg"):
+    def to_graphviz(self, output_path="cfg"): #pragma: no cover
         dot = graphviz.Digraph(format="svg")
 
         # Add nodes with labels

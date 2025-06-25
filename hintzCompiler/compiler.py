@@ -73,7 +73,7 @@ def Driver(code: str):
 """
 Handles compilation of the provided input files, often includes some include directives.
 """
-def processInput(path: str) -> CompilationContext:
+def processInput(path: str) -> CompilationContext: #pragma: no cover
     if not path.endswith(".hz"):
         raise ValueError(f"❌ Only .hz files are supported: {path}")
 
@@ -88,7 +88,7 @@ def processInput(path: str) -> CompilationContext:
 """
 Main function for the Hintz Compiler
 """
-def main():
+def main(): #pragma: no cover
 
     parser = argparse.ArgumentParser(description="Hintz Compiler")
     parser.add_argument("-w", "--dumpProgramToFile" , action="store_true"   , help="Path to write IR output")

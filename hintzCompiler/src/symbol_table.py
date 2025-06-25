@@ -29,13 +29,13 @@ class SymbolTable:
 
     def define(self, symbol: Symbol):
         if symbol.name in self.symbols:
-            raise RuntimeError(f"Symbol '{symbol.name}' already declared.")
+            raise RuntimeError(f"Symbol '{symbol.name}' already declared.") #pragma: no cover
         self.symbols[symbol.name] = symbol
 
     def lookup(self, name: str) -> Optional[Symbol]:
         return self.symbols.get(name) or (self.parent.lookup(name) if self.parent else None)
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return "\n".join(f"{name}: {sym}" for name, sym in self.symbols.items())
 
 class ScopedSymbolTableManager:

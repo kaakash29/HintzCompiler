@@ -36,11 +36,11 @@ class Preprocessor:
                         raise FileNotFoundError(f"Include file not found: {include_file}")
                 continue
 
-            elif line.startswith('#define'):
-                parts = line.split(maxsplit=2)
+            elif stripped.startswith('#define'):
+                parts = stripped.split(maxsplit=2)
                 if len(parts) == 3:
                     _, key, val = parts
-                    self.macros[key] = val
+                    self.macros[key] = val 
                 continue
 
             for key, val in self.macros.items():

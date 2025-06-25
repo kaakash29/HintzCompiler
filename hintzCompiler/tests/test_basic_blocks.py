@@ -228,10 +228,3 @@ BB4: Nodes: [11, 13, 14, 15]  ->"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
         self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
-
-
-#############################################################################################################################################
-
-if __name__ == "__main__":
-    unittest.main()
-
