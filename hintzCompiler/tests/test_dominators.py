@@ -5,7 +5,7 @@ from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.compiler import Driver
-from hintzCompiler.src.dominators import compute_dominators, build_dom_tree, compute_idoms, print_dominator_tree
+from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.basic_blocks import *
 
 
@@ -15,8 +15,7 @@ class TestDominators(unittest.TestCase):
         cctx = Driver(code)
         bbgs = cctx.bbgs
         blks = bbgs[0].blocks
-        doms = compute_dominators(blks, blks[0])
-        domT = build_dom_tree(compute_idoms(doms))
+        doms = Dominators(blks)
         retn = ""
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             print(f"\nCFG:\n{cctx.cfgs[0]}")
@@ -24,7 +23,7 @@ class TestDominators(unittest.TestCase):
             for block in bbgs[0].blocks:
                 print(block)
             print(f"\nDOM-TREE:")
-            print_dominator_tree(domT, blks[0])
+            doms.dump()
         retn = mock_stdout.getvalue().strip()
         return retn 
 
