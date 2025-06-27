@@ -37,13 +37,13 @@ def index():
             elif action == "bbg":
                 function = cast(Function, ast.declarations[0])
                 cfg = ControlFlowGraph(function)
-                bbg = BasicBlockGraph()
-                bbg.build_basic_blocks_from_cfg(cfg);
+                bbg = BasicBlockGraph(cfg)
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
                 bbg.to_graphviz(dot_path)
                 os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
                 cfg_generated = True
+
         except Exception as e:
             ir_output = f"❌ Error: {str(e)}"
 

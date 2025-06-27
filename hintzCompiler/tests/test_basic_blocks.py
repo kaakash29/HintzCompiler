@@ -12,9 +12,8 @@ class TestBasicBlockGraph(unittest.TestCase):
     def computeAndEmitBBGForCode(self, code):
         cctx = Driver(code)
         cfgs = cctx.cfgs
-        bbg  = BasicBlockGraph()
         dcfg = cfgs[0]
-        bbg.build_basic_blocks_from_cfg(cfgs[0])
+        bbg  = BasicBlockGraph(dcfg)
         bbgStr = "";
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             print(f"\nCFG:\n{dcfg}")

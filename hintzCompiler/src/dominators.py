@@ -1,29 +1,14 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
-from collections import defaultdict
-
-"""
-Computes the set of dominators for each node (block) in the CFG/basic block graph.
-
-Args:
-        blocks: List of BasicBlock (or CFGNode) objects with .successors and .predecessors
-        entry_block: The entry BasicBlock (usually blocks[0])
-
-Returns:
-        dom: dict {block: set of dominating blocks}
-
-Central-Idea:
-        The algorithm starts by conservatively assuming that every node is dominated by all nodes.
-        The exception is the entry node, which is only dominated by itself.
-        The function then iteratively refines these sets: for each node (except the entry), 
-                its set of dominators is updated to be the intersection of its predecessors’ dominator sets, plus itself.
-        This update process continues in rounds until no dominator set changes in a complete pass over the graph.
-"""
+from graphviz import Digraph
 
 class Dominators:
 
     #public:
 
+    """
+    Do everythong constructor
+    """
     def __init__(self, blocks):
         self.bblist = blocks
         self.dom = self.computeDoms();
@@ -121,6 +106,37 @@ class Dominators:
         print(" " * indent + str(node_name_func(entry_block)))
         for child in dom_tree.get(entry_block, []):
             self.printDomTree(dom_tree, child, node_name_func, indent + 2)
+
+    
+    def dumpGraph(self, dom_tree, entry_block, output_path="cfg", node_name_func=None):
+        """
+        Dumps the dominator tree to a Graphviz .gv file and renders it to PDF/SVG.
+    
+        Parameters:
+            dom_tree (dict): The dominator tree as a dict of {block: [children]}.
+            entry_block: The entry node of the tree.
+            filename (str): Output file name (with .gv extension).
+            node_name_func (callable): Function to map block to string name.
+        """
+        if node_name_func is None:
+            node_name_func = lambda b: f"BB{getattr(b, 'name', str(b))}"
+    
+        dot = Digraph(comment="Dominator Tree", format='svg')
+        visited = set()
+    
+        def visit(block):
+            block_name = node_name_func(block)
+            if block_name not in visited:
+                visited.add(block_name)
+                dot.node(block_name)
+            for child in dom_tree.get(block, []):
+                child_name = node_name_func(child)
+                dot.node(child_name)
+                dot.edge(block_name, child_name)
+                visit(child)
+    
+        visit(entry_block)
+        dot.render(output_path, view=True)
 
 ###############################################################################################################################################
 

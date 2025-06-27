@@ -31,13 +31,16 @@ class BasicBlock:
 
 class BasicBlockGraph:
 
-    """
-    Initialize only constructor
-    """
-    def __init__(self):
-        self.blocks: List[BasicBlock] = []
-        self.label_map: Dict[str, BasicBlock] = {}
+    #public:
 
+    """
+    Do all constructor
+    """
+    def __init__(self, cfg):
+        self.label_map: Dict[str, BasicBlock] = {}
+        self.blocks: List[BasicBlock] = self.build_basic_blocks_from_cfg(cfg)
+
+    #private:
 
     """
     Returns True if node's statement is a branch (If, Switch, Goto, Return, etc.)
@@ -131,7 +134,7 @@ class BasicBlockGraph:
                     block.successors.append(succ_block)
                     succ_block.predecessors.append(block)
                     
-        self.blocks = basic_blocks
+        return basic_blocks
 
 
     def to_graphviz(self, output_path="cfg"): #pragma: no cover
