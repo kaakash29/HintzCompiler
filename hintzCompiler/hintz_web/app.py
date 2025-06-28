@@ -7,6 +7,7 @@ from hintzCompiler.compiler import Driver
 from hintzCompiler.src.ir_nodes import Function
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.basic_blocks import BasicBlockGraph
+from hintzCompiler.src.dominators import Dominators
 from flask import Flask, render_template, request, send_file
 
 app = Flask(__name__)
@@ -26,14 +27,16 @@ def index():
             ast = Driver(code).ast
             if action == "ast":
                 ir_output = pprint.pformat(ast, indent=2)
+
             elif action == "cfg":
                 function = cast(Function, ast.declarations[0])
                 cfg = ControlFlowGraph(function)
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
-                cfg.to_graphviz_svg(dot_path)
+                cfg.to_graphviz(dot_path)
                 os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
                 cfg_generated = True
+
             elif action == "bbg":
                 function = cast(Function, ast.declarations[0])
                 cfg = ControlFlowGraph(function)
@@ -41,6 +44,17 @@ def index():
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
                 bbg.to_graphviz(dot_path)
+                os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
+                cfg_generated = True
+
+            elif action == "dmt":
+                function = cast(Function, ast.declarations[0])
+                cfg = ControlFlowGraph(function)
+                bbg = BasicBlockGraph(cfg)
+                dom = Dominators(bbg.blocks)
+                dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
+                svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
+                dom.to_graphviz(dot_path)
                 os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
                 cfg_generated = True
 

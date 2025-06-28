@@ -138,7 +138,7 @@ class BasicBlockGraph:
 
 
     def to_graphviz(self, output_path="cfg"): #pragma: no cover
-        dot = graphviz.Digraph(format="svg")
+        dot = graphviz.Digraph(comment="Basic Block Graph", format="svg")
 
         # Add nodes with labels
         for node in self.blocks:

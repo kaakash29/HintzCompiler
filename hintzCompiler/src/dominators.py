@@ -7,7 +7,7 @@ class Dominators:
     #public:
 
     """
-    Do everythong constructor
+    Do all constructor
     """
     def __init__(self, blocks):
         self.bblist = blocks
@@ -17,6 +17,9 @@ class Dominators:
 
     def dump(self):
         self.printDomTree(self.domTree, self.bblist[0])
+
+    def to_graphviz(self, dot_path):
+        self.printGraph(self.domTree, self.bblist[0], dot_path)
 
 
     #private:
@@ -108,7 +111,7 @@ class Dominators:
             self.printDomTree(dom_tree, child, node_name_func, indent + 2)
 
     
-    def dumpGraph(self, dom_tree, entry_block, output_path="cfg", node_name_func=None):
+    def printGraph(self, dom_tree, entry_block, output_path="cfg", node_name_func=None):
         """
         Dumps the dominator tree to a Graphviz .gv file and renders it to PDF/SVG.
     
@@ -119,7 +122,7 @@ class Dominators:
             node_name_func (callable): Function to map block to string name.
         """
         if node_name_func is None:
-            node_name_func = lambda b: f"BB{getattr(b, 'name', str(b))}"
+            node_name_func = lambda b: f"{getattr(b, 'name', str(b))}"
     
         dot = Digraph(comment="Dominator Tree", format='svg')
         visited = set()
@@ -136,7 +139,7 @@ class Dominators:
                 visit(child)
     
         visit(entry_block)
-        dot.render(output_path, view=True)
+        dot.render(output_path, view=False, cleanup=False)
 
 ###############################################################################################################################################
 
