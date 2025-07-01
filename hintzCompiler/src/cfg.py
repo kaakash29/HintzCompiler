@@ -44,7 +44,7 @@ class ControlFlowGraph:
     # public:
 
     """
-    A doit all constructor
+    A do-it-all constructor
     """
     def __init__(self, function: Function):
         self._fcnName = function.name
@@ -53,6 +53,7 @@ class ControlFlowGraph:
         self.goto_links: List[Tuple[CFGNode, str]] = []
         self.stmt_id = 0
         self._pending_breaks: List[CFGNode] = []
+        self.version = 0
 
         self._build_cfg(cast(Block, function.body))
         self._resolve_gotos()
