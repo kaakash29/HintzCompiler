@@ -6,6 +6,7 @@ from unittest.mock import patch
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.cfg import *
 from hintzCompiler.src.StmtBuilderFacade import HintzStatementBuilder
+from hintzCompiler.src.EditCfg import EditCfg
 
 class TestEditingCFG(unittest.TestCase):
 
@@ -21,22 +22,20 @@ class TestEditingCFG(unittest.TestCase):
         ir = Driver(code)
         cfg = ir.cfgs[0]
 
-        nodeAsTest = "i = 12;";
-        newNode = HintzStatementBuilder().parse_statement(nodeAsTest)
+        expected = """Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
+[1] Assignment(target=Identifier(name='i'), value=Literal(value=23.0)) ->"""
 
-        newCfgNode = CFGNode(id=cfg.stmt_id, stmt=newNode)
-        cfg.stmt_id += 1
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
-        #insert after 0
-        nodeBefore = cfg.nodes[0]
-        
-        for succNode in nodeBefore.successors:
-            newCfgNode.add_successor(succNode)
 
-        nodeBefore.successors = [newCfgNode]
-        newCfgNode.add_predecessor(nodeBefore)
-        cfg.nodes.append(newCfgNode)
-     
+        nodeAsText = "i = 12;";
+        newAstNode = HintzStatementBuilder().parse_statement(nodeAsText)
+        newCfgNode = CFGNode(id=cfg.stmt_id, stmt=newAstNode)
+        EditCfg.addNodeAfter(cfg, 0, newCfgNode)
+
         expected = """Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 2
 [1] Assignment(target=Identifier(name='i'), value=Literal(value=23.0)) ->
@@ -56,18 +55,7 @@ class TestEditingCFG(unittest.TestCase):
         """
         ir = Driver(code)
         cfg = ir.cfgs[0]
-
-        #delete node 1 
-        nodeToDelete = cfg.nodes[1]
-
-        for predNode in nodeToDelete.predecessors:
-            predNode.successors = nodeToDelete.successors
-
-        for succNode in nodeToDelete.successors:
-            succNode.predecessors = nodeToDelete.predecessors
-
-        cfg.nodes.remove(nodeToDelete)
-
+        EditCfg.deleteNode(cfg, 1)
         expected = """Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] ->"""
 
