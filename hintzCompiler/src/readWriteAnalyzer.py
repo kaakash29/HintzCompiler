@@ -145,48 +145,25 @@ class ReadWriteAnalyzer:
 
             elif isinstance(node, If):
                 visit(node.condition, [])
-                visit_block(node.then_branch)
-                if node.else_branch:
-                    visit_block(node.else_branch)
 
             elif isinstance(node, While):
-                visit(node.condition, []) #should a new memory be started here ?
-                visit_block(node.body)
+                visit(node.condition, [])
 
             elif isinstance(node, DoWhile):
                 visit(node.condition, [])
-                visit_block(node.body, [])
 
             elif isinstance(node, For):
-                if node.init:
-                    visit(node.init, [])
-                if node.condition:
-                    visit(node.condition, [])
-                if node.update:
-                    visit(node.update, [])
-                visit_block(node.body)
+                pass
 
             elif isinstance(node, Switch):
                 visit(node.expr, [])
-                for case in node.cases:
-                    visit_block(case.body)
-
-            elif isinstance(node, Case):
-                visit_block(node.body)
 
             elif isinstance(node, Return):
                 if node.value:
                     visit(node.value, [])
 
-            elif isinstance(node, Block):
-                visit_block(node)
-
             elif isinstance(node, (Goto, Label, Break)):
                 pass
-
-            elif isinstance(node, list): # what is this switch for ?
-                for sub in node:
-                    visit(sub, [])
 
             elif isinstance(node, ArrayAccess):
                 if  isinstance(node.index, Literal):
@@ -203,12 +180,7 @@ class ReadWriteAnalyzer:
             elif isinstance(node, IRNode):
                 for value in vars(node).values():
                     if isinstance(value, IRNode) or isinstance(value, list):
-                        visit(value)
-
-        def visit_block(block: Block):
-            if block:
-                for s in block.statements:
-                    visit(s, [])
+                        visit(value, [])
 
         visit(stmt, [])
         return {'reads': reads, 'writes': writes}

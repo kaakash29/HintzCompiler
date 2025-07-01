@@ -107,7 +107,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 
         expected = """[0] reads: None, writes: None
 [1] reads: None, writes: None
-[2] reads: [i], writes: [i][v->UNKWN]
+[2] reads: None, writes: None
 [3] reads: None, writes: [i]
 [4] reads: [i], writes: None
 [5] reads: [i], writes: [v->UNKWN]
@@ -139,13 +139,43 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 
         expected = """[0] reads: None, writes: None
 [1] reads: None, writes: None
-[2] reads: [i], writes: [i][v->x->0.0]
+[2] reads: None, writes: None
 [3] reads: None, writes: [i]
 [4] reads: [i], writes: None
 [5] reads: [i], writes: [v->x->0.0]
 [6] reads: [i], writes: None
 [7] reads: None, writes: [v->x->5.0]
 [8] reads: [v->x->5.0], writes: [y]"""
+
+        rwaS = self.rwaAsStr(code)
+        self.assertIn(rwaS, expected,
+                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+
+    def test_rwa_phi_expr(self):
+        code = """
+        int main(int in) {
+            int v1;
+            int v2;
+            int v3;
+            if(in < 0) {
+                v1 = 0;
+            } else {
+                v2 = 1;
+            }
+            v3 = phi(v1, v2);
+            return;
+        }
+        """
+
+        expected = """[0] reads: None, writes: None
+[1] reads: None, writes: None
+[2] reads: None, writes: None
+[3] reads: [in], writes: None
+[4] reads: None, writes: None
+[5] reads: None, writes: [v1]
+[6] reads: None, writes: [v2]
+[7] reads: [v1][v2], writes: [v3]
+[8] reads: None, writes: None"""
 
         rwaS = self.rwaAsStr(code)
         self.assertIn(rwaS, expected,

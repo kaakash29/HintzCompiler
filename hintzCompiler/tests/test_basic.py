@@ -502,3 +502,30 @@ int main() {
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+    def test_phi_expr(self):
+        code = """
+        int main(int in) {
+            int v1;
+            int v2;
+            int v3;
+            if(in < 0) {
+                v1 = 0;
+            } else {
+                v2 = 1;
+            }
+            v3 = phi(v1, v2);
+            return;
+        }
+        """
+        expected = """Assignment:
+              target:
+                Identifier:
+                  name: v3
+              value: FunctionCall(name='phi', args=[Identifier(name='v1'), Identifier(name='v2')])"""
+
+        ir = Driver(code).ast
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            ir.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")

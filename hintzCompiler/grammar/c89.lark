@@ -82,6 +82,7 @@ primary: IDENT
        | LPAR expr RPAR
        | func_call
 
+
 func_call: IDENT LPAR (expr (COMMA expr)*)? RPAR
 
 // Operators
@@ -132,7 +133,7 @@ TYPE_FLOAT.2: "float"
 TYPE_DOUBLE.2: "double"
 TYPE_CHAR.2: "char"
 TYPE_MATRIX.2: "matrix"
-
+PHI.2:"phi"
 // Identifiers
 IDENT: /[a-zA-Z_][a-zA-Z0-9_]*/
 
