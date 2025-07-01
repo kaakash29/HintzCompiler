@@ -20,7 +20,7 @@ type_specifier: TYPE_INT
 struct_type: "struct" IDENT
 
 struct_def: "struct" IDENT LBRACE struct_body RBRACE SEMI
-struct_body: (type_specifier IDENT SEMI)+
+struct_body: (type_specifier declarator_list SEMI)+
 
 param_list: param (COMMA param)*
 param: type_specifier IDENT

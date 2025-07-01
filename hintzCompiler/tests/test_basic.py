@@ -56,19 +56,8 @@ class TestCompiler(unittest.TestCase):
         }
         """
 
-        expected = """Program:
-  declarations: [
-    Function:
-      return_type: int
-      name: main
-      params: [
-      ]
-      body:
-        Block:
-          statements: [
-            [Variable(name='m', type_spec='float', attributes={'dimensions': [3]})]
-            Assignment:
-              target: ArrayAccess(base=Identifier(name="Identifier(name='m')"), index=Literal(value=0.0))
+        expected = """Assignment:
+              target: ArrayAccess(base=Identifier(name='m'), index=Literal(value=0.0))
               value:
                 Literal:
                   value: 10.0
@@ -95,10 +84,8 @@ class TestCompiler(unittest.TestCase):
         }
         """
 
-        expected = """statements: [
-            [Variable(name='v', type_spec='Vec2', attributes=None)]
-            Assignment:
-              target: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+        expected = """Assignment:
+              target: FieldAccess(base=Identifier(name='v'), field='x')
               value:
                 Literal:
                   value: 1.0
@@ -132,7 +119,7 @@ class TestCompiler(unittest.TestCase):
               condition:
                 BinaryOp:
                   op: ==
-                  left: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                  left: FieldAccess(base=Identifier(name='v'), field='x')
                   right:
                     Literal:
                       value: 1.0
@@ -140,10 +127,20 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                      target: FieldAccess(base=Identifier(name='v'), field='x')
                       value:
                         Literal:
-                          value: 0.0""";
+                          value: 0.0
+                  ]
+              else_branch:
+                Block:
+                  statements: [
+                    Assignment:
+                      target: FieldAccess(base=Identifier(name='v'), field='x')
+                      value:
+                        Literal:
+                          value: 29.0
+                  ]""";
 
         ir = Driver(code).ast
         self.maxDiff = None
@@ -263,11 +260,11 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                      target: FieldAccess(base=Identifier(name='v'), field='x')
                       value:
                         BinaryOp:
                           op: +
-                          left: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+                          left: FieldAccess(base=Identifier(name='v'), field='x')
                           right:
                             Literal:
                               value: 1.0"""
@@ -304,8 +301,8 @@ class TestCompiler(unittest.TestCase):
 
         }
         """
-        expected = """Switch:
-              expr: FieldAccess(base=Identifier(name="Identifier(name='v')"), field='x')
+        expected = """            Switch:
+              expr: FieldAccess(base=Identifier(name='v'), field='x')
               cases: [
                 Case:
                   value:
@@ -322,11 +319,46 @@ class TestCompiler(unittest.TestCase):
                             Literal:
                               value: 0.0
                         Break:
-                      ]"""
+                      ]
+                Case:
+                  value:
+                    Literal:
+                      value: 1.0
+                  body:
+                    Block:
+                      statements: [
+                        Assignment:
+                          target:
+                            Identifier:
+                              name: i
+                          value:
+                            Literal:
+                              value: 1.0
+                        Break:
+                      ]
+                Case:
+                  value: None
+                  body:
+                    Block:
+                      statements: [
+                        Assignment:
+                          target:
+                            Identifier:
+                              name: i
+                          value:
+                            UnaryOp:
+                              op: -
+                              operand:
+                                Literal:
+                                  value: 1.0
+                              is_postfix: False
+                        Break:
+                      ]
+              ]"""
         ir = Driver(code).ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected, mock_stdout.getvalue().strip())
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
     def test_simple_got_label_stmt(self):

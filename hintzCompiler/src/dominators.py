@@ -18,7 +18,7 @@ class Dominators:
     def dump(self):
         self.printDomTree(self.domTree, self.bblist[0])
 
-    def to_graphviz(self, dot_path):
+    def to_graphviz(self, dot_path): #pragma: no cover
         self.printGraph(self.domTree, self.bblist[0], dot_path)
 
 
@@ -111,7 +111,7 @@ class Dominators:
             self.printDomTree(dom_tree, child, node_name_func, indent + 2)
 
     
-    def printGraph(self, dom_tree, entry_block, output_path="cfg", node_name_func=None):
+    def printGraph(self, dom_tree, entry_block, output_path="cfg", node_name_func=None): #pragma: no cover
         """
         Dumps the dominator tree to a Graphviz .gv file and renders it to PDF/SVG.
     

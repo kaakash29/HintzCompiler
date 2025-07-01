@@ -190,12 +190,12 @@ class IRTransformer(Transformer):
         return items[0]
 
     def field_access(self, items):
-        base = Identifier(name=str(items[0]))
+        base = items[0]
         field = str(items[2])
         return FieldAccess(base=base, field=field)
 
     def array_access(self, items):
-        base = Identifier(name=str(items[0]))
+        base = items[0]
         index = items[2]
         return ArrayAccess(base=base, index=index)
 

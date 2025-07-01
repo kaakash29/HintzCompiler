@@ -1,0 +1,156 @@
+import unittest
+from io import StringIO
+from unittest.mock import patch
+from hintzCompiler.src.ir_nodes import *
+from hintzCompiler.compiler import Driver
+from hintzCompiler.src.basic_blocks import *
+from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
+
+class TestReadWriteAnalyzer(unittest.TestCase):
+
+    def rwaAsStr(self, code):
+        cctx = Driver(code)
+        cfg = cctx.cfgs[0]
+        rwa = ReadWriteAnalyzer(cfg)
+        rwaAsStr = ""
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            rwa.dump()
+        rwaAsStr = mock_stdout.getvalue().strip()
+        return rwaAsStr
+
+    #@unittest.skip("Tmp")
+    def test_rwa_basic(self):
+        code = """
+        int main() {
+            int a;
+            int b;
+            int c;
+
+            c = a;
+            a = b;
+            b = c;
+        }
+        """
+
+        expected = """
+[0] reads: None, writes: None
+[1] reads: None, writes: None
+[2] reads: None, writes: None
+[3] reads: [a], writes: [c]
+[4] reads: [b], writes: [a]
+[5] reads: [c], writes: [b]"""
+
+        rwaS = self.rwaAsStr(code)
+        self.assertIn(rwaS, expected,
+                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+
+
+    #@unittest.skip("Tmp")
+    def test_rwa_structs(self):
+        code = """
+        struct Vec2 {
+            int x;
+        };
+
+        int main() {
+            struct Vec2 v;
+            v.x = 1;
+        } 
+        """
+
+        expected = """
+[0] reads: None, writes: None
+[1] reads: None, writes: [v->x]
+"""
+
+        rwaS = self.rwaAsStr(code)
+        self.assertIn(rwaS, expected,
+                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+
+
+    def test_rwa_structs_2(self):
+        code = """
+        struct Vec2 {
+            int x;
+        };
+
+        int main() {
+            struct Vec2 v;
+            int y;
+            y = v.x;
+        } 
+        """
+
+        expected = """
+[0] reads: None, writes: None
+[1] reads: None, writes: None
+[2] reads: [v->x], writes: [y]"""
+
+        rwaS = self.rwaAsStr(code)
+        self.assertIn(rwaS, expected,
+                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+
+    def test_rwa_matrix(self):
+        code = """
+        int main() {
+            int v[10];
+            int i;
+            for(i=0;i<5;i++){
+                v[i] = i;
+            }
+            v[0] = 0;
+            y = v[5];
+        } 
+        """
+
+        expected = """[0] reads: None, writes: None
+[1] reads: None, writes: None
+[2] reads: [i], writes: [i][v->UNKWN]
+[3] reads: None, writes: [i]
+[4] reads: [i], writes: None
+[5] reads: [i], writes: [v->UNKWN]
+[6] reads: [i], writes: None
+[7] reads: None, writes: [v->0.0]
+[8] reads: [v->5.0], writes: [y]"""
+
+        rwaS = self.rwaAsStr(code)
+        self.assertIn(rwaS, expected,
+                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+
+
+    def test_rwa_struct_matrix(self):
+        code = """
+        struct Vec2 {
+            int x[3];
+        };
+
+        int main() {
+            struct Vec2 v;
+            int i;
+            for(i=0;i<5;i++){
+                v.x[0] = i;
+            }
+            v.x[5] = 0;
+            y = v.x[5];
+        } 
+        """
+
+        expected = """[0] reads: None, writes: None
+[1] reads: None, writes: None
+[2] reads: [i], writes: [i][v->x->0.0]
+[3] reads: None, writes: [i]
+[4] reads: [i], writes: None
+[5] reads: [i], writes: [v->x->0.0]
+[6] reads: [i], writes: None
+[7] reads: None, writes: [v->x->5.0]
+[8] reads: [v->x->5.0], writes: [y]"""
+
+        rwaS = self.rwaAsStr(code)
+        self.assertIn(rwaS, expected,
+                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+
+"""
+The readWriteAnalyzer is only covered 86% and there is a lot of scope for writing unit tests for the RWA
+especially related to memory exprs appearing at different places in the CFG like if conditions, 
+while checks, for init etc.
+"""
