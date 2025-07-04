@@ -34,11 +34,11 @@ class TestCompiler(unittest.TestCase):
         Variable:
           name: a
           type_spec: int
-          attributes: None
+          attributes: {'isiovar': True}
         Variable:
           name: b
           type_spec: int
-          attributes: None
+          attributes: {'isiovar': True}
       ]
       body:
         Block:

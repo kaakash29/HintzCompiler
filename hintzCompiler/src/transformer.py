@@ -185,7 +185,7 @@ class IRTransformer(Transformer):
         return tok
 
     def param(self, items):
-        return Variable(name=str(items[1]), type_spec=str(items[0]))
+        return Variable(name=str(items[1]), type_spec=str(items[0]), attributes={"isiovar":True})
 
     def unary(self, children):
         if len(children) == 2 and isinstance(children[1], Token):

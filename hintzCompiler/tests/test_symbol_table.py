@@ -15,8 +15,9 @@ class TestSymbolTable(unittest.TestCase):
         for cfg in cfgs:
             symT = cfg.fcn.symbolTable
             with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+                print(f"\n")
                 symT.dump()
-            retStr +=  mock_stdout.getvalue().strip()
+            retStr +=  mock_stdout.getvalue()
         
         return retStr
 
@@ -47,7 +48,10 @@ class TestSymbolTable(unittest.TestCase):
   Symbol Table [global]:
     G: <Symbol G: type=int, attrs={}>
     main: <Symbol main: type=int, attrs={'params': []}>
-    foo: <Symbol foo: type=int, attrs={'params': [Variable(name='a', type_spec='int', attributes=None), Variable(name='b', type_spec='int', attributes=None)]}>Symbol Table [foo]:
+    foo: <Symbol foo: type=int, attrs={'params': [Variable(name='a', type_spec='int', attributes={'isiovar': True}), Variable(name='b', type_spec='int', attributes={'isiovar': True})]}>
+
+
+Symbol Table [foo]:
   y: <Symbol y: type=int, attrs={}>
   xx: <Symbol xx: type=int, attrs={}>
   a: <Symbol a: type=int, attrs={}>
@@ -56,7 +60,7 @@ class TestSymbolTable(unittest.TestCase):
   Symbol Table [global]:
     G: <Symbol G: type=int, attrs={}>
     main: <Symbol main: type=int, attrs={'params': []}>
-    foo: <Symbol foo: type=int, attrs={'params': [Variable(name='a', type_spec='int', attributes=None), Variable(name='b', type_spec='int', attributes=None)]}>"""
+    foo: <Symbol foo: type=int, attrs={'params': [Variable(name='a', type_spec='int', attributes={'isiovar': True}), Variable(name='b', type_spec='int', attributes={'isiovar': True})]}>"""
 
         retStr = self.computeAndEmitSymbolTableForCode(code)
         self.assertIn(expected.strip(), retStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{retStr}||")
