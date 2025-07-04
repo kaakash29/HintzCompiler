@@ -2,7 +2,7 @@ start: program
 
 program: (struct_def | function_def | declaration)*
 
-function_def: type_specifier IDENT LPAR param_list? RPAR compound_stmt
+function_def: type_specifier IDENT param_list_container compound_stmt
 declaration: type_specifier declarator_list SEMI
 
 declarator_list: declarator (COMMA declarator)*
@@ -22,6 +22,7 @@ struct_type: "struct" IDENT
 struct_def: "struct" IDENT LBRACE struct_body RBRACE SEMI
 struct_body: (type_specifier declarator_list SEMI)+
 
+param_list_container : LPAR param_list* RPAR
 param_list: param (COMMA param)*
 param: type_specifier IDENT
 

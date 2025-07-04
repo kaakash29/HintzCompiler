@@ -4,6 +4,8 @@ from typing import Set, Dict
 from ordered_set import OrderedSet
 from hintzCompiler.src.ir_nodes import *
 
+##############################################################################################
+
 @dataclass
 class MemAccess:
     def toStr(self):
@@ -28,14 +30,15 @@ class MemAccessArrayElem(MemAccess):
 class MemAccessVariable(MemAccess):
     varname:str
 
+##############################################################################################
+
 @dataclass
 class ReadOcc:
     baseVar:str
-    memAccess:List
+    memAccess:List[MemAccess]
 
     def toStr(self):
         ret = "["
-
         for i, axs in enumerate(self.memAccess):
             ret += axs.toStr()
             if i < len(self.memAccess) - 1:
@@ -55,9 +58,9 @@ class ReadOcc:
 class WriteOcc:
     baseVar:str
     memAccess:List[MemAccess]
+
     def toStr(self):
         ret = "["
-
         for i, axs in enumerate(self.memAccess):
             ret += axs.toStr()
             if i < len(self.memAccess) - 1:
@@ -72,6 +75,8 @@ class WriteOcc:
 
     def __hash__(self):
         return hash(self.toStr())
+
+##############################################################################################
 
 class ReadWriteAnalyzer:
 
@@ -97,7 +102,7 @@ class ReadWriteAnalyzer:
 
             if isinstance(smMemE, ArrayAccess):
                 if  isinstance(smMemE.index, Literal):
-                    memAccessPattern.append(MemAccessArrayElem(smMemE.index.value))
+                    memAccessPattern.append(MemAccessArrayElem(smMemE.index.value)) #pyright: ignore
                 else:
                     memAccessPattern.append(MemAccessArrayElem(-1))
 
@@ -106,13 +111,12 @@ class ReadWriteAnalyzer:
 
             if isinstance(smMemE, FunctionCall):
                 break
-    
-        #print(f"smMemE = {smMemE}")
+
         memAccessPattern.append(MemAccessVariable(varname=smMemE.name))
         memAccessPattern.reverse();
         return smMemE, memAccessPattern
 
-    def _get_reads_and_writes(self, stmt: IRNode) -> Dict[str, Set[str]]:
+    def _get_reads_and_writes(self, stmt: IRNode) -> Dict[str, OrderedSet[str]]:
         reads = OrderedSet([])
         writes = OrderedSet([])
 
@@ -167,7 +171,7 @@ class ReadWriteAnalyzer:
 
             elif isinstance(node, ArrayAccess):
                 if  isinstance(node.index, Literal):
-                    memOccPath.append(MemAccessArrayElem(node.index.value))
+                    memOccPath.append(MemAccessArrayElem(node.index.value)) #pyright: ignore
                 else:
                     memOccPath.append(MemAccessArrayElem(-1))
                 visit(node.base, memOccPath)

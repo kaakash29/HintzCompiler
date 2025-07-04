@@ -37,6 +37,7 @@ class BasicBlockGraph:
     Do all constructor
     """
     def __init__(self, cfg):
+        self.cfg = cfg
         self.label_map: Dict[str, BasicBlock] = {}
         self.blocks: List[BasicBlock] = self.build_basic_blocks_from_cfg(cfg)
 

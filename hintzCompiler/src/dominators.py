@@ -1,7 +1,7 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 from graphviz import Digraph
-
+from hintzCompiler.src.basic_blocks import BasicBlockGraph
 class Dominators:
 
     #public:
@@ -9,8 +9,9 @@ class Dominators:
     """
     Do all constructor
     """
-    def __init__(self, blocks):
-        self.bblist = blocks
+    def __init__(self, bbg:BasicBlockGraph):
+        self.bbg    = bbg
+        self.bblist = bbg.blocks
         self.dom = self.computeDoms();
         self.idoms = self.computeIDoms();
         self.domTree = self.buildDomTree();
@@ -20,6 +21,16 @@ class Dominators:
 
     def to_graphviz(self, dot_path): #pragma: no cover
         self.printGraph(self.domTree, self.bblist[0], dot_path)
+
+    def dumpSimplifiedDomRels(self):
+        for key in self.dom:
+            keyName = key.name
+            values = self.dom[key]
+            valuesStr = ""
+            for value in values:
+                valuesStr += value.name + " "
+
+            print(f"{keyName} -> DOMS:[ {valuesStr}]")
 
 
     #private:

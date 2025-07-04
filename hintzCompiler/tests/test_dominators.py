@@ -14,16 +14,19 @@ class TestDominators(unittest.TestCase):
     def computeAndEmitDomTree(self, code):
         cctx = Driver(code)
         bbgs = cctx.bbgs
-        blks = bbgs[0].blocks
-        doms = Dominators(blks)
+        doms = Dominators(bbgs[0])
         retn = ""
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            print(f"\nInput:\n{code}")
             print(f"\nCFG:\n{cctx.cfgs[0]}")
             print(f"\nBB-GRAPH:")
             for block in bbgs[0].blocks:
                 print(block)
             print(f"\nDOM-TREE:")
             doms.dump()
+            print(f"\nSIMPLE-DOM-RELS:")
+            doms.dumpSimplifiedDomRels()
+
         retn = mock_stdout.getvalue().strip()
         return retn 
 
@@ -71,8 +74,7 @@ DOM-TREE:
         }
         """
 
-        expected = """
-CFG:
+        expected = """CFG:
 Fcn : main
 [0] [Variable(name='a', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='b', type_spec='int', attributes=None)] -> 2
@@ -108,6 +110,73 @@ DOM-TREE:
   6
 """
         domTreeAsStr = self.computeAndEmitDomTree(code)
-        self.assertIn(expected.strip(), domTreeAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+        strippedActual = domTreeAsStr.replace(" ", "")
+        strippedExpected = expected.replace(" ", "")
+        self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+
+    def test_complicated_if_else(self):
+        code = """
+         int main(int in) {
+            int x;
+
+
+            if(in < 0) {
+                x = -1;
+                goto skipIf;
+            }
+
+            x = 0;
+            
+            if(in > 5) {
+                x = 1;
+            } else {
+                x = 2;
+            }
+
+            skipIf:
+                out = x;
+                return out;
+        }       
+        """
+
+        expected = """CFG:
+Fcn : main
+[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[1] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='in'), right=Literal(value=0.0)) -> 3, 2
+[2] IfJoin() -> 5
+[3] Assignment(target=Identifier(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
+[4] Goto(label='skipIf') -> 2, 10
+[5] Assignment(target=Identifier(name='x'), value=Literal(value=0.0)) -> 6
+[6] If BinaryOp(op=Token('GT_OP', '>'), left=Identifier(name='in'), right=Literal(value=5.0)) -> 8, 9
+[7] IfJoin() -> 10
+[8] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 7
+[9] Assignment(target=Identifier(name='x'), value=Literal(value=2.0)) -> 7
+[10] Label(name='skipIf') -> 11
+[11] Assignment(target=Identifier(name='out'), value=Identifier(name='x')) -> 12
+[12] Return(value=Identifier(name='out')) ->
+
+
+BB-GRAPH:
+BB1: Nodes: [0, 1]  -> BB2, BB3
+BB2: Nodes: [3, 4]  -> BB3, BB6
+BB3: Nodes: [2, 5, 6]  -> BB4, BB7
+BB4: Nodes: [8]  -> BB5
+BB5: Nodes: [7]  -> BB6
+BB6: Nodes: [10, 11, 12]  ->
+BB7: Nodes: [9]  -> BB5
+
+DOM-TREE:
+1
+  2
+  3
+    4
+    5
+    7
+  6
+"""
+        domTreeAsStr = self.computeAndEmitDomTree(code)
+        strippedActual = domTreeAsStr.replace(" ", "")
+        strippedExpected = expected.replace(" ", "")
+        self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
 
 

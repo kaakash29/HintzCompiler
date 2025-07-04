@@ -17,7 +17,8 @@ class TestCFG(unittest.TestCase):
         int main() {
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main""";
@@ -39,7 +40,8 @@ class TestCFG(unittest.TestCase):
             x = i;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main
@@ -66,7 +68,8 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main
@@ -104,7 +107,8 @@ class TestCFG(unittest.TestCase):
 
                 return x;
             }"""
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         
@@ -140,7 +144,8 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -178,7 +183,8 @@ class TestCFG(unittest.TestCase):
             }
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -214,7 +220,8 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -255,7 +262,8 @@ Fcn : main
 [3] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 2
 [4] Return(value=Identifier(name='i')) ->"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -291,7 +299,8 @@ Fcn : main
 [7] Assignment(target=Identifier(name='j'), value=Literal(value=1.0)) -> 3
 [8] Return(value=Identifier(name='i')) ->"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -324,7 +333,8 @@ Fcn : main
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -377,7 +387,8 @@ Fcn : main
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -430,7 +441,9 @@ Fcn : main
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
+
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -484,7 +497,8 @@ Fcn : main
 [9] Assignment(target=Identifier(name='x'), value=Identifier(name='j')) -> 7
 [10] Return(value=Identifier(name='x')) ->""";
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -535,7 +549,8 @@ Fcn : main
 [11] Break() -> 5
 [12] Assignment(target=Identifier(name='out'), value=Literal(value=11.0)) -> 3
 [13] Return(value=Identifier(name='out')) ->"""
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -572,7 +587,8 @@ Fcn : main
 [5] Assignment(target=Identifier(name='x'), value=Identifier(name='i')) -> 6
 [6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -613,7 +629,9 @@ Fcn : main
 [7] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 4
 [8] Return(value=Identifier(name='x')) ->"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
+
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -643,7 +661,8 @@ Fcn : main
             return x;
         }"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -691,7 +710,8 @@ Fcn : main
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -738,7 +758,9 @@ Fcn : main
             return x;
         }
         """
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
+
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
 
@@ -785,7 +807,8 @@ int main() {
 [4] Assignment(target=Identifier(name='j'), value=Identifier(name='i')) -> 3
 [5] Return(value=Identifier(name='i')) ->"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -827,7 +850,8 @@ int main() {
 [7] Assignment(target=Identifier(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 8
 [8] Return(value=Literal(value=0.0)) ->"""
 
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         self.maxDiff = None
@@ -866,7 +890,8 @@ int main() {
 
  DFS: [0, 1, 2, 3, 4, 5, 6]"""
         
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         border = cfg.get_bfs_traversal_order()
@@ -914,7 +939,9 @@ int main() {
 
  DFS: [0, 1, 2, 3, 5, 4, 7, 8, 6]"""
         
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
+
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         border = cfg.get_bfs_traversal_order()
@@ -960,7 +987,9 @@ int main() {
 
  DFS: [0, 1, 2, 3, 4, 5, 6, 7]"""
         
-        ir = Driver(code).ast
+        comp = Driver(code)
+        ir = comp.ast
+
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         border = cfg.get_bfs_traversal_order()

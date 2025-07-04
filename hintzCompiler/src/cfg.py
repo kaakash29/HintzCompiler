@@ -5,7 +5,7 @@ from typing import cast
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional
 from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Break, SwitchJoin, IfJoin, DoJoin 
-
+from hintzCompiler.src.symbol_table import *
 """
 This is a node in the control flow graph, encapsulates over an AstNode and its successors
 in the graph. 
@@ -47,7 +47,9 @@ class ControlFlowGraph:
     A do-it-all constructor
     """
     def __init__(self, function: Function):
+        self.fcn = function
         self._fcnName = function.name
+        self.symbol_table = function.symbolTable
         self.nodes: List[CFGNode] = []
         self.label_map: Dict[str, CFGNode] = {}
         self.goto_links: List[Tuple[CFGNode, str]] = []

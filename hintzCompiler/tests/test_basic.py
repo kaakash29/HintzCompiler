@@ -1,13 +1,55 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
+import os
 import unittest
+from lark import Lark
 from io import StringIO
 from typing import cast
 from unittest.mock import patch
+from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.src.ir_nodes import Function, Block
 from hintzCompiler.compiler import Driver
 
 class TestCompiler(unittest.TestCase):
+
+    def test_simple_fcn_with_args(self):
+        code = """
+        int main(int a, int b) {
+            int x;
+        }
+        """
+        grammar_path = os.path.join(os.path.dirname(__file__),"..", "grammar", "c89.lark")
+        with open(grammar_path) as f:
+            grammar = f.read()
+        parser = Lark(grammar, parser="lalr", start="start")
+        tree = parser.parse(code)
+        transformer = IRTransformer()
+        ir = transformer.transform(tree)
+        expected = """Program:
+  declarations: [
+    Function:
+      return_type: int
+      name: main
+      params: [
+        Variable:
+          name: a
+          type_spec: int
+          attributes: None
+        Variable:
+          name: b
+          type_spec: int
+          attributes: None
+      ]
+      body:
+        Block:
+          statements: [
+            [Variable(name='x', type_spec='int', attributes=None)]
+          ]
+      symbolTable: x: <Symbol x: type=int, attrs={}>
+a: <Symbol a: type=int, attrs={}>
+b: <Symbol b: type=int, attrs={}>
+  ]"""
+        self.assertIn(expected.strip(), ir.toString(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{ir.toString().strip()}||")
 
     def test_variable_assignment(self):
         code = """
@@ -56,12 +98,24 @@ class TestCompiler(unittest.TestCase):
         }
         """
 
-        expected = """Assignment:
+        expected = """Program:
+  declarations: [
+    Function:
+      return_type: int
+      name: main
+      params: [
+      ]
+      body:
+        Block:
+          statements: [
+            [Variable(name='m', type_spec='float', attributes={'dimensions': [3]})]
+            Assignment:
               target: ArrayAccess(base=Identifier(name='m'), index=Literal(value=0.0))
               value:
                 Literal:
                   value: 10.0
           ]
+      symbolTable: m: <Symbol m: type=matrix, attrs={'element_type': 'float', 'dimensions': [3]}>
   ]"""
 
         ir = Driver(code).ast

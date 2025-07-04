@@ -5,13 +5,14 @@ from io import StringIO
 from unittest.mock import patch
 from dataclasses import dataclass
 from typing import List, Optional, Union
+from hintzCompiler.src.symbol_table import SymbolTable
 
 class IRNode:
 
     def dump(self, indent=0):
         pad = '  ' * indent
         print(f"{pad}{self.__class__.__name__}:")
-        for field in self.__dataclass_fields__:
+        for field in self.__dataclass_fields__: #pyright: ignore
             value = getattr(self, field)
             if isinstance(value, list):
                 print(f"{pad}  {field}: [")
@@ -46,6 +47,7 @@ class Function(IRNode):
     name: str
     params: List['Variable']
     body: IRNode
+    symbolTable: SymbolTable
 
 @dataclass
 class Variable(IRNode):

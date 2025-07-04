@@ -14,10 +14,10 @@ from hintzCompiler.src.ir_nodes import Function, Program
 from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
 
+
 @dataclass
 class CompilationContext:
     parseTree: ParseTree
-    symbol_table: SymbolTable
     ast: Program
     cfgs: List[ControlFlowGraph]
     bbgs: List[BasicBlockGraph]
@@ -40,19 +40,19 @@ def Driver(code: str):
     # ParseTree to HintzAst
     transformer = IRTransformer()
     ir = transformer.transform(tree)
-    symb_tab = transformer.get_global_symbol_table() 
 
     # HintzAst to Cfgs/Bbgs
     allCfgs = []
     allBbgs = []
     for decl in ir.declarations:
         if isinstance(decl, Function):
+            fcn = cast(Function, decl)
             cfg = ControlFlowGraph(cast(Function, decl))
             bbg = BasicBlockGraph(cfg)
             allCfgs.append(cfg)
             allBbgs.append(bbg)
 
-    compCtx = CompilationContext(parseTree=tree, symbol_table=symb_tab, ast=ir, cfgs=allCfgs, bbgs=allBbgs)
+    compCtx = CompilationContext(parseTree=tree, ast=ir, cfgs=allCfgs, bbgs=allBbgs)
 
     """MIDDLE-END"""
 

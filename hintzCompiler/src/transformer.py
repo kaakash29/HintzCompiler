@@ -102,24 +102,40 @@ class IRTransformer(Transformer):
 
     def function_def(self, items):
         return_type = items[0]
-        name = str(items[1])
-        params = []
-        body = items[2]
-        if len(items) == 5:
-            body = items[4]
-        elif len(items) > 5:
-            params = items[3]
-            body = items[5]
-        self.symtab_manager.current_scope.define(Symbol(name=name, type=return_type, attributes={"params": params}))
-        self.symtab_manager.push_scope()
+        fcnname = str(items[1])
+        
+        params = items[2]
+        body = items[3]
+
+        if self.symtab_manager.isInFcnBody:
+            self.symtab_manager.current_scope.name = f"{fcnname}"
+
         for param in params:
             if isinstance(param, Variable):
                 self.symtab_manager.current_scope.define(Symbol(name=param.name, type=param.type_spec)) # pyright: ignore
-        self.symtab_manager.pop_scope()
-        return Function(return_type=return_type, name=name, params=params, body=body)
+        
+        fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope)
+
+        if self.symtab_manager.isInFcnBody:
+            self.symtab_manager.pop_scope()
+            self.symtab_manager.isInFcnBody = False
+
+        self.symtab_manager.current_scope.define(Symbol(name=fcnname, type=return_type, attributes={"params": params}))
+        return fcnIrNode
+
+
+    def param_list_container(self, items):
+        if not self.symtab_manager.isInFcnBody:
+            self.symtab_manager.isInFcnBody = True
+            self.symtab_manager.push_scope(f"unnamedFcn")
+        if len(items) > 2:
+            return items[1]
+        else:
+            return [] 
 
     def param_list(self, items):
-        return items
+        args = [arg for arg in items if not (isinstance(arg, Token) and arg.type == "COMMA")]
+        return args
 
     def compound_stmt(self, items):
         innerS = items[1:-1]
