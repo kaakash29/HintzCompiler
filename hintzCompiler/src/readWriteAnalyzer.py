@@ -93,7 +93,7 @@ class ReadWriteAnalyzer:
     def _simplifyMemoryAccess(self, smMemE:IRNode):
         memAccessPattern = []
         base = None
-        while not isinstance(smMemE, Identifier):
+        while not isinstance(smMemE, VarAccess):
 
             if isinstance(smMemE, FieldAccess):
                 memAccessPattern.append(MemAccessStructField(smMemE.field))
@@ -122,14 +122,14 @@ class ReadWriteAnalyzer:
 
         def visit(node, memOccPath):
 
-            if isinstance(node, Identifier):
+            if isinstance(node, VarAccess):
                 memOccPath.append(MemAccessVariable(node.name))
                 memOccPath.reverse()
                 readO = ReadOcc(node.name, memOccPath)
                 reads.add(readO)
 
             elif isinstance(node, Assignment):
-                if isinstance(node.target, (Identifier, FieldAccess, ArrayAccess)):
+                if isinstance(node.target, (VarAccess, FieldAccess, ArrayAccess)):
                     simplifiedAccess, memOcc = self._simplifyMemoryAccess(node.target)
                     writeO = WriteOcc(simplifiedAccess.name, memOcc)
                     writes.add(writeO)

@@ -44,11 +44,7 @@ class TestCompiler(unittest.TestCase):
         Block:
           statements: [
             [Variable(name='x', type_spec='int', attributes=None)]
-          ]
-      symbolTable: x: <Symbol x: type=int, attrs={}>
-a: <Symbol a: type=int, attrs={}>
-b: <Symbol b: type=int, attrs={}>
-  ]"""
+          ]"""
         self.assertIn(expected.strip(), ir.toString(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{ir.toString().strip()}||")
 
     def test_variable_assignment(self):

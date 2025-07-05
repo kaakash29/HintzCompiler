@@ -5,7 +5,7 @@ from io import StringIO
 from unittest.mock import patch
 from dataclasses import dataclass
 from typing import List, Optional, Union
-from hintzCompiler.src.symbol_table import SymbolTable
+from hintzCompiler.src.symbol_table import SymbolTable, Symbol
 
 class IRNode:
 
@@ -115,8 +115,9 @@ class Literal(IRNode):
     value: Union[int, float, str]
 
 @dataclass
-class Identifier(IRNode):
+class VarAccess(IRNode):
     name: str
+    _symbol: Symbol
 
 @dataclass
 class FieldAccess:

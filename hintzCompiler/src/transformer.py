@@ -17,7 +17,7 @@ class IRTransformer(Transformer):
     def __init__(self):
         self.symtab_manager = ScopedSymbolTableManager()
 
-    def get_global_symbol_table(self):
+    def get_global_scope(self):
         return self.symtab_manager.global_scope
 
     ###############################################
@@ -107,16 +107,10 @@ class IRTransformer(Transformer):
         params = items[2]
         body = items[3]
 
-        if self.symtab_manager.isInFcnBody:
-            self.symtab_manager.current_scope.name = f"{fcnname}"
-
-        for param in params:
-            if isinstance(param, Variable):
-                self.symtab_manager.current_scope.define(Symbol(name=param.name, type=param.type_spec)) # pyright: ignore
-        
         fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope)
 
         if self.symtab_manager.isInFcnBody:
+            self.symtab_manager.current_scope.name = f"{fcnname}"
             self.symtab_manager.pop_scope()
             self.symtab_manager.isInFcnBody = False
 
@@ -129,6 +123,10 @@ class IRTransformer(Transformer):
             self.symtab_manager.isInFcnBody = True
             self.symtab_manager.push_scope(f"unnamedFcn")
         if len(items) > 2:
+            for param in items[1]:
+                if isinstance(param, Variable):
+                    self.symtab_manager.current_scope.define(Symbol(name=param.name, type=param.type_spec)) # pyright: ignore
+ 
             return items[1]
         else:
             return [] 
@@ -181,7 +179,12 @@ class IRTransformer(Transformer):
             elif tok.type == "STRING":
                 return Literal(value=str(tok)[1:-1])
             elif tok.type == "IDENT":
-                return Identifier(name=str(tok))
+                symbol = self.symtab_manager.current_scope.lookup(str(tok));
+
+                if symbol  is None:
+                    RuntimeError("\n Use of undeclared variable")
+
+                return VarAccess(name=str(tok), _symbol=symbol)
         return tok
 
     def param(self, items):

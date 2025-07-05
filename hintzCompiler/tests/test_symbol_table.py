@@ -52,10 +52,10 @@ class TestSymbolTable(unittest.TestCase):
 
 
 Symbol Table [foo]:
-  y: <Symbol y: type=int, attrs={}>
-  xx: <Symbol xx: type=int, attrs={}>
   a: <Symbol a: type=int, attrs={}>
   b: <Symbol b: type=int, attrs={}>
+  y: <Symbol y: type=int, attrs={}>
+  xx: <Symbol xx: type=int, attrs={}>
   ↑ Parent scope:
   Symbol Table [global]:
     G: <Symbol G: type=int, attrs={}>
