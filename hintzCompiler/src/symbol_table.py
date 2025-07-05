@@ -13,6 +13,9 @@ class Symbol:
     def __repr__(self):
         return f"<Symbol {self.name}: type={self.type}, attrs={self.attributes}>"
 
+    def __str__(self):
+        return f"<Symbol {self.name}: type={self.type}, attrs={self.attributes}>"
+
 class SymbolTable:
 
     def __init__(self, name:str, parent: Optional['SymbolTable'] = None):
@@ -40,6 +43,7 @@ class SymbolTable:
 
     def __repr__(self): # pragma: no cover
         return "\n".join(f"{name}: {sym}" for name, sym in self.symbols.items())
+
 
 class ScopedSymbolTableManager:
 

@@ -17,7 +17,6 @@ class IRNode:
         for field in self.__dataclass_fields__:
 
             if field == "_symbol":
-                #print(f"SKIPPING")
                 continue
 
             value = getattr(self, field)

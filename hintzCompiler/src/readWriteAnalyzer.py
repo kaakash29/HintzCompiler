@@ -1,8 +1,10 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
-from typing import Set, Dict
+from typing import Set, Dict, cast
 from ordered_set import OrderedSet
 from hintzCompiler.src.ir_nodes import *
+from hintzCompiler.src.symbol_table import *
+from dataclasses import dataclass, field
 
 ##############################################################################################
 
@@ -11,6 +13,8 @@ class MemAccess:
     def toStr(self):
         retVal = ""
         for field in self.__dataclass_fields__:
+            if field == "_varSymb":
+                continue
             retVal += f"{getattr(self, field)}"
         return retVal
 
@@ -29,6 +33,7 @@ class MemAccessArrayElem(MemAccess):
 @dataclass
 class MemAccessVariable(MemAccess):
     varname:str
+    _varSymb:Symbol = field(default=None, repr=False)
 
 ##############################################################################################
 
@@ -112,7 +117,11 @@ class ReadWriteAnalyzer:
             if isinstance(smMemE, FunctionCall):
                 break
 
-        memAccessPattern.append(MemAccessVariable(varname=smMemE.name))
+        if isinstance(smMemE, VarAccess):
+            if smMemE._symbol is None:
+                RuntimeError("Ran into a Variable Access where the variable is NOT in the symbol table")
+            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _varSymb=cast(smMemE._symbol, Symbol) ))
+        
         memAccessPattern.reverse();
         return smMemE, memAccessPattern
 
@@ -123,7 +132,7 @@ class ReadWriteAnalyzer:
         def visit(node, memOccPath):
 
             if isinstance(node, VarAccess):
-                memOccPath.append(MemAccessVariable(node.name))
+                memOccPath.append(MemAccessVariable(node.name, _varSymb=cast(node._symbol, Symbol)))
                 memOccPath.reverse()
                 readO = ReadOcc(node.name, memOccPath)
                 reads.add(readO)
