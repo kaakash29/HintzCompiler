@@ -38,7 +38,7 @@ class MemAccessVariable(MemAccess):
 
 @dataclass
 class ReadOcc:
-    baseVar:str
+    baseVar:Variable
     memAccess:List[MemAccess]
 
     def toStr(self):
@@ -60,7 +60,7 @@ class ReadOcc:
 
 @dataclass
 class WriteOcc:
-    baseVar:str
+    baseVar:Variable
     memAccess:List[MemAccess]
 
     def toStr(self):
@@ -119,7 +119,9 @@ class ReadWriteAnalyzer:
         if isinstance(smMemE, VarAccess):
             if smMemE._var is None:
                 RuntimeError("Ran into a Variable Access where the variable is UNKNOWN")
-            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _var=smMemE._var)) #pyright: ignore 
+            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _var=smMemE._var)) #pyright: ignore
+        else:
+            memAccessPattern = []
         
         memAccessPattern.reverse();
         return smMemE, memAccessPattern
@@ -133,14 +135,15 @@ class ReadWriteAnalyzer:
             if isinstance(node, VarAccess):
                 memOccPath.append(MemAccessVariable(node.name, _var=node._var)) #pyright: ignore
                 memOccPath.reverse()
-                readO = ReadOcc(node.name, memOccPath)
+                readO = ReadOcc(node._var, memOccPath)
                 reads.add(readO)
 
             elif isinstance(node, Assignment):
                 if isinstance(node.target, (VarAccess, FieldAccess, ArrayAccess)):
                     simplifiedAccess, memOcc = self._simplifyMemoryAccess(node.target)
-                    writeO = WriteOcc(simplifiedAccess.name, memOcc)
-                    writes.add(writeO)
+                    if isinstance(simplifiedAccess, VarAccess):
+                        writeO = WriteOcc(simplifiedAccess._var, memOcc)
+                        writes.add(writeO)
                 visit(node.value, memOccPath)
 
             elif isinstance(node, BinaryOp):

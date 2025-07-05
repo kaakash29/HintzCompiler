@@ -48,14 +48,14 @@ class ControlFlowGraph:
     """
     def __init__(self, function: Function):
         self.fcn = function
-        self._fcnName = function.name
         self.symbol_table = function.symbolTable
         self.nodes: List[CFGNode] = []
         self.label_map: Dict[str, CFGNode] = {}
         self.goto_links: List[Tuple[CFGNode, str]] = []
         self.stmt_id = 0
-        self._pending_breaks: List[CFGNode] = []
         self.version = 0
+        self._pending_breaks: List[CFGNode] = []
+        self._fcnName = function.name
 
         self._build_cfg(cast(Block, function.body))
         self._resolve_gotos()

@@ -60,4 +60,9 @@ class DominanceFrontiers:
      14                  W←W∪{Y}
     """
     def computePhiLocsForVar(self):
+        currF = self.doms.bbg.cfg.fcn
+        for v in currF.declaredVarsList:
+            F = OrderedSet([])
+            W = OrderedSet([])
+
         return
