@@ -24,7 +24,7 @@ class TestEditingCFG(unittest.TestCase):
 
         expected = """Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
-[1] Assignment(target=Identifier(name='i'), value=Literal(value=23.0)) ->"""
+[1] Assignment(target=VarAccess(name='i'), value=Literal(value=23.0)) ->"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
@@ -38,8 +38,8 @@ class TestEditingCFG(unittest.TestCase):
 
         expected = """Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 2
-[1] Assignment(target=Identifier(name='i'), value=Literal(value=23.0)) ->
-[2] Assignment(target=Identifier(name='i'), value=Literal(value=12.0)) -> 1"""
+[1] Assignment(target=VarAccess(name='i'), value=Literal(value=23.0)) ->
+[2] Assignment(target=VarAccess(name='i'), value=Literal(value=12.0)) -> 1"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()

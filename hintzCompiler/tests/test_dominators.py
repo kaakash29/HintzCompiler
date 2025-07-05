@@ -79,18 +79,18 @@ Fcn : main
 [0] [Variable(name='a', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='b', type_spec='int', attributes=None)] -> 2
 [2] [Variable(name='c', type_spec='int', attributes=None)] -> 3
-[3] Assignment(target=Identifier(name='a'), value=Literal(value=0.0)) -> 4
-[4] Assignment(target=Identifier(name='b'), value=Literal(value=0.0)) -> 5
-[5] Assignment(target=Identifier(name='c'), value=Literal(value=0.0)) -> 6
-[6] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='a'), right=Identifier(name='b')) -> 8, 12
+[3] Assignment(target=VarAccess(name='a'), value=Literal(value=0.0)) -> 4
+[4] Assignment(target=VarAccess(name='b'), value=Literal(value=0.0)) -> 5
+[5] Assignment(target=VarAccess(name='c'), value=Literal(value=0.0)) -> 6
+[6] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='a'), right=VarAccess(name='b')) -> 8, 12
 [7] IfJoin() -> 13
-[8] Assignment(target=Identifier(name='c'), value=Identifier(name='a')) -> 9
-[9] If BinaryOp(op=Token('GT_OP', '>'), left=Identifier(name='c'), right=Identifier(name='a')) -> 11, 10
+[8] Assignment(target=VarAccess(name='c'), value=VarAccess(name='a')) -> 9
+[9] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='c'), right=VarAccess(name='a')) -> 11, 10
 [10] IfJoin() -> 7
-[11] Assignment(target=Identifier(name='c'), value=Identifier(name='b')) -> 10
-[12] Assignment(target=Identifier(name='a'), value=Identifier(name='b')) -> 7
-[13] Assignment(target=Identifier(name='b'), value=Identifier(name='c')) -> 14
-[14] Return(value=BinaryOp(op=Token('ADD_OP', '+'), left=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='a'), right=Identifier(name='b')), right=Identifier(name='c'))) ->
+[11] Assignment(target=VarAccess(name='c'), value=VarAccess(name='b')) -> 10
+[12] Assignment(target=VarAccess(name='a'), value=VarAccess(name='b')) -> 7
+[13] Assignment(target=VarAccess(name='b'), value=VarAccess(name='c')) -> 14
+[14] Return(value=BinaryOp(op=Token('ADD_OP', '+'), left=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='a'), right=VarAccess(name='b')), right=VarAccess(name='c'))) ->
 
 
 BB-GRAPH:
@@ -142,18 +142,18 @@ DOM-TREE:
         expected = """CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
-[1] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='in'), right=Literal(value=0.0)) -> 3, 2
+[1] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='in'), right=Literal(value=0.0)) -> 3, 2
 [2] IfJoin() -> 5
-[3] Assignment(target=Identifier(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
+[3] Assignment(target=VarAccess(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
 [4] Goto(label='skipIf') -> 2, 10
-[5] Assignment(target=Identifier(name='x'), value=Literal(value=0.0)) -> 6
-[6] If BinaryOp(op=Token('GT_OP', '>'), left=Identifier(name='in'), right=Literal(value=5.0)) -> 8, 9
+[5] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 6
+[6] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 8, 9
 [7] IfJoin() -> 10
-[8] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 7
-[9] Assignment(target=Identifier(name='x'), value=Literal(value=2.0)) -> 7
+[8] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 7
+[9] Assignment(target=VarAccess(name='x'), value=Literal(value=2.0)) -> 7
 [10] Label(name='skipIf') -> 11
-[11] Assignment(target=Identifier(name='out'), value=Identifier(name='x')) -> 12
-[12] Return(value=Identifier(name='out')) ->
+[11] Assignment(target=VarAccess(name='out'), value=VarAccess(name='x')) -> 12
+[12] Return(value=VarAccess(name='out')) ->
 
 
 BB-GRAPH:

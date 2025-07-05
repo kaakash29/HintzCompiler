@@ -41,11 +41,11 @@ class TestBasicBlockGraph(unittest.TestCase):
         expected = """CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
-[1] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 2
-[2] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='x'), right=Literal(value=5.0)) -> 4, 3
+[1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
+[2] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 4, 3
 [3] IfJoin() -> 5
-[4] Assignment(target=Identifier(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='x'), right=Literal(value=1.0))) -> 3
-[5] Return(value=Identifier(name='x')) ->
+[4] Assignment(target=VarAccess(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x'), right=Literal(value=1.0))) -> 3
+[5] Return(value=VarAccess(name='x')) ->
 
 
 DFS:[0, 1, 2, 4, 3, 5]
@@ -72,10 +72,10 @@ BB3: Nodes: [3, 5]  ->"""
         expected = """CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
-[1] Assignment(target=Identifier(name='x'), value=Literal(value=1.0)) -> 2
-[2] Assignment(target=Identifier(name='x'), value=Literal(value=2.0)) -> 3
-[3] Assignment(target=Identifier(name='x'), value=Literal(value=3.0)) -> 4
-[4] Return(value=Identifier(name='x')) ->
+[1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
+[2] Assignment(target=VarAccess(name='x'), value=Literal(value=2.0)) -> 3
+[3] Assignment(target=VarAccess(name='x'), value=Literal(value=3.0)) -> 4
+[4] Return(value=VarAccess(name='x')) ->
 
 
 DFS:[0, 1, 2, 3, 4]
@@ -108,13 +108,13 @@ BB1: Nodes: [0, 1, 2, 3, 4]  ->"""
 Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='k', type_spec='int', attributes=None)] -> 2
-[2] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 3
-[3] Assignment(target=Identifier(name='k'), value=Literal(value=0.0)) -> 4
-[4] While BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=12.0)) -> 5, 8
-[5] Assignment(target=Identifier(name='k'), value=Literal(value=1.0)) -> 6
-[6] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 7
-[7] Assignment(target=Identifier(name='k'), value=Literal(value=2.0)) -> 4
-[8] Return(value=Identifier(name='k')) ->
+[2] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 3
+[3] Assignment(target=VarAccess(name='k'), value=Literal(value=0.0)) -> 4
+[4] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=12.0)) -> 5, 8
+[5] Assignment(target=VarAccess(name='k'), value=Literal(value=1.0)) -> 6
+[6] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 7
+[7] Assignment(target=VarAccess(name='k'), value=Literal(value=2.0)) -> 4
+[8] Return(value=VarAccess(name='k')) ->
 
 
 DFS:[0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -149,15 +149,15 @@ BB4: Nodes: [8]  ->"""
 Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='k', type_spec='int', attributes=None)] -> 2
-[2] Assignment(target=Identifier(name='k'), value=Literal(value=0.0)) -> 3
-[3] Assignment(target=Identifier(name='k'), value=Literal(value=12.0)) -> 4
+[2] Assignment(target=VarAccess(name='k'), value=Literal(value=0.0)) -> 3
+[3] Assignment(target=VarAccess(name='k'), value=Literal(value=12.0)) -> 4
 [4] for(init; cond; update) -> 5
-[5] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 6
-[6] BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='i'), right=Literal(value=25.0)) -> 7, 10
-[7] Assignment(target=Identifier(name='k'), value=BinaryOp(op=Token('SUB_OP', '-'), left=Identifier(name='i'), right=Literal(value=1.0))) -> 8
-[8] Assignment(target=Identifier(name='k'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='k'), right=Literal(value=7.0))) -> 9
-[9] UnaryOp(op=Token('INCREMENT', '++'), operand=Identifier(name='i'), is_postfix=True) -> 6
-[10] Return(value=Identifier(name='k')) ->
+[5] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 6
+[6] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=25.0)) -> 7, 10
+[7] Assignment(target=VarAccess(name='k'), value=BinaryOp(op=Token('SUB_OP', '-'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 8
+[8] Assignment(target=VarAccess(name='k'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='k'), right=Literal(value=7.0))) -> 9
+[9] UnaryOp(op=Token('INCREMENT', '++'), operand=VarAccess(name='i'), is_postfix=True) -> 6
+[10] Return(value=VarAccess(name='k')) ->
 
 
 DFS:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -202,19 +202,19 @@ Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
 [1] [Variable(name='j', type_spec='int', attributes=None)] -> 2
 [2] [Variable(name='k', type_spec='int', attributes=None)] -> 3
-[3] Assignment(target=Identifier(name='j'), value=Literal(value=0.0)) -> 4
-[4] Assignment(target=Identifier(name='k'), value=Literal(value=0.0)) -> 5
-[5] Assignment(target=Identifier(name='i'), value=Literal(value=0.0)) -> 6
+[3] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 4
+[4] Assignment(target=VarAccess(name='k'), value=Literal(value=0.0)) -> 5
+[5] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 6
 [6] Label(name='l1') -> 7
-[7] Assignment(target=Identifier(name='k'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='k'), right=Literal(value=1.0))) -> 8
-[8] Assignment(target=Identifier(name='i'), value=BinaryOp(op=Token('MUL_OP', '*'), left=Identifier(name='i'), right=Literal(value=3.0))) -> 9
-[9] Assignment(target=Identifier(name='j'), value=BinaryOp(op=Token('ADD_OP', '+'), left=Identifier(name='j'), right=Token('LPAR', '('))) -> 10
-[10] If BinaryOp(op=Token('LT_OP', '<'), left=Identifier(name='k'), right=Literal(value=12.0)) -> 12, 11
+[7] Assignment(target=VarAccess(name='k'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='k'), right=Literal(value=1.0))) -> 8
+[8] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('MUL_OP', '*'), left=VarAccess(name='i'), right=Literal(value=3.0))) -> 9
+[9] Assignment(target=VarAccess(name='j'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='j'), right=Token('LPAR', '('))) -> 10
+[10] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='k'), right=Literal(value=12.0)) -> 12, 11
 [11] IfJoin() -> 13
 [12] Goto(label='l1') -> 11, 6
-[13] Assignment(target=Identifier(name='i'), value=Identifier(name='j')) -> 14
-[14] Assignment(target=Identifier(name='k'), value=Identifier(name='j')) -> 15
-[15] Return(value=Identifier(name='j')) ->
+[13] Assignment(target=VarAccess(name='i'), value=VarAccess(name='j')) -> 14
+[14] Assignment(target=VarAccess(name='k'), value=VarAccess(name='j')) -> 15
+[15] Return(value=VarAccess(name='j')) ->
 
 
 DFS:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 11, 13, 14, 15]

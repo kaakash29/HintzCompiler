@@ -6,13 +6,20 @@ from unittest.mock import patch
 from dataclasses import dataclass
 from typing import List, Optional, Union
 from hintzCompiler.src.symbol_table import SymbolTable, Symbol
+from dataclasses import dataclass, field
 
+@dataclass
 class IRNode:
 
     def dump(self, indent=0):
         pad = '  ' * indent
         print(f"{pad}{self.__class__.__name__}:")
-        for field in self.__dataclass_fields__: #pyright: ignore
+        for field in self.__dataclass_fields__:
+
+            if field == "_symbol":
+                #print(f"SKIPPING")
+                continue
+
             value = getattr(self, field)
             if isinstance(value, list):
                 print(f"{pad}  {field}: [")
@@ -117,7 +124,7 @@ class Literal(IRNode):
 @dataclass
 class VarAccess(IRNode):
     name: str
-    _symbol: Symbol
+    _symbol: Optional[Symbol] = field(default=None, repr=False)
 
 @dataclass
 class FieldAccess:

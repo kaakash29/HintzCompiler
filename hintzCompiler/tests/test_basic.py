@@ -75,7 +75,7 @@ class TestCompiler(unittest.TestCase):
             [Variable(name='result', type_spec='int', attributes=None)]
             Assignment:
               target:
-                Identifier:
+                VarAccess:
                   name: result
               value: FunctionCall(name='add', args=[Literal(value=1.0), Literal(value=2.0)])
           ]"""
@@ -106,7 +106,7 @@ class TestCompiler(unittest.TestCase):
           statements: [
             [Variable(name='m', type_spec='float', attributes={'dimensions': [3]})]
             Assignment:
-              target: ArrayAccess(base=Identifier(name='m'), index=Literal(value=0.0))
+              target: ArrayAccess(base=VarAccess(name='m'), index=Literal(value=0.0))
               value:
                 Literal:
                   value: 10.0
@@ -135,7 +135,7 @@ class TestCompiler(unittest.TestCase):
         """
 
         expected = """Assignment:
-              target: FieldAccess(base=Identifier(name='v'), field='x')
+              target: FieldAccess(base=VarAccess(name='v'), field='x')
               value:
                 Literal:
                   value: 1.0
@@ -169,7 +169,7 @@ class TestCompiler(unittest.TestCase):
               condition:
                 BinaryOp:
                   op: ==
-                  left: FieldAccess(base=Identifier(name='v'), field='x')
+                  left: FieldAccess(base=VarAccess(name='v'), field='x')
                   right:
                     Literal:
                       value: 1.0
@@ -177,7 +177,7 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=Identifier(name='v'), field='x')
+                      target: FieldAccess(base=VarAccess(name='v'), field='x')
                       value:
                         Literal:
                           value: 0.0
@@ -186,7 +186,7 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=Identifier(name='v'), field='x')
+                      target: FieldAccess(base=VarAccess(name='v'), field='x')
                       value:
                         Literal:
                           value: 29.0
@@ -220,7 +220,7 @@ class TestCompiler(unittest.TestCase):
               init:
                 Assignment:
                   target:
-                    Identifier:
+                    VarAccess:
                       name: i
                   value:
                     Literal:
@@ -229,7 +229,7 @@ class TestCompiler(unittest.TestCase):
                 BinaryOp:
                   op: <
                   left:
-                    Identifier:
+                    VarAccess:
                       name: i
                   right:
                     Literal:
@@ -238,7 +238,7 @@ class TestCompiler(unittest.TestCase):
                 UnaryOp:
                   op: ++
                   operand:
-                    Identifier:
+                    VarAccess:
                       name: i
                   is_postfix: True
               body:"""
@@ -272,7 +272,7 @@ class TestCompiler(unittest.TestCase):
                 BinaryOp:
                   op: <
                   left:
-                    Identifier:
+                    VarAccess:
                       name: i
                   right:
                     Literal:
@@ -310,11 +310,11 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=Identifier(name='v'), field='x')
+                      target: FieldAccess(base=VarAccess(name='v'), field='x')
                       value:
                         BinaryOp:
                           op: +
-                          left: FieldAccess(base=Identifier(name='v'), field='x')
+                          left: FieldAccess(base=VarAccess(name='v'), field='x')
                           right:
                             Literal:
                               value: 1.0"""
@@ -352,7 +352,7 @@ class TestCompiler(unittest.TestCase):
         }
         """
         expected = """            Switch:
-              expr: FieldAccess(base=Identifier(name='v'), field='x')
+              expr: FieldAccess(base=VarAccess(name='v'), field='x')
               cases: [
                 Case:
                   value:
@@ -363,7 +363,7 @@ class TestCompiler(unittest.TestCase):
                       statements: [
                         Assignment:
                           target:
-                            Identifier:
+                            VarAccess:
                               name: i
                           value:
                             Literal:
@@ -379,7 +379,7 @@ class TestCompiler(unittest.TestCase):
                       statements: [
                         Assignment:
                           target:
-                            Identifier:
+                            VarAccess:
                               name: i
                           value:
                             Literal:
@@ -393,7 +393,7 @@ class TestCompiler(unittest.TestCase):
                       statements: [
                         Assignment:
                           target:
-                            Identifier:
+                            VarAccess:
                               name: i
                           value:
                             UnaryOp:
@@ -440,7 +440,7 @@ class TestCompiler(unittest.TestCase):
                 BinaryOp:
                   op: <
                   left:
-                    Identifier:
+                    VarAccess:
                       name: i
                   right:
                     Literal:
@@ -450,7 +450,7 @@ class TestCompiler(unittest.TestCase):
                   statements: [
                     Assignment:
                       target:
-                        Identifier:
+                        VarAccess:
                           name: i
                       value:
                         Literal:
@@ -463,7 +463,7 @@ class TestCompiler(unittest.TestCase):
                   statements: [
                     Assignment:
                       target:
-                        Identifier:
+                        VarAccess:
                           name: i
                       value:
                         Literal:
@@ -501,7 +501,7 @@ int main() {
                 BinaryOp:
                   op: <
                   left:
-                    Identifier:
+                    VarAccess:
                       name: i
                   right:
                     Literal:
@@ -510,7 +510,7 @@ int main() {
                 UnaryOp:
                   op: ++
                   operand:
-                    Identifier:
+                    VarAccess:
                       name: i
                   is_postfix: True
               body:"""
@@ -570,9 +570,9 @@ int main() {
         """
         expected = """Assignment:
               target:
-                Identifier:
+                VarAccess:
                   name: v3
-              value: FunctionCall(name='phi', args=[Identifier(name='v1'), Identifier(name='v2')])"""
+              value: FunctionCall(name='phi', args=[VarAccess(name='v1'), VarAccess(name='v2')])"""
 
         ir = Driver(code).ast
         self.maxDiff = None

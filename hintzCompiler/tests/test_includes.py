@@ -16,7 +16,7 @@ class TestCompiler(unittest.TestCase):
         preprocessor = Preprocessor(include_paths=[fullIncludePath])
 
         # Write the source file that uses the include
-        test_file_path = "tests/temp_test.hz"
+        test_file_path = os.path.join(os.path.dirname(__file__), "temp_test.hz")
         with open(test_file_path, "w") as f:
             f.write("""
             #include "utils.hz"
@@ -41,7 +41,7 @@ class TestCompiler(unittest.TestCase):
         preprocessor = Preprocessor(include_paths=[fullIncludePath])
 
         # Write the source file that uses the include
-        test_file_path = "tests/temp_test.hz"
+        test_file_path = os.path.join(os.path.dirname(__file__), "temp_test.hz")
         with open(test_file_path, "w") as f:
             f.write("""
             #define MINE 5
