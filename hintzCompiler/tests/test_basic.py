@@ -43,7 +43,7 @@ class TestCompiler(unittest.TestCase):
       body:
         Block:
           statements: [
-            [Variable(name='x', type_spec='int', attributes=None)]
+            [Variable(name='x', type_spec='int', attributes={})]
           ]"""
         self.assertIn(expected.strip(), ir.toString(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{ir.toString().strip()}||")
 
@@ -72,7 +72,7 @@ class TestCompiler(unittest.TestCase):
         """
 
         expected = """statements: [
-            [Variable(name='result', type_spec='int', attributes=None)]
+            [Variable(name='result', type_spec='int', attributes={})]
             Assignment:
               target:
                 VarAccess:

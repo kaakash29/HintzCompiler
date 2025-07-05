@@ -40,7 +40,7 @@ class TestBasicBlockGraph(unittest.TestCase):
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
 [2] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 4, 3
 [3] IfJoin() -> 5
@@ -71,7 +71,7 @@ BB3: Nodes: [3, 5]  ->"""
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
 [2] Assignment(target=VarAccess(name='x'), value=Literal(value=2.0)) -> 3
 [3] Assignment(target=VarAccess(name='x'), value=Literal(value=3.0)) -> 4
@@ -106,8 +106,8 @@ BB1: Nodes: [0, 1, 2, 3, 4]  ->"""
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
-[1] [Variable(name='k', type_spec='int', attributes=None)] -> 2
+[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='k', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 3
 [3] Assignment(target=VarAccess(name='k'), value=Literal(value=0.0)) -> 4
 [4] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=12.0)) -> 5, 8
@@ -147,8 +147,8 @@ BB4: Nodes: [8]  ->"""
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
-[1] [Variable(name='k', type_spec='int', attributes=None)] -> 2
+[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='k', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='k'), value=Literal(value=0.0)) -> 3
 [3] Assignment(target=VarAccess(name='k'), value=Literal(value=12.0)) -> 4
 [4] for(init; cond; update) -> 5
@@ -199,9 +199,9 @@ BB4: Nodes: [10]  ->"""
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes=None)] -> 1
-[1] [Variable(name='j', type_spec='int', attributes=None)] -> 2
-[2] [Variable(name='k', type_spec='int', attributes=None)] -> 3
+[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[2] [Variable(name='k', type_spec='int', attributes={})] -> 3
 [3] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 4
 [4] Assignment(target=VarAccess(name='k'), value=Literal(value=0.0)) -> 5
 [5] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 6

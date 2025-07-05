@@ -76,9 +76,9 @@ DOM-TREE:
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='a', type_spec='int', attributes=None)] -> 1
-[1] [Variable(name='b', type_spec='int', attributes=None)] -> 2
-[2] [Variable(name='c', type_spec='int', attributes=None)] -> 3
+[0] [Variable(name='a', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='b', type_spec='int', attributes={})] -> 2
+[2] [Variable(name='c', type_spec='int', attributes={})] -> 3
 [3] Assignment(target=VarAccess(name='a'), value=Literal(value=0.0)) -> 4
 [4] Assignment(target=VarAccess(name='b'), value=Literal(value=0.0)) -> 5
 [5] Assignment(target=VarAccess(name='c'), value=Literal(value=0.0)) -> 6
@@ -141,7 +141,7 @@ DOM-TREE:
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes=None)] -> 1
+[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='in'), right=Literal(value=0.0)) -> 3, 2
 [2] IfJoin() -> 5
 [3] Assignment(target=VarAccess(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4

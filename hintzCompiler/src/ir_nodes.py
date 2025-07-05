@@ -59,7 +59,8 @@ class Function(IRNode):
 class Variable(IRNode):
     name: str
     type_spec: Optional[str]
-    attributes: dict = None # pyright : ignore
+    attributes: dict = field(default_factory=dict)
+    _symbol: Optional[Symbol] = field(default=None, repr=False)
 
 @dataclass
 class BinaryOp(IRNode):
