@@ -19,6 +19,11 @@ class IRNode:
             if field == "_symbol":
                 continue
 
+            if field == "_var":
+                continue
+
+
+
             value = getattr(self, field)
             if isinstance(value, list):
                 print(f"{pad}  {field}: [")
@@ -54,6 +59,7 @@ class Function(IRNode):
     params: List['Variable']
     body: IRNode
     symbolTable: SymbolTable
+    declaredVarsList: List['Variable'] = field(repr=False)
 
 @dataclass
 class Variable(IRNode):
@@ -124,6 +130,7 @@ class Literal(IRNode):
 @dataclass
 class VarAccess(IRNode):
     name: str
+    _var: Optional[Variable] = field(default=None, repr=False)
     _symbol: Optional[Symbol] = field(default=None, repr=False)
 
 @dataclass

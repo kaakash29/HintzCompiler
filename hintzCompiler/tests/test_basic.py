@@ -112,6 +112,12 @@ class TestCompiler(unittest.TestCase):
                   value: 10.0
           ]
       symbolTable: m: <Symbol m: type=matrix, attrs={'element_type': 'float', 'dimensions': [3]}>
+      declaredVarsList: [
+        Variable:
+          name: m
+          type_spec: float
+          attributes: {'dimensions': [3]}
+      ]
   ]"""
 
         ir = Driver(code).ast

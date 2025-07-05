@@ -2,6 +2,7 @@
 
 from lark import Transformer, Token 
 from hintzCompiler.src.ir_nodes import *
+from ordered_set  import OrderedSet
 from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
 
 """
@@ -15,7 +16,9 @@ class IRTransformer(Transformer):
     # public:
 
     def __init__(self):
+        super().__init__()
         self.symtab_manager = ScopedSymbolTableManager()
+        self.decldFcnVars : List[Variable] = []
 
     def get_global_scope(self):
         return self.symtab_manager.global_scope
@@ -79,23 +82,32 @@ class IRTransformer(Transformer):
         name = str(items[0])
 
         if len(items) == 4:
-            return Variable(name=name, type_spec="matrix", attributes={"dimensions": [int(items[2])]})
+            newV = Variable(name=name, type_spec="matrix", attributes={"dimensions": [int(items[2])]})
+            self.decldFcnVars.append(newV)
+            return newV
 
-        return Variable(name=name, type_spec=None)
+        newV = Variable(name=name, type_spec=None)
+        self.decldFcnVars.append(newV)
+        return newV
 
     def declaration(self, items):
         type_spec = items[0]
         vars = []
         declarators = items[1]
         for decl in declarators:
+
+
             if decl.type_spec == "matrix":
-                self.symtab_manager.current_scope.define(Symbol(
-                    name=decl.name,
-                    type="matrix",
-                    attributes={"element_type": type_spec, "dimensions": decl.attributes["dimensions"]}
-                ))
+                newS = Symbol(  name=decl.name,
+                                type="matrix",
+                                attributes={"element_type": type_spec, "dimensions": decl.attributes["dimensions"]} )
+                self.symtab_manager.current_scope.define(newS)
+                decl._symbol = newS
             else:
-                self.symtab_manager.current_scope.define(Symbol(name=decl.name, type=type_spec))
+                newS = Symbol(name=decl.name, type=type_spec)
+                self.symtab_manager.current_scope.define(newS)
+                decl._symbol = newS
+
             decl.type_spec=type_spec
             vars.append(decl)
         return vars
@@ -107,7 +119,7 @@ class IRTransformer(Transformer):
         params = items[2]
         body = items[3]
 
-        fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope)
+        fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope, declaredVarsList=self.decldFcnVars)
 
         if self.symtab_manager.isInFcnBody:
             self.symtab_manager.current_scope.name = f"{fcnname}"
@@ -125,8 +137,10 @@ class IRTransformer(Transformer):
         if len(items) > 2:
             for param in items[1]:
                 if isinstance(param, Variable):
-                    self.symtab_manager.current_scope.define(Symbol(name=param.name, type=param.type_spec)) # pyright: ignore
- 
+                    newS = Symbol(name=param.name, type=param.type_spec)  # pyright: ignore
+                    self.symtab_manager.current_scope.define(newS)
+                    self.decldFcnVars = []
+                    param._symbol = newS
             return items[1]
         else:
             return [] 
@@ -180,15 +194,18 @@ class IRTransformer(Transformer):
                 return Literal(value=str(tok)[1:-1])
             elif tok.type == "IDENT":
                 symbol = self.symtab_manager.current_scope.lookup(str(tok));
-
-                if symbol  is None:
-                    RuntimeError("\n Use of undeclared variable")
-
-                return VarAccess(name=str(tok), _symbol=symbol)
+                var = next((item for item in self.decldFcnVars if item.name == str(tok)), None)
+                
+                if symbol is None or var is None:
+                    RuntimeError("\n Access of an undeclared variable.")
+                
+                return VarAccess(name=str(tok), _var=var, _symbol=symbol)
         return tok
 
     def param(self, items):
-        return Variable(name=str(items[1]), type_spec=str(items[0]), attributes={"isiovar":True})
+        var = Variable(name=str(items[1]), type_spec=str(items[0]), attributes={"isiovar":True})
+        self.decldFcnVars.append(var)
+        return var;
 
     def unary(self, children):
         if len(children) == 2 and isinstance(children[1], Token):

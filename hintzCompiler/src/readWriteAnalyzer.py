@@ -3,7 +3,6 @@
 from typing import Set, Dict, cast
 from ordered_set import OrderedSet
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.src.symbol_table import *
 from dataclasses import dataclass, field
 
 ##############################################################################################
@@ -13,7 +12,7 @@ class MemAccess:
     def toStr(self):
         retVal = ""
         for field in self.__dataclass_fields__:
-            if field == "_varSymb":
+            if field == "_var":
                 continue
             retVal += f"{getattr(self, field)}"
         return retVal
@@ -33,7 +32,7 @@ class MemAccessArrayElem(MemAccess):
 @dataclass
 class MemAccessVariable(MemAccess):
     varname:str
-    _varSymb:Symbol = field(default=None, repr=False)
+    _var:Variable = field(repr=False)
 
 ##############################################################################################
 
@@ -118,9 +117,9 @@ class ReadWriteAnalyzer:
                 break
 
         if isinstance(smMemE, VarAccess):
-            if smMemE._symbol is None:
-                RuntimeError("Ran into a Variable Access where the variable is NOT in the symbol table")
-            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _varSymb=cast(smMemE._symbol, Symbol) ))
+            if smMemE._var is None:
+                RuntimeError("Ran into a Variable Access where the variable is UNKNOWN")
+            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _var=smMemE._var)) #pyright: ignore 
         
         memAccessPattern.reverse();
         return smMemE, memAccessPattern
@@ -132,7 +131,7 @@ class ReadWriteAnalyzer:
         def visit(node, memOccPath):
 
             if isinstance(node, VarAccess):
-                memOccPath.append(MemAccessVariable(node.name, _varSymb=cast(node._symbol, Symbol)))
+                memOccPath.append(MemAccessVariable(node.name, _var=node._var)) #pyright: ignore
                 memOccPath.reverse()
                 readO = ReadOcc(node.name, memOccPath)
                 reads.add(readO)
