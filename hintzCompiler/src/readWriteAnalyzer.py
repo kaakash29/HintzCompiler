@@ -9,17 +9,17 @@ from dataclasses import dataclass, field
 
 @dataclass
 class MemAccess:
-    def toStr(self):
-        retVal = ""
-        for field in self.__dataclass_fields__:
-            if field == "_var":
-                continue
-            retVal += f"{getattr(self, field)}"
-        return retVal
+
+    def toStr(self) -> str:
+        return ""
 
 @dataclass
 class MemAccessStructField(MemAccess):
     fieldName:str
+
+    def toStr(self):
+        retVal = f"{self.fieldName}"
+        return retVal
 
 @dataclass 
 class MemAccessArrayElem(MemAccess):
@@ -34,12 +34,13 @@ class MemAccessVariable(MemAccess):
     varname:str
     _var:Variable = field(repr=False)
 
-##############################################################################################
+    def toStr(self):
+        return self.varname
 
 @dataclass
 class ReadOcc:
-    baseVar:Variable
-    memAccess:List[MemAccess]
+    baseVar: Variable
+    memAccess: List[MemAccess]
 
     def toStr(self):
         ret = "["
@@ -50,18 +51,11 @@ class ReadOcc:
         ret += "]"
         return ret
 
-    def __eq__(self, other):
-        return isinstance(other, ReadOcc)\
-           and self.baseVar == other.baseVar\
-           and self.memAccess == other.memAccess
-
-    def __hash__(self):
-        return hash(self.toStr())
 
 @dataclass
 class WriteOcc:
-    baseVar:Variable
-    memAccess:List[MemAccess]
+    baseVar: Variable
+    memAccess: List[MemAccess]
 
     def toStr(self):
         ret = "["
@@ -72,15 +66,9 @@ class WriteOcc:
         ret += "]"
         return ret
 
-    def __eq__(self, other):
-        return isinstance(other, WriteOcc)\
-           and self.baseVar == other.baseVar\
-           and self.memAccess == other.memAccess
 
-    def __hash__(self):
-        return hash(self.toStr())
+##########################################################################################################################
 
-##############################################################################################
 
 class ReadWriteAnalyzer:
 
@@ -104,7 +92,7 @@ class ReadWriteAnalyzer:
                 base = smMemE.base
                 smMemE = base
 
-            if isinstance(smMemE, ArrayAccess):
+            elif isinstance(smMemE, ArrayAccess):
                 if  isinstance(smMemE.index, Literal):
                     memAccessPattern.append(MemAccessArrayElem(smMemE.index.value)) #pyright: ignore
                 else:
@@ -113,7 +101,11 @@ class ReadWriteAnalyzer:
                 base = smMemE.base
                 smMemE = base
 
-            if isinstance(smMemE, FunctionCall):
+            elif isinstance(smMemE, FunctionCall):
+                break
+
+            else:
+                print(f"Unknown memory access type: {smMemE}")
                 break
 
         if isinstance(smMemE, VarAccess):
@@ -126,9 +118,9 @@ class ReadWriteAnalyzer:
         memAccessPattern.reverse();
         return smMemE, memAccessPattern
 
-    def _get_reads_and_writes(self, stmt: IRNode) -> Dict[str, OrderedSet[str]]:
-        reads = OrderedSet([])
-        writes = OrderedSet([])
+    def _get_reads_and_writes(self, stmt: IRNode) -> Dict[str, List[str]]:
+        reads = []
+        writes = []
 
         def visit(node, memOccPath):
 
@@ -136,15 +128,15 @@ class ReadWriteAnalyzer:
                 memOccPath.append(MemAccessVariable(node.name, _var=node._var)) #pyright: ignore
                 memOccPath.reverse()
                 readO = ReadOcc(node._var, memOccPath)
-                reads.add(readO)
+                reads.append(readO)
 
             elif isinstance(node, Assignment):
                 if isinstance(node.target, (VarAccess, FieldAccess, ArrayAccess)):
                     simplifiedAccess, memOcc = self._simplifyMemoryAccess(node.target)
                     if isinstance(simplifiedAccess, VarAccess):
                         writeO = WriteOcc(simplifiedAccess._var, memOcc)
-                        writes.add(writeO)
-                visit(node.value, memOccPath)
+                        writes.append(writeO)
+                visit(node.value, [])
 
             elif isinstance(node, BinaryOp):
                 visit(node.left, [])
@@ -192,11 +184,6 @@ class ReadWriteAnalyzer:
                 memOccPath.append(MemAccessStructField(node.field))
                 visit(node.base, memOccPath)
 
-            elif isinstance(node, IRNode):
-                for value in vars(node).values():
-                    if isinstance(value, IRNode) or isinstance(value, list):
-                        visit(value, [])
-
         visit(stmt, [])
         return {'reads': reads, 'writes': writes}
 
@@ -221,4 +208,3 @@ class ReadWriteAnalyzer:
                 writeStr += f"{write.toStr()}"
 
             print(f"[{node_id}] reads: {readStr}, writes: {writeStr}")
-

@@ -1,8 +1,8 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 from lark import Transformer, Token 
+from typing import cast
 from hintzCompiler.src.ir_nodes import *
-from ordered_set  import OrderedSet
 from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
 
 """
@@ -120,6 +120,7 @@ class IRTransformer(Transformer):
         body = items[3]
 
         fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope, declaredVarsList=self.decldFcnVars)
+        
 
         if self.symtab_manager.isInFcnBody:
             self.symtab_manager.current_scope.name = f"{fcnname}"
@@ -157,7 +158,13 @@ class IRTransformer(Transformer):
         return items[0]
 
     def assignment(self, items):
-        return items[0] if len(items) == 1 else Assignment(target=items[0], value=items[1])
+        if len(items) == 1:
+            return items[0]
+        else:
+            assignS = Assignment(target=items[0], value=items[1])
+            items[0]._parent = assignS
+            items[1]._parent = assignS
+            return assignS
 
     def relational(self, items):
         return self.reduce_ops(items);
@@ -183,6 +190,8 @@ class IRTransformer(Transformer):
         node = items[0]
         for i in range(1, len(items), 2):
             node = BinaryOp(op=items[i], left=node, right=items[i+1])
+            if isinstance(node.left, IRNode): node.left._parent = node
+            if isinstance(node.right, IRNode): node.right._parent = node
         return node
 
     def primary(self, items):
@@ -199,7 +208,8 @@ class IRTransformer(Transformer):
                 if symbol is None or var is None:
                     RuntimeError("\n Access of an undeclared variable.")
                 
-                return VarAccess(name=str(tok), _var=var, _symbol=symbol)
+                va = VarAccess(name=str(tok), _var=var, _symbol=symbol)
+                return va
         return tok
 
     def param(self, items):
@@ -211,11 +221,15 @@ class IRTransformer(Transformer):
         if len(children) == 2 and isinstance(children[1], Token):
             # postfix: primary ++ or primary --
             expr, op = children
-            return UnaryOp(op=op, operand=expr, is_postfix=True)
+            uop = UnaryOp(op=op, operand=expr, is_postfix=True)
+            uop.operand._parent = uop
+            return uop
         elif len(children) == 2 and isinstance(children[0], Token):
             # prefix: ++ expr
             op, expr = children
-            return UnaryOp(op=op, operand=expr, is_postfix=False)
+            uop = UnaryOp(op=op, operand=expr, is_postfix=False)
+            uop.operand._parent = uop
+            return uop
         else:
             return children[0]
 
@@ -228,32 +242,43 @@ class IRTransformer(Transformer):
     def field_access(self, items):
         base = items[0]
         field = str(items[2])
-        return FieldAccess(base=base, field=field)
+        fa = FieldAccess(base=base, field=field)
+        fa.base._parent = fa #pyright: ignore
+        return fa
 
     def array_access(self, items):
         base = items[0]
         index = items[2]
-        return ArrayAccess(base=base, index=index)
+        aa = ArrayAccess(base=base, index=index)
+        aa.base._parent = aa #pyright: ignore
+        aa.index._parent = aa #pyright: ignore
+        return aa
 
     def return_stmt(self, items):
         if len(items) >= 2:
-            return Return(items[0])
+            retN = Return(items[0])
+            if retN.value is not None: retN.value._parent = retN
+            return retN
         return Return(None);
 
     def func_call(self, items):
         name = str(items[0])
+        fcnC = FunctionCall(name=name, args=[])
         if len(items) > 3:
-            args = [arg for arg in items[2:-1] if not (isinstance(arg, Token) and arg.type == "COMMA")]
-        else:
-            args = []
-
-        return FunctionCall(name=name, args=args)
+            #fncC.args = [arg for arg in items[2:-1] if not (isinstance(arg, Token) and arg.type == "COMMA")]
+            for item in items[2:-1]:
+                if not isinstance(item, Token):
+                    fcnC.args.append(item)
+                    item._parent = fcnC
+        return fcnC
 
     def if_stmt(self, children):
         condition = children[1]
         then_branch = children[3]
         else_branch = children[4] if len(children) == 5 else None
-        return If(condition=condition, then_branch=then_branch, else_branch=else_branch)
+        ifs = If(condition=condition, then_branch=then_branch, else_branch=else_branch)
+        ifs.condition._parent = ifs
+        return ifs
 
     def for_stmt(self, children):
         init = children[1]
@@ -261,7 +286,11 @@ class IRTransformer(Transformer):
         update = children[3]
         body = children[5]
 
-        return For(init=init, condition=cond, update=update, body=body)
+        forS = For(init=init, condition=cond, update=update, body=body)
+        if forS.init is not None: forS.init._parent = forS 
+        if forS.condition is not None: forS.condition._parent = forS
+        if forS.update is not None: forS.update._parent = forS
+        return forS
 
     def for_init(self, children):
         if len(children) == 1:
@@ -281,12 +310,16 @@ class IRTransformer(Transformer):
     def while_stmt(self, children):
         cond = children[1];
         body = children[3];
-        return While(condition=cond, body=body)
+        whileS = While(condition=cond, body=body)
+        whileS.condition._parent = whileS
+        return whileS
 
     def do_while_stmt(self, children):
         body = children[0];
         cond = children[2];
-        return DoWhile(body=body, condition=cond)
+        doWhileS = DoWhile(body=body, condition=cond)
+        doWhileS.condition._parent = doWhileS
+        return doWhileS
 
     def goto_stmt(self, children):
         label = children[0].value
@@ -311,4 +344,11 @@ class IRTransformer(Transformer):
     def switch_stmt(self, children):
         expr = children[1]
         cases = children[4:-1]
-        return Switch(expr=expr, cases=cases)
+        switchS = Switch(expr=expr, cases=cases)
+        switchS.expr._parent = switchS
+        return switchS
+
+
+
+
+

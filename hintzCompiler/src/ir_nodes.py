@@ -8,8 +8,10 @@ from typing import List, Optional, Union
 from hintzCompiler.src.symbol_table import SymbolTable, Symbol
 from dataclasses import dataclass, field
 
-@dataclass
+@dataclass(kw_only=True)
 class IRNode:
+
+    _parent: Optional["IRNode"] = field(default=None, repr=False)
 
     def dump(self, indent=0):
         pad = '  ' * indent
@@ -22,7 +24,8 @@ class IRNode:
             if field == "_var":
                 continue
 
-
+            if field == "_parent":
+                continue
 
             value = getattr(self, field)
             if isinstance(value, list):
@@ -134,17 +137,17 @@ class VarAccess(IRNode):
     _symbol: Optional[Symbol] = field(default=None, repr=False)
 
 @dataclass
-class FieldAccess:
+class FieldAccess(IRNode):
     base: 'IRNode'  # e.g., Identifier('s')
     field: str      # e.g., 'f'
 
 @dataclass
-class ArrayAccess:
+class ArrayAccess(IRNode):
     base: 'IRNode'  # e.g., Identifier('m')
     index: 'IRNode' # e.g., Literal(2)
 
 @dataclass
-class FunctionCall:
+class FunctionCall(IRNode):
     name: str
     args: list
 

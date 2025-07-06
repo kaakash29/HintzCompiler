@@ -77,7 +77,15 @@ class TestCompiler(unittest.TestCase):
               target:
                 VarAccess:
                   name: result
-              value: FunctionCall(name='add', args=[Literal(value=1.0), Literal(value=2.0)])
+              value:
+                FunctionCall:
+                  name: add
+                  args: [
+                    Literal:
+                      value: 1.0
+                    Literal:
+                      value: 2.0
+                  ]
           ]"""
 
         ir = Driver(code).ast
@@ -94,9 +102,7 @@ class TestCompiler(unittest.TestCase):
         }
         """
 
-        expected = """Program:
-  declarations: [
-    Function:
+        expected = """Function:
       return_type: int
       name: main
       params: [
@@ -106,19 +112,17 @@ class TestCompiler(unittest.TestCase):
           statements: [
             [Variable(name='m', type_spec='float', attributes={'dimensions': [3]})]
             Assignment:
-              target: ArrayAccess(base=VarAccess(name='m'), index=Literal(value=0.0))
+              target:
+                ArrayAccess:
+                  base:
+                    VarAccess:
+                      name: m
+                  index:
+                    Literal:
+                      value: 0.0
               value:
                 Literal:
-                  value: 10.0
-          ]
-      symbolTable: m: <Symbol m: type=matrix, attrs={'element_type': 'float', 'dimensions': [3]}>
-      declaredVarsList: [
-        Variable:
-          name: m
-          type_spec: float
-          attributes: {'dimensions': [3]}
-      ]
-  ]"""
+             """
 
         ir = Driver(code).ast
         self.maxDiff = None
@@ -141,11 +145,15 @@ class TestCompiler(unittest.TestCase):
         """
 
         expected = """Assignment:
-              target: FieldAccess(base=VarAccess(name='v'), field='x')
+              target:
+                FieldAccess:
+                  base:
+                    VarAccess:
+                      name: v
+                  field: x
               value:
                 Literal:
-                  value: 1.0
-          ]"""
+                  value: 1.0"""
 
         ir = Driver(code).ast
         self.maxDiff = None
@@ -175,7 +183,12 @@ class TestCompiler(unittest.TestCase):
               condition:
                 BinaryOp:
                   op: ==
-                  left: FieldAccess(base=VarAccess(name='v'), field='x')
+                  left:
+                    FieldAccess:
+                      base:
+                        VarAccess:
+                          name: v
+                      field: x
                   right:
                     Literal:
                       value: 1.0
@@ -183,7 +196,12 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=VarAccess(name='v'), field='x')
+                      target:
+                        FieldAccess:
+                          base:
+                            VarAccess:
+                              name: v
+                          field: x
                       value:
                         Literal:
                           value: 0.0
@@ -192,11 +210,17 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=VarAccess(name='v'), field='x')
+                      target:
+                        FieldAccess:
+                          base:
+                            VarAccess:
+                              name: v
+                          field: x
                       value:
                         Literal:
                           value: 29.0
-                  ]""";
+                  ]
+          ]""";
 
         ir = Driver(code).ast
         self.maxDiff = None
@@ -316,14 +340,38 @@ class TestCompiler(unittest.TestCase):
                 Block:
                   statements: [
                     Assignment:
-                      target: FieldAccess(base=VarAccess(name='v'), field='x')
+                      target:
+                        FieldAccess:
+                          base:
+                            VarAccess:
+                              name: v
+                          field: x
                       value:
                         BinaryOp:
                           op: +
-                          left: FieldAccess(base=VarAccess(name='v'), field='x')
+                          left:
+                            FieldAccess:
+                              base:
+                                VarAccess:
+                                  name: v
+                              field: x
                           right:
                             Literal:
-                              value: 1.0"""
+                              value: 1.0
+                    Assignment:
+                      target:
+                        VarAccess:
+                          name: i
+                      value:
+                        BinaryOp:
+                          op: +
+                          left:
+                            VarAccess:
+                              name: i
+                          right:
+                            Literal:
+                              value: 1.0
+                  ]"""
 
         ir = Driver(code).ast
         self.maxDiff = None
@@ -358,7 +406,12 @@ class TestCompiler(unittest.TestCase):
         }
         """
         expected = """            Switch:
-              expr: FieldAccess(base=VarAccess(name='v'), field='x')
+              expr:
+                FieldAccess:
+                  base:
+                    VarAccess:
+                      name: v
+                  field: x
               cases: [
                 Case:
                   value:
@@ -409,8 +462,7 @@ class TestCompiler(unittest.TestCase):
                                   value: 1.0
                               is_postfix: False
                         Break:
-                      ]
-              ]"""
+                      ]"""
         ir = Driver(code).ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -540,7 +592,7 @@ int main() {
         }
         """
 
-        expected = """Function:
+        expected = """    Function:
       return_type: int
       name: main
       params: [
@@ -548,7 +600,10 @@ int main() {
       body:
         Block:
           statements: [
-            FunctionCall(name='foo', args=[])
+            FunctionCall:
+              name: foo
+              args: [
+              ]
             Return:
               value: None
           ]"""
@@ -578,7 +633,15 @@ int main() {
               target:
                 VarAccess:
                   name: v3
-              value: FunctionCall(name='phi', args=[VarAccess(name='v1'), VarAccess(name='v2')])"""
+              value:
+                FunctionCall:
+                  name: phi
+                  args: [
+                    VarAccess:
+                      name: v1
+                    VarAccess:
+                      name: v2
+                  ]"""
 
         ir = Driver(code).ast
         self.maxDiff = None
