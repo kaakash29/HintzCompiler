@@ -6,7 +6,7 @@ class EditCfg:
     @staticmethod
     def addNodeAfter(cfg:ControlFlowGraph, nodeIndex:int, nodeToInsert:CFGNode):
         assert(0 <= nodeIndex < len(cfg.nodes))
-        nodeBefore = cfg.nodes[0] 
+        nodeBefore = cfg.nodes[nodeIndex] 
         for succNode in nodeBefore.successors:
             nodeToInsert.add_successor(succNode)
 

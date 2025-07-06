@@ -71,6 +71,8 @@ class Variable(IRNode):
     attributes: dict = field(default_factory=dict)
     _symbol: Optional[Symbol] = field(default=None, repr=False)
 
+
+
 @dataclass
 class BinaryOp(IRNode):
     op: str

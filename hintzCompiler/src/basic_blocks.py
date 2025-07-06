@@ -10,10 +10,14 @@ class BasicBlock:
     name: str
     id: int
     nodes: List[int] = field(default_factory=list)
+    entryNode: int = -1
     successors: List["BasicBlock"] = field(default_factory=list)
     predecessors: List["BasicBlock"] = field(default_factory=list)
 
     def add_node(self, node):
+        if self.entryNode == -1:
+            self.entryNode = node
+
         self.nodes.append(node)
 
     def __str__(self):
