@@ -20,6 +20,7 @@ class CFGNode:
     compositeNodeEntry : Optional["CFGNode"] = None
 
     def add_successor(self, succ: "CFGNode"):
+
         if succ not in self.successors:
             self.successors.append(succ)
             succ.add_predecessor(self)
@@ -227,14 +228,16 @@ class ControlFlowGraph:
             if stmt.then_branch:
                 then_entry, then_last = self._build_branch(cast(Block, stmt.then_branch))
                 node.add_successor(then_entry)
-                then_last.add_successor(exit_node);
+
+                if not isinstance(then_last.stmt, Goto):
+                    then_last.add_successor(exit_node) 
             else:
                 node.add_successor(exit_node)
 
             if stmt.else_branch:
                 else_entry, else_last = self._build_branch(cast(Block, stmt.else_branch))
                 node.add_successor(else_entry)
-                else_last.add_successor(exit_node)
+                if not isinstance(else_last.stmt, Goto): else_last.add_successor(exit_node)
             else:
                 node.add_successor(exit_node)
 

@@ -14,11 +14,15 @@ class DominanceFrontiers:
 
     #public:
 
+    """
+    A do-it-all constructor.
+    """
     def __init__(self, dominators):
         self.doms   = dominators
         self.DFs    = {}
         self.computeDFs()
         self.computePhiLocsForVar()
+        self.renameVersionsOfVars()
 
 
     def dump(self):
@@ -74,15 +78,20 @@ class DominanceFrontiers:
         retList : List[BasicBlock] = []
         for stmtID in stmtsFordefsOfV:
             B = self.findBBStmtBelongsIn(stmtID, bbg)
-            retList.append(B)
+            retList.append(B) #pyright: ignore
         return retList
 
     def insertPhiStmtForVar(self, v:Variable, bb: BasicBlock, cfg:ControlFlowGraph):
         phisAsText = f"{v.name} = phi();"
         newAstNode = HintzStatementBuilder().parse_statement(phisAsText)
         newCfgNode = CFGNode(id=cfg.stmt_id, stmt=newAstNode)
-        print(f"BB: {bb} EntryNode: {bb.entryNode}")
-        EditCfg.addNodeAfter(cfg, bb.entryNode, newCfgNode)
+
+        if isinstance(cfg.nodes[bb.entryNode].stmt, (Label, IfJoin, SwitchJoin)):
+            EditCfg.addNodeAfter(cfg, bb.entryNode, newCfgNode)
+        else:
+            EditCfg.addNodeBefore(cfg, bb.entryNode, newCfgNode)
+
+
 
     """
     Algorithm 3.1 from SSA Book:
@@ -120,16 +129,19 @@ class DominanceFrontiers:
                     domFrontsOfX = self.DFs[X]
                     for Y in domFrontsOfX:
                         if Y not in F:
-                            print(f"Need to add a Phi for {v.name} to the top of {Y.name} before node {Y.entryNode}")
+                            #print(f"Need to add a Phi for {v.name} to the top of {Y.name} before node {Y.entryNode}")
                             tmpList.append(Y)
                             F.append(Y)
                             if Y not in defBBList:
                                 W.append(Y)
-            var2PhiBBs.append((v, tmpList));
+
+            var2PhiBBs.append((v, tmpList))
 
         #materialize
         for v, bblist in var2PhiBBs:
             for bb in bblist:
                 self.insertPhiStmtForVar(v, bb, currCfg)
 
-        return
+
+    def renameVersionsOfVars(self):
+        pass

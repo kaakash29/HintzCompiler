@@ -98,7 +98,7 @@ BB1: Nodes: [0, 1, 2, 3, 4, 5, 6]  -> BB2, BB6
 BB2: Nodes: [8, 9]  -> BB3, BB4
 BB3: Nodes: [11]  -> BB4
 BB4: Nodes: [10]  -> BB5
-BB5: Nodes: [7, 13, 14]  -> 
+BB5: Nodes: [7, 13, 14]  ->
 BB6: Nodes: [12]  -> BB5
 
 DOM-TREE:
@@ -108,7 +108,15 @@ DOM-TREE:
     4
   5
   6
-"""
+
+SIMPLE-DOM-RELS:
+BB1 -> DOMS:[ BB1 ]
+BB2 -> DOMS:[ BB1 BB2 ]
+BB3 -> DOMS:[ BB1 BB2 BB3 ]
+BB4 -> DOMS:[ BB1 BB2 BB4 ]
+BB5 -> DOMS:[ BB1 BB5 ]
+BB6 -> DOMS:[ BB1 BB6 ]"""
+
         domTreeAsStr = self.computeAndEmitDomTree(code)
         strippedActual = domTreeAsStr.replace(" ", "")
         strippedExpected = expected.replace(" ", "")
@@ -145,7 +153,7 @@ Fcn : main
 [1] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='in'), right=Literal(value=0.0)) -> 3, 2
 [2] IfJoin() -> 5
 [3] Assignment(target=VarAccess(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
-[4] Goto(label='skipIf') -> 2, 10
+[4] Goto(label='skipIf') -> 10
 [5] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 6
 [6] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 8, 9
 [7] IfJoin() -> 10
@@ -157,23 +165,31 @@ Fcn : main
 
 
 BB-GRAPH:
-BB1: Nodes: [0, 1]  -> BB2, BB3
-BB2: Nodes: [3, 4]  -> BB3, BB6
-BB3: Nodes: [2, 5, 6]  -> BB4, BB7
-BB4: Nodes: [8]  -> BB5
-BB5: Nodes: [7]  -> BB6
-BB6: Nodes: [10, 11, 12]  ->
-BB7: Nodes: [9]  -> BB5
+BB1: Nodes: [0, 1]  -> BB2, BB4
+BB2: Nodes: [3, 4]  -> BB3
+BB3: Nodes: [10, 11, 12]  ->
+BB4: Nodes: [2, 5, 6]  -> BB5, BB7
+BB5: Nodes: [8]  -> BB6
+BB6: Nodes: [7]  -> BB3
+BB7: Nodes: [9]  -> BB6
 
 DOM-TREE:
 1
   2
   3
-    4
+  4
     5
+    6
     7
-  6
-"""
+
+SIMPLE-DOM-RELS:
+BB1 -> DOMS:[ BB1 ]
+BB2 -> DOMS:[ BB1 BB2 ]
+BB3 -> DOMS:[ BB1 BB3 ]
+BB4 -> DOMS:[ BB1 BB4 ]
+BB5 -> DOMS:[ BB1 BB4 BB5 ]
+BB6 -> DOMS:[ BB1 BB4 BB6 ]
+BB7 -> DOMS:[ BB1 BB4 BB7 ]"""
         domTreeAsStr = self.computeAndEmitDomTree(code)
         strippedActual = domTreeAsStr.replace(" ", "")
         strippedExpected = expected.replace(" ", "")

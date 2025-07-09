@@ -49,6 +49,15 @@ class IRNode:
             retVal = mock_stdout.getvalue().strip()
         return retVal;
 
+    def rootStmt(self):
+        higherLevel = self._parent
+        if higherLevel is None : return self
+
+        prev = None
+        while higherLevel is not None:
+            prev = higherLevel
+            higherLevel = higherLevel._parent
+        return prev
 
 
 @dataclass

@@ -211,7 +211,7 @@ Fcn : main
 [9] Assignment(target=VarAccess(name='j'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='j'), right=Token('LPAR', '('))) -> 10
 [10] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='k'), right=Literal(value=12.0)) -> 12, 11
 [11] IfJoin() -> 13
-[12] Goto(label='l1') -> 11, 6
+[12] Goto(label='l1') -> 6
 [13] Assignment(target=VarAccess(name='i'), value=VarAccess(name='j')) -> 14
 [14] Assignment(target=VarAccess(name='k'), value=VarAccess(name='j')) -> 15
 [15] Return(value=VarAccess(name='j')) ->
@@ -222,8 +222,8 @@ DFS:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 11, 13, 14, 15]
 BB-GRAPH:
 BB1: Nodes: [0, 1, 2, 3, 4, 5]  -> BB2
 BB2: Nodes: [6, 7, 8, 9, 10]  -> BB3, BB4
-BB3: Nodes: [12]  -> BB4, BB2
-BB4: Nodes: [11, 13, 14, 15]  ->"""
+BB3: Nodes: [12]  -> BB2
+BB4: Nodes: [11, 13, 14, 15]  -"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
         self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")

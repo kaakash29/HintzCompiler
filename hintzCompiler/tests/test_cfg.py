@@ -6,7 +6,7 @@ from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.cfg import ControlFlowGraph
-from hintzCompiler.src.ir_nodes import Function
+from hintzCompiler.src.ir_nodes import *
 
 class TestCFG(unittest.TestCase):
 
@@ -820,7 +820,7 @@ int main() {
                           \nActual:||{mock_stdout.getvalue().strip()}||")
 
 
-    def test_simple_goto_label(self):
+    def test_simple_goto_label_forward_jump(self):
         code = """
         int main(int i, int j) {
 
@@ -842,7 +842,7 @@ int main() {
         expected = """Fcn : main
 [0] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 2, 1
 [1] IfJoin() -> 3
-[2] Goto(label='l1') -> 1, 5
+[2] Goto(label='l1') -> 5
 [3] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 4
 [4] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 5
 [5] Label(name='l1') -> 6
@@ -862,8 +862,51 @@ int main() {
                           \nExpected:||{expected.strip()}||\
                           \nActual:||{mock_stdout.getvalue().strip()}||")
 
+    def test_simple_goto_label_backwards_jump(self):
+        code = """
+        int main(int i, int j) {
 
-    def test_traversal_orders_stright_line(self):
+        l1:
+            i = -1;
+            j = -1;
+
+            if(i < j) {
+                goto l1;
+            }
+            
+            i = 112;
+            j = 123;
+
+            
+            return 0;
+        }
+        """
+
+        expected = """Fcn : main
+[0] Label(name='l1') -> 1
+[1] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 2
+[2] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 3
+[3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 5, 4
+[4] IfJoin() -> 6
+[5] Goto(label='l1') -> 0
+[6] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 7
+[7] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 8
+[8] Return(value=Literal(value=0.0)) ->"""
+
+        comp = Driver(code)
+        ir = comp.ast
+        function = cast(Function, ir.declarations[0])
+        cfg = ControlFlowGraph(function)
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cfg.dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_traversal_orders_straight_line(self):
         code = """
         int main() {
             int a;
@@ -906,6 +949,7 @@ int main() {
                           msg=f"\n\n[[-- FAILED --]]\
                           \nExpected:||{expected.strip()}||\
                           \nActual:||{mock_stdout.getvalue().strip()}||")
+
 
     def test_traversal_orders_if_stmt(self):
         code = """
@@ -1004,3 +1048,50 @@ int main() {
                           msg=f"\n\n[[-- FAILED --]]\
                           \nExpected:||{expected.strip()}||\
                           \nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+    def test_bidirectional_expr_traversal(self):
+        code = """
+
+        struct GrowVecT {
+            int data[10];
+            int size[2];
+        };
+
+        int main() {
+            struct GrowVecT g;
+            
+            g.data[5] = 55; 
+
+        }
+        """
+
+        expected = """
+Downwards Root: VarAccess(name='g')
+Upwards Root: Assignment(target=ArrayAccess(base=FieldAccess(base=VarAccess(name='g'), field='data'), index=Literal(value=5.0)), value=Literal(value=55.0))"""
+
+        comp = Driver(code)
+        ir = comp.ast
+
+        function = cast(Function, ir.declarations[0])
+        cfg = ControlFlowGraph(function)
+
+        self.maxDiff = None
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+
+            stmtAt1 = cfg.nodes[1].stmt
+            assignment = cast(Assignment, stmtAt1)
+            lhs = cast(ArrayAccess, assignment.target)
+            lhs2  = cast(FieldAccess, lhs.base)
+            lhs3  = cast(VarAccess, lhs2.base)
+            print(f"Downwards Root: {lhs3}")
+
+            rootS = lhs3.rootStmt()
+            print(f"Upwards Root: {rootS}")
+
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\
+                          \nExpected:||{expected.strip()}||\
+                          \nActual:||{mock_stdout.getvalue().strip()}||")
+
+    

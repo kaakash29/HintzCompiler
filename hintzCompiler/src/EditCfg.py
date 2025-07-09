@@ -29,3 +29,17 @@ class EditCfg:
         
         cfg.nodes.remove(nodeToDelete)
 
+    @staticmethod
+    def addNodeBefore(cfg:ControlFlowGraph, nodeIndex:int, nodeToInsert:CFGNode):
+        assert(0 <= nodeIndex < len(cfg.nodes))
+        nodeAfter = cfg.nodes[nodeIndex]
+
+        for predNode in nodeAfter.predecessors:
+            predNode.successors = [nodeToInsert]
+        
+        nodeToInsert.predecessors = nodeAfter.predecessors
+        nodeAfter.predecessors = [nodeToInsert]
+        nodeToInsert.successors = [nodeAfter]
+        cfg.nodes.append(nodeToInsert)
+        cfg.stmt_id += 1
+        cfg.version += 1

@@ -6,9 +6,10 @@ from typing import cast
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.ir_nodes import Function
 from hintzCompiler.src.cfg import ControlFlowGraph
-from hintzCompiler.src.basic_blocks import BasicBlockGraph
 from hintzCompiler.src.dominators import Dominators
+from hintzCompiler.src.basic_blocks import BasicBlockGraph
 from flask import Flask, render_template, request, send_file
+from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
 app = Flask(__name__)
 UPLOAD_DIR = "static"
@@ -51,10 +52,22 @@ def index():
                 function = cast(Function, ast.declarations[0])
                 cfg = ControlFlowGraph(function)
                 bbg = BasicBlockGraph(cfg)
-                dom = Dominators(bbg.blocks)
+                dom = Dominators(bbg)
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                 svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
                 dom.to_graphviz(dot_path)
+                os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
+                cfg_generated = True
+
+            elif action == "toSSA":
+                function = cast(Function, ast.declarations[0])
+                cfg = ControlFlowGraph(function)
+                bbg = BasicBlockGraph(cfg)
+                dom = Dominators(bbg)
+                domFronts = DominanceFrontiers(dom)
+                dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
+                svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
+                domFronts.doms.bbg.cfg.to_graphviz(dot_path)
                 os.system(f"dot -Tsvg {dot_path} -o {svg_path}")
                 cfg_generated = True
 
