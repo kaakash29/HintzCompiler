@@ -1078,14 +1078,15 @@ Upwards Root: Assignment(target=ArrayAccess(base=FieldAccess(base=VarAccess(name
 
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-
+            # Going down
             stmtAt1 = cfg.nodes[1].stmt
-            assignment = cast(Assignment, stmtAt1)
-            lhs = cast(ArrayAccess, assignment.target)
-            lhs2  = cast(FieldAccess, lhs.base)
-            lhs3  = cast(VarAccess, lhs2.base)
+            asign   = cast(Assignment, stmtAt1)
+            lhs     = cast(ArrayAccess, asign.target)
+            lhs2    = cast(FieldAccess, lhs.base)
+            lhs3    = cast(VarAccess, lhs2.base)
             print(f"Downwards Root: {lhs3}")
 
+            # Going up
             rootS = lhs3.rootStmt()
             print(f"Upwards Root: {rootS}")
 
