@@ -124,54 +124,55 @@ BB6 -> DOMS:[ BB1 BB6 ]"""
 
     def test_complicated_if_else(self):
         code = """
-         int main(int in) {
-            int x;
+        int main(int in) {
+           int x;
+           int out;
 
+           if(in < 0) {
+               x = -1;
+               goto skipIf;
+           }
 
-            if(in < 0) {
-                x = -1;
-                goto skipIf;
-            }
+           x = 0;
+           
+           if(in > 5) {
+               x = 1;
+           } else {
+               x = 2;
+           }
 
-            x = 0;
-            
-            if(in > 5) {
-                x = 1;
-            } else {
-                x = 2;
-            }
-
-            skipIf:
-                out = x;
-                return out;
+           skipIf:
+               out = x;
+               return out;
         }       
         """
 
         expected = """CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='in'), right=Literal(value=0.0)) -> 3, 2
-[2] IfJoin() -> 5
-[3] Assignment(target=VarAccess(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
-[4] Goto(label='skipIf') -> 10
-[5] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 6
-[6] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 8, 9
-[7] IfJoin() -> 10
-[8] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 7
-[9] Assignment(target=VarAccess(name='x'), value=Literal(value=2.0)) -> 7
-[10] Label(name='skipIf') -> 11
-[11] Assignment(target=VarAccess(name='out'), value=VarAccess(name='x')) -> 12
-[12] Return(value=VarAccess(name='out')) ->
+[1] [Variable(name='out', type_spec='int', attributes={})] -> 2
+[2] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='in'), right=Literal(value=0.0)) -> 4, 3
+[3] IfJoin() -> 6
+[4] Assignment(target=VarAccess(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 5
+[5] Goto(label='skipIf') -> 11
+[6] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 7
+[7] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 9, 10
+[8] IfJoin() -> 11
+[9] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 8
+[10] Assignment(target=VarAccess(name='x'), value=Literal(value=2.0)) -> 8
+[11] Label(name='skipIf') -> 12
+[12] Assignment(target=VarAccess(name='out'), value=VarAccess(name='x')) -> 13
+[13] Return(value=VarAccess(name='out')) ->
 
 
 BB-GRAPH:
-BB1: Nodes: [0, 1]  -> BB2, BB4
-BB2: Nodes: [3, 4]  -> BB3
-BB3: Nodes: [10, 11, 12]  ->
-BB4: Nodes: [2, 5, 6]  -> BB5, BB7
-BB5: Nodes: [8]  -> BB6
-BB6: Nodes: [7]  -> BB3
-BB7: Nodes: [9]  -> BB6
+BB1: Nodes: [0, 1, 2]  -> BB2, BB4
+BB2: Nodes: [4, 5]  -> BB3
+BB3: Nodes: [11, 12, 13]  ->
+BB4: Nodes: [3, 6, 7]  -> BB5, BB7
+BB5: Nodes: [9]  -> BB6
+BB6: Nodes: [8]  -> BB3
+BB7: Nodes: [10]  -> BB6
 
 DOM-TREE:
 1
@@ -180,19 +181,37 @@ DOM-TREE:
   4
     5
     6
-    7
-
-SIMPLE-DOM-RELS:
-BB1 -> DOMS:[ BB1 ]
-BB2 -> DOMS:[ BB1 BB2 ]
-BB3 -> DOMS:[ BB1 BB3 ]
-BB4 -> DOMS:[ BB1 BB4 ]
-BB5 -> DOMS:[ BB1 BB4 BB5 ]
-BB6 -> DOMS:[ BB1 BB4 BB6 ]
-BB7 -> DOMS:[ BB1 BB4 BB7 ]"""
+    7"""
         domTreeAsStr = self.computeAndEmitDomTree(code)
         strippedActual = domTreeAsStr.replace(" ", "")
         strippedExpected = expected.replace(" ", "")
         self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+
+    def test_dominates_relationships(self):
+
+        code = """
+        int main() {
+            int l;                    
+            double dl;              
+            l = 12;                 
+            l = l + 1;              
+            if (l < 12) {           
+                l = 12;             
+            } else {                
+                l = 24;             
+            }                       
+            return l;               
+        }
+        """
+
+        cctx = Driver(code)
+        bbgs = cctx.bbgs
+        doms = Dominators(bbgs[0])
+        self.assertTrue(doms.dominates(3, 4))
+        self.assertTrue(doms.dominates(0, 8))
+        self.assertFalse(doms.dominates(6, 8))
+
+
+
 
 

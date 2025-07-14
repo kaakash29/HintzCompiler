@@ -4,6 +4,35 @@ from lark import Transformer, Token
 from typing import cast
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
+from dataclasses import fields
+
+from hintzCompiler.src.ir_nodes import VarAccess, IRNode
+
+class VarAccessCollector:
+    def __init__(self):
+        self.var_accesses = []
+
+    def visit(self, node: IRNode):
+
+        if not isinstance(node, IRNode):
+            return
+
+        if node is None:
+            return
+        
+        if isinstance(node, VarAccess):
+            self.var_accesses.append(node)
+
+        # Recursively visit children if node has attributes that are IRNodes or lists of IRNodes
+        for name, attr in vars(node).items():
+            if isinstance(attr, IRNode):
+                if not name.startswith("_"):
+                    self.visit(attr)
+
+            elif isinstance(attr, list):
+                for item in attr:
+                    if isinstance(item, IRNode):
+                        self.visit(item)
 
 """
 Inherits from the Lark Transformer class and provides a visitor like traversal f
@@ -22,6 +51,9 @@ class IRTransformer(Transformer):
 
     def get_global_scope(self):
         return self.symtab_manager.global_scope
+
+    def transform(self, tree):
+        return super().transform(tree)
 
     ###############################################
 
@@ -112,6 +144,16 @@ class IRTransformer(Transformer):
             vars.append(decl)
         return vars
 
+     
+
+    
+    @staticmethod
+    def collect_from(stmt: IRNode) -> list[VarAccess]:
+        collector = VarAccessCollector()
+        collector.visit(stmt)
+        return collector.var_accesses
+
+
     def function_def(self, items):
         return_type = items[0]
         fcnname = str(items[1])
@@ -120,12 +162,26 @@ class IRTransformer(Transformer):
         body = items[3]
 
         fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope, declaredVarsList=self.decldFcnVars)
-        
+       
+
+        for stmt in body.statements:
+            vas = IRTransformer.collect_from(stmt)
+            #print(f"STMT: {stmt} VAS: {vas}")
+            for va in vas:
+                if va._var is None:
+                    #print(f"\n * VAR was None. Looking for {va.name} in {self.decldFcnVars}")
+
+                    varForSlot = next((v for v in self.decldFcnVars if v.name == va.name), None)
+                    if varForSlot is not None:
+                        va._var = varForSlot
+                        #print(f" Set now.")
+
 
         if self.symtab_manager.isInFcnBody:
             self.symtab_manager.current_scope.name = f"{fcnname}"
             self.symtab_manager.pop_scope()
             self.symtab_manager.isInFcnBody = False
+            self.decldFcnVars = []
 
         self.symtab_manager.current_scope.define(Symbol(name=fcnname, type=return_type, attributes={"params": params}))
         return fcnIrNode
@@ -140,7 +196,7 @@ class IRTransformer(Transformer):
                 if isinstance(param, Variable):
                     newS = Symbol(name=param.name, type=param.type_spec)  # pyright: ignore
                     self.symtab_manager.current_scope.define(newS)
-                    self.decldFcnVars = []
+
                     param._symbol = newS
             return items[1]
         else:
@@ -205,8 +261,11 @@ class IRTransformer(Transformer):
                 symbol = self.symtab_manager.current_scope.lookup(str(tok));
                 var = next((item for item in self.decldFcnVars if item.name == str(tok)), None)
                 
-                if symbol is None or var is None:
-                    RuntimeError("\n Access of an undeclared variable.")
+                if symbol is None:
+                    raise RuntimeError(f"\n Access of an undeclared symbol {str(tok)}.")
+
+                # if var is None:
+                #    raise RuntimeError(f"\n Access of an undeclared variable {str(tok)}.")
                 
                 va = VarAccess(name=str(tok), _var=var, _symbol=symbol)
                 return va

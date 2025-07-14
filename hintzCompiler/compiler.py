@@ -47,7 +47,7 @@ def Driver(code: str):
     for decl in ir.declarations:
         if isinstance(decl, Function):
             fcn = cast(Function, decl)
-            cfg = ControlFlowGraph(cast(Function, decl))
+            cfg = ControlFlowGraph(fcn)
             bbg = BasicBlockGraph(cfg)
             allCfgs.append(cfg)
             allBbgs.append(bbg)

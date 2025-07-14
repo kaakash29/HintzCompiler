@@ -97,6 +97,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
         int main() {
             int v[10];
             int i;
+            int y;
             for(i=0;i<5;i++){
                 v[i] = i;
             }
@@ -108,12 +109,13 @@ class TestReadWriteAnalyzer(unittest.TestCase):
         expected = """[0] reads: None, writes: None
 [1] reads: None, writes: None
 [2] reads: None, writes: None
-[3] reads: None, writes: [i]
-[4] reads: [i], writes: None
-[5] reads: [i], writes: [v->UNKWN]
-[6] reads: [i], writes: None
-[7] reads: None, writes: [v->0.0]
-[8] reads: [v->5.0], writes: [y]"""
+[3] reads: None, writes: None
+[4] reads: None, writes: [i]
+[5] reads: [i], writes: None
+[6] reads: [i], writes: [v->UNKWN]
+[7] reads: [i], writes: None
+[8] reads: None, writes: [v->0.0]
+[9] reads: [v->5.0], writes: [y]"""
 
         rwaS = self.rwaAsStr(code)
         self.assertIn(rwaS, expected,
@@ -129,6 +131,8 @@ class TestReadWriteAnalyzer(unittest.TestCase):
         int main() {
             struct Vec2 v;
             int i;
+            int y;
+
             for(i=0;i<5;i++){
                 v.x[0] = i;
             }
@@ -140,12 +144,13 @@ class TestReadWriteAnalyzer(unittest.TestCase):
         expected = """[0] reads: None, writes: None
 [1] reads: None, writes: None
 [2] reads: None, writes: None
-[3] reads: None, writes: [i]
-[4] reads: [i], writes: None
-[5] reads: [i], writes: [v->x->0.0]
-[6] reads: [i], writes: None
-[7] reads: None, writes: [v->x->5.0]
-[8] reads: [v->x->5.0], writes: [y]"""
+[3] reads: None, writes: None
+[4] reads: None, writes: [i]
+[5] reads: [i], writes: None
+[6] reads: [i], writes: [v->x->0.0]
+[7] reads: [i], writes: None
+[8] reads: None, writes: [v->x->5.0]
+[9] reads: [v->x->5.0], writes: [y]"""
 
         rwaS = self.rwaAsStr(code)
         self.assertIn(rwaS, expected,

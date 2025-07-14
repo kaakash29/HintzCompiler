@@ -1,5 +1,5 @@
 from hintzCompiler.src.cfg import *
-from hintzCompiler.src.ir_nodes import IRNode, Goto, Label, Block, Function, Return, If, While, DoWhile, For, Switch, Break, SwitchJoin, IfJoin, DoJoin 
+from hintzCompiler.src.ir_nodes import *
 
 class EditCfg:
 
@@ -43,3 +43,17 @@ class EditCfg:
         cfg.nodes.append(nodeToInsert)
         cfg.stmt_id += 1
         cfg.version += 1
+
+    @staticmethod
+    def createNewLocalVar(cfg: ControlFlowGraph, varName: str, varType: str, varAttr: dict):
+        # add to local symbol table
+        # add to cfg declared vars
+        # add a decl stmt for the variable -- we dont need to do this,
+        #                                     only when the cfg needs emitting do we need the declaration,
+        #                                     this prevents dirtying the cfg unnecessarily.
+
+        newVarSymbol = Symbol(varName, varType, varAttr)
+        cfg.symbol_table.define(newVarSymbol)
+        newVar = Variable(varName, varType, varAttr, newVarSymbol)
+        cfg.fcn.declaredVarsList.append(newVar)
+        return newVar

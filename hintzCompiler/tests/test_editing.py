@@ -32,7 +32,7 @@ class TestEditingCFG(unittest.TestCase):
 
 
         nodeAsText = "i = 12;";
-        newAstNode = HintzStatementBuilder().parse_statement(nodeAsText)
+        newAstNode = HintzStatementBuilder(cfg).parse_statement(nodeAsText)
         newCfgNode = CFGNode(id=cfg.stmt_id, stmt=newAstNode)
         EditCfg.addNodeAfter(cfg, 0, newCfgNode)
 

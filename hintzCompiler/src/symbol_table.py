@@ -61,7 +61,6 @@ class ScopedSymbolTableManager:
         self.scopes.append(self.current_scope)
 
     def pop_scope(self):
-
         if self.current_scope.parent is None:
             raise RuntimeError("Can't pop the global scope.")
         self.current_scope = self.current_scope.parent

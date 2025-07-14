@@ -16,6 +16,43 @@ class Dominators:
         self.idoms = self.computeIDoms();
         self.domTree = self.buildDomTree();
 
+    """
+    Answers if stmtA dominates stmtB
+    """
+    def dominates(self, stmtA, stmtB):
+        bba = self.bbg.belongsToBB(stmtA)
+        bbb = self.bbg.belongsToBB(stmtB)
+
+        if bba is None or bbb is None: 
+            return False;
+
+        if bba == bbb != None:
+            stmtOrder = bba.getLinearStmtOrderInBB(self.bbg.cfg)
+            if stmtOrder.index(stmtA) < stmtOrder.index(stmtB):
+                return True;
+        elif bba != None and bba in self.dom[bbb]:
+                return True;
+
+        return False;
+
+    """
+    Returns a list of basic blocks in DFS preorder traversal of the dominator tree.
+    """
+    def dfs_preorder(self, entry_block=None):
+        if entry_block is None:
+            entry_block = self.bblist[0]
+
+        dom_tree = self.domTree
+        result = []
+
+        def visit(block):
+            result.append(block)
+            for child in dom_tree.get(block, []):
+                visit(child)
+
+        visit(entry_block)
+        return result
+
     def dump(self):
         self.printDomTree(self.domTree, self.bblist[0])
 
@@ -101,7 +138,8 @@ class Dominators:
         return idom
 
     """
-    Builds the dominator tree as a dict mapping each node to its list of children.
+    Builds the dominator tree as a dict mapping each node to its
+    list of children.
     """
     def buildDomTree(self):
         idom = self.idoms

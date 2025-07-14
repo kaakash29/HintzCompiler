@@ -4,6 +4,7 @@ import graphviz
 from typing import List, Dict
 from dataclasses import dataclass, field
 from hintzCompiler.src.ir_nodes import *
+from hintzCompiler.src.cfg import ControlFlowGraph
 
 @dataclass
 class BasicBlock:
@@ -19,6 +20,16 @@ class BasicBlock:
             self.entryNode = node
 
         self.nodes.append(node)
+
+    def getLinearStmtOrderInBB(self, cfg:ControlFlowGraph):
+        linearOrder : List[int] = []
+        currIndex: int = self.entryNode
+        linearOrder.append(currIndex)
+        while len(cfg.nodes[currIndex].successors) == 1 and cfg.nodes[currIndex].successors[0].id in self.nodes :
+            currIndex = cfg.nodes[currIndex].successors[0].id
+            linearOrder.append(currIndex)
+
+        return linearOrder
 
     def __str__(self):
         stmt_strs = f"Nodes: {self.nodes}"
@@ -44,6 +55,12 @@ class BasicBlockGraph:
         self.cfg = cfg
         self.label_map: Dict[str, BasicBlock] = {}
         self.blocks: List[BasicBlock] = self.build_basic_blocks_from_cfg(cfg)
+
+    def belongsToBB(self, stmtId):
+        for bb in self.blocks:
+            if stmtId in bb.nodes:
+                return bb
+        return None
 
     #private:
 
@@ -140,7 +157,6 @@ class BasicBlockGraph:
                     succ_block.predecessors.append(block)
                     
         return basic_blocks
-
 
     def to_graphviz(self, output_path="cfg"): #pragma: no cover
         dot = graphviz.Digraph(comment="Basic Block Graph", format="svg")

@@ -40,13 +40,14 @@ class MemAccessVariable(MemAccess):
 @dataclass
 class ReadOcc:
     baseVar: Variable
-    memAccess: List[MemAccess]
+    memAccessPath: List[MemAccess]
+    irVarAccessNode: VarAccess
 
     def toStr(self):
         ret = "["
-        for i, axs in enumerate(self.memAccess):
+        for i, axs in enumerate(self.memAccessPath):
             ret += axs.toStr()
-            if i < len(self.memAccess) - 1:
+            if i < len(self.memAccessPath) - 1:
                 ret += "->"
         ret += "]"
         return ret
@@ -55,13 +56,14 @@ class ReadOcc:
 @dataclass
 class WriteOcc:
     baseVar: Variable
-    memAccess: List[MemAccess]
+    memAccessPath: List[MemAccess]
+    irVarAccessNode: VarAccess
 
     def toStr(self):
         ret = "["
-        for i, axs in enumerate(self.memAccess):
+        for i, axs in enumerate(self.memAccessPath):
             ret += axs.toStr()
-            if i < len(self.memAccess) - 1:
+            if i < len(self.memAccessPath) - 1:
                 ret += "->"
         ret += "]"
         return ret
@@ -127,14 +129,14 @@ class ReadWriteAnalyzer:
             if isinstance(node, VarAccess):
                 memOccPath.append(MemAccessVariable(node.name, _var=node._var)) #pyright: ignore
                 memOccPath.reverse()
-                readO = ReadOcc(node._var, memOccPath)
+                readO = ReadOcc(node._var, memOccPath, node)
                 reads.append(readO)
 
             elif isinstance(node, Assignment):
                 if isinstance(node.target, (VarAccess, FieldAccess, ArrayAccess)):
-                    simplifiedAccess, memOcc = self._simplifyMemoryAccess(node.target)
+                    simplifiedAccess, writeMemOccPath = self._simplifyMemoryAccess(node.target)
                     if isinstance(simplifiedAccess, VarAccess):
-                        writeO = WriteOcc(simplifiedAccess._var, memOcc)
+                        writeO = WriteOcc(simplifiedAccess._var, writeMemOccPath, simplifiedAccess)
                         writes.append(writeO)
                 visit(node.value, [])
 
@@ -187,10 +189,10 @@ class ReadWriteAnalyzer:
         visit(stmt, [])
         return {'reads': reads, 'writes': writes}
 
-    def get_reads(self, node_id: int) -> Set[str]:
+    def get_reads(self, node_id: int) -> Set[ReadOcc]:
         return self.analysis.get(node_id, {}).get('reads', set())
 
-    def get_writes(self, node_id: int) -> Set[str]:
+    def get_writes(self, node_id: int) -> Set[WriteOcc]:
         return self.analysis.get(node_id, {}).get('writes', set())
 
     def dump(self):

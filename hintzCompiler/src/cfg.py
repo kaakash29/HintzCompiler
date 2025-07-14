@@ -19,8 +19,11 @@ class CFGNode:
     compositeNodeExit : Optional["CFGNode"] = None
     compositeNodeEntry : Optional["CFGNode"] = None
 
-    def add_successor(self, succ: "CFGNode"):
+    def __post_init__(self):
+        if isinstance(self.stmt, IRNode):
+            self.stmt._cfgNodeId = self.id
 
+    def add_successor(self, succ: "CFGNode"):
         if succ not in self.successors:
             self.successors.append(succ)
             succ.add_predecessor(self)
@@ -33,8 +36,6 @@ class CFGNode:
         stmt_str = str(self.stmt).replace("\n", " ")
         succs = ", ".join(str(s.id) for s in self.successors)
         return f"[{self.id}] {stmt_str} -> {succs}".rstrip()
-
-
 
 """
 Builds the control flow graph for a function, in the IR and provides various traversal
