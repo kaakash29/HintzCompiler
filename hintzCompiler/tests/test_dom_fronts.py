@@ -56,14 +56,14 @@ CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] [Variable(name='out', type_spec='int', attributes={})] -> 2
-[2] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 3
+[2] Assignment(target=VarAccess(name='x1'), value=Literal(value=0.0)) -> 3
 [3] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 5, 6
 [4] IfJoin() -> 9
-[5] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 4
-[6] Assignment(target=VarAccess(name='x'), value=Literal(value=2.0)) -> 4
-[7] Assignment(target=VarAccess(name='out'), value=VarAccess(name='x')) -> 8
-[8] Return(value=VarAccess(name='out')) ->
-[9] Assignment(target=VarAccess(name='x'), value=FunctionCall(name='phi', args=[])) -> 7"""
+[5] Assignment(target=VarAccess(name='x2'), value=Literal(value=1.0)) -> 4
+[6] Assignment(target=VarAccess(name='x4'), value=Literal(value=2.0)) -> 4
+[7] Assignment(target=VarAccess(name='out1'), value=VarAccess(name='x3')) -> 8
+[8] Return(value=VarAccess(name='out1')) ->
+[9] Assignment(target=VarAccess(name='x3'), value=FunctionCall(name='phi', args=[VarAccess(name='x2'), VarAccess(name='x4')])) -> 7"""
        
         doms = Dominators(bbg0)
         domFs = DominanceFrontiers(doms)
@@ -73,7 +73,6 @@ Fcn : main
             print(f"CFG:")
             cctx.cfgs[0].dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
-
 
     def test_domFronts_while_simple(self):
         code = """
@@ -110,11 +109,11 @@ BB4 -> DF:[ ]
 CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 5
-[2] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 3, 4
-[3] Assignment(target=VarAccess(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x'), right=Literal(value=1.0))) -> 5
-[4] Return(value=VarAccess(name='x')) ->
-[5] Assignment(target=VarAccess(name='x'), value=FunctionCall(name='phi', args=[])) -> 2"""
+[1] Assignment(target=VarAccess(name='x1'), value=Literal(value=0.0)) -> 5
+[2] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x2'), right=Literal(value=5.0)) -> 3, 4
+[3] Assignment(target=VarAccess(name='x3'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x2'), right=Literal(value=1.0))) -> 5
+[4] Return(value=VarAccess(name='x2')) ->
+[5] Assignment(target=VarAccess(name='x2'), value=FunctionCall(name='phi', args=[VarAccess(name='x1'), VarAccess(name='x3')])) -> 2"""
 
         doms = Dominators(bbg0)
         domFs = DominanceFrontiers(doms)
@@ -166,14 +165,14 @@ BB4 -> DF:[ ]
 CFG:
 Fcn : main
 [0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 2
+[1] Assignment(target=VarAccess(name='x1'), value=Literal(value=0.0)) -> 2
 [2] Label(name='L1') -> 8
-[3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 5, 4
+[3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x2'), right=Literal(value=5.0)) -> 5, 4
 [4] IfJoin() -> 7
-[5] Assignment(target=VarAccess(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x'), right=Literal(value=1.0))) -> 6
+[5] Assignment(target=VarAccess(name='x3'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x2'), right=Literal(value=1.0))) -> 6
 [6] Goto(label='L1') -> 2
-[7] Return(value=VarAccess(name='x')) ->
-[8] Assignment(target=VarAccess(name='x'), value=FunctionCall(name='phi', args=[])) -> 3"""
+[7] Return(value=VarAccess(name='x2')) ->
+[8] Assignment(target=VarAccess(name='x2'), value=FunctionCall(name='phi', args=[VarAccess(name='x1'), VarAccess(name='x3')])) -> 3"""
  
         doms = Dominators(bbg0)
         domFs = DominanceFrontiers(doms)
@@ -184,11 +183,12 @@ Fcn : main
             cctx.cfgs[0].dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
-    def test_do_while_needs_no_phis(self):
+    def test_do_while(self):
         code = """
         int main(int i, int j) {
         
         i = 24;
+        j = 26;
         do {
             i = -1;
             j = -1;
@@ -204,14 +204,15 @@ Fcn : main
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
-[0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 2
-[1] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 2, 5
-[2] DoJoin() -> 3
-[3] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
-[4] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 1
-[5] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 6
-[6] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 7
-[7] Return(value=VarAccess(name='i')) ->"""
+[0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 1
+[1] Assignment(target=VarAccess(name='j'), value=Literal(value=26.0)) -> 3
+[2] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 3, 6
+[3] DoJoin() -> 4
+[4] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 5
+[5] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 2
+[6] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 7
+[7] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 8
+[8] Return(value=VarAccess(name='i')) ->"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cctx.cfgs[0].dump()
@@ -220,18 +221,22 @@ Fcn : main
         # no phis inserted as there is no merging defs.
         expected = """DOMINANCE-FRONTIERS:
 BB1 -> DF:[ ]
-BB2 -> DF:[ ]
-BB3 -> DF:[ ]
+BB2 -> DF:[ BB2 ]
+BB3 -> DF:[ BB2 ]
+BB4 -> DF:[ ]
 CFG:
 Fcn : main
-[0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 2
-[1] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 2, 5
-[2] DoJoin() -> 3
-[3] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
-[4] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 1
-[5] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 6
-[6] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 7
-[7] Return(value=VarAccess(name='i')) ->"""
+[0] Assignment(target=VarAccess(name='i1'), value=Literal(value=24.0)) -> 1
+[1] Assignment(target=VarAccess(name='j1'), value=Literal(value=26.0)) -> 3
+[2] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i3'), right=VarAccess(name='j3')) -> 3, 6
+[3] DoJoin() -> 10
+[4] Assignment(target=VarAccess(name='i3'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 5
+[5] Assignment(target=VarAccess(name='j3'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 2
+[6] Assignment(target=VarAccess(name='i4'), value=Literal(value=112.0)) -> 7
+[7] Assignment(target=VarAccess(name='j4'), value=Literal(value=123.0)) -> 8
+[8] Return(value=VarAccess(name='i4')) ->
+[9] Assignment(target=VarAccess(name='i2'), value=FunctionCall(name='phi', args=[VarAccess(name='i1'), VarAccess(name='i3')])) -> 4
+[10] Assignment(target=VarAccess(name='j2'), value=FunctionCall(name='phi', args=[VarAccess(name='j1'), VarAccess(name='j3')])) -> 9"""
  
         doms = Dominators(bbg0)
         domFs = DominanceFrontiers(doms)
@@ -248,7 +253,7 @@ Fcn : main
         int main(int i, int j) {
         
         i = 24;
-
+        j = 26;
         l1:
             i = -1;
             j = -1;
@@ -269,15 +274,16 @@ Fcn : main
 
         origCfg = """Fcn : main
 [0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 1
-[1] Label(name='l1') -> 2
-[2] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 3
-[3] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
-[4] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 6, 5
-[5] IfJoin() -> 7
-[6] Goto(label='l1') -> 1
-[7] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 8
-[8] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 9
-[9] Return(value=Literal(value=0.0)) ->"""
+[1] Assignment(target=VarAccess(name='j'), value=Literal(value=26.0)) -> 2
+[2] Label(name='l1') -> 3
+[3] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
+[4] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 5
+[5] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 7, 6
+[6] IfJoin() -> 8
+[7] Goto(label='l1') -> 2
+[8] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 9
+[9] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 10
+[10] Return(value=Literal(value=0.0)) ->"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cctx.cfgs[0].dump()
@@ -291,18 +297,19 @@ BB3 -> DF:[ BB2 ]
 BB4 -> DF:[ ]
 CFG:
 Fcn : main
-[0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 1
-[1] Label(name='l1') -> 11
-[2] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 3
-[3] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
-[4] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 6, 5
-[5] IfJoin() -> 7
-[6] Goto(label='l1') -> 1
-[7] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 8
-[8] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 9
-[9] Return(value=Literal(value=0.0)) ->
-[10] Assignment(target=VarAccess(name='i'), value=FunctionCall(name='phi', args=[])) -> 2
-[11] Assignment(target=VarAccess(name='j'), value=FunctionCall(name='phi', args=[])) -> 10"""
+[0] Assignment(target=VarAccess(name='i1'), value=Literal(value=24.0)) -> 1
+[1] Assignment(target=VarAccess(name='j1'), value=Literal(value=26.0)) -> 2
+[2] Label(name='l1') -> 12
+[3] Assignment(target=VarAccess(name='i3'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
+[4] Assignment(target=VarAccess(name='j3'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 5
+[5] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i3'), right=VarAccess(name='j3')) -> 7, 6
+[6] IfJoin() -> 8
+[7] Goto(label='l1') -> 2
+[8] Assignment(target=VarAccess(name='i4'), value=Literal(value=112.0)) -> 9
+[9] Assignment(target=VarAccess(name='j4'), value=Literal(value=123.0)) -> 10
+[10] Return(value=Literal(value=0.0)) ->
+[11] Assignment(target=VarAccess(name='i2'), value=FunctionCall(name='phi', args=[VarAccess(name='i1'), VarAccess(name='i3')])) -> 3
+[12] Assignment(target=VarAccess(name='j2'), value=FunctionCall(name='phi', args=[VarAccess(name='j1'), VarAccess(name='j3')])) -> 11"""
  
         doms = Dominators(bbg0)
         domFs = DominanceFrontiers(doms)

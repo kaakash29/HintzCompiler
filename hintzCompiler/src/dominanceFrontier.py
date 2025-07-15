@@ -1,8 +1,9 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
-from typing import List
 from ordered_set import OrderedSet
+from dataclasses import replace
 from hintzCompiler.src.ir_nodes import *
+from typing import List, Tuple, Optional
 from hintzCompiler.src.EditCfg import EditCfg
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.cfg import ControlFlowGraph, CFGNode
@@ -10,6 +11,44 @@ from hintzCompiler.src.cfg import ControlFlowGraph, CFGNode
 from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
 from hintzCompiler.src.StmtBuilderFacade import HintzStatementBuilder
 from hintzCompiler.src.basic_blocks import BasicBlock, BasicBlockGraph
+
+
+"""
+Data Structure to hold a Var and its stack of versions.
+"""
+
+class VarVersionStackMap:
+    def __init__(self):
+        self._items: List[Tuple[Variable, List[VarAccess]]] = []
+
+    def insert(self, var: Variable, access: VarAccess):
+        for key, stack in self._items:
+            if key == var:
+                stack.append(access)
+                return
+        self._items.append((var, [access]))
+
+    def get(self, var: Variable) -> List[VarAccess]:
+        for key, stack in self._items:
+            if key == var:
+                return stack
+        return []
+
+    def contains(self, var: Variable) -> bool:
+        return any(key == var for key, _ in self._items)
+
+    def __str__(self):
+        result = []
+        for var, stack in self._items:
+            result.append(f"{var}: {[str(access) for access in stack]}")
+        return "\n".join(result)
+
+    def __repr__(self):
+        return f"VarStackMap({self._items})"
+
+
+############################################################################
+
 
 
 class DominanceFrontiers:
@@ -86,10 +125,11 @@ class DominanceFrontiers:
     def insertPhiStmtForVar(self, v:Variable, bb: BasicBlock, cfg:ControlFlowGraph):
         phisAsText = f"{v.name} = phi();"
         newAstNode = HintzStatementBuilder(cfg).parse_statement(phisAsText)
+        newAstNode._ssaIsPhi = True
 
         newCfgNode = CFGNode(id=cfg.stmt_id, stmt=newAstNode)
 
-        if isinstance(cfg.nodes[bb.entryNode].stmt, (Label, IfJoin, SwitchJoin)):
+        if isinstance(cfg.nodes[bb.entryNode].stmt, (Label, IfJoin, SwitchJoin, DoJoin)):
             EditCfg.addNodeAfter(cfg, bb.entryNode, newCfgNode)
             bb.nodes.append(newCfgNode.id)
         else:
@@ -197,9 +237,13 @@ class DominanceFrontiers:
         newVarName = origVar.name+f"{len(origVar._ssaVersions)+1}" 
         newVar = EditCfg.createNewLocalVar(cfg, newVarName, origVar.type_spec, origVar.attributes)
         origVar._ssaVersions.append(newVar)
+        newVar._ssaUnversioned = origVar
+        newVar._ssaIsVersionOfAVar = True
         return newVar
 
     def renameVersionsOfVars(self):
+
+        var_stacks = VarVersionStackMap()
         cfg = self.doms.bbg.cfg
         updatedReadWriteAnalyzer = ReadWriteAnalyzer(self.doms.bbg.cfg)
         updatedDominators = Dominators(self.doms.bbg)
@@ -210,24 +254,43 @@ class DominanceFrontiers:
                 read.irVarAccessNode._ssaReachingDef = None
 
         for eachBB in self.doms.dfs_preorder():
-            for instId in eachBB.getLinearStmtOrderInBB(self.doms.bbg.cfg):
+            for instId in eachBB.getLinearStmtOrderInBB(cfg):
 
                 readsInStmtInst = updatedReadWriteAnalyzer.get_reads(instId)
                 for readOcc in readsInStmtInst:
                     self.updateReachingDef(readOcc.irVarAccessNode, updatedDominators)
-                    print(f"\n * Need to replace {readOcc.irVarAccessNode} on {readOcc.irVarAccessNode.rootStmt()} with {readOcc.irVarAccessNode._ssaReachingDef}")
+                    if var_stacks.contains(readOcc.irVarAccessNode._var): #pyright: ignore
+                        versionStack = var_stacks.get(readOcc.irVarAccessNode._var) #pyright: ignore
+                        if len(versionStack) != 0:
+                            versionedAccess = replace(readOcc.irVarAccessNode, name=versionStack[-1].name, _var=versionStack[-1])
+                            EditCfg.swapIntoCfg(versionedAccess, readOcc.irVarAccessNode)
+                            #print(f"* Replaced read of {readOcc.irVarAccessNode.name} on {readOcc.irVarAccessNode.rootStmt()} with access {versionStack[-1]}")
 
                 writesInStmtInst = updatedReadWriteAnalyzer.get_writes(instId)
                 for writeOcc in writesInStmtInst:
                     self.updateReachingDef(writeOcc.irVarAccessNode, updatedDominators)
+                    origVar = writeOcc.irVarAccessNode._var 
+                    version = self.createNewVersionForOrigVar(cfg, origVar) #pyright: ignore
+                    versionAccess = VarAccess(version.name, version, None)
+                    EditCfg.swapIntoCfg(versionAccess, writeOcc.irVarAccessNode) 
+                    var_stacks.insert(origVar, versionAccess) #pyright: ignore
+                    #print(f"* Created a new version of the variable {origVar.name} on stmt: {writeOcc.irVarAccessNode.rootStmt()} named: {version.name}")
 
-                    print(f"\n * Create a new version of the variable here at {writeOcc.irVarAccessNode} on stmt: {writeOcc.irVarAccessNode.rootStmt()} ")
-                    print(f"\n\t ** WRITE-OCCURRENCE: {writeOcc}")
-                    print(f"\n\t ** WRITE-VAR-ACCESS: {writeOcc.irVarAccessNode}")
-                    print(f"\n\t ** WRITE-VAR: {writeOcc.irVarAccessNode._var}")
+            for succBB in eachBB.successors:
 
-                    origVar = writeOcc.irVarAccessNode._var
-                    
-                    version = self.createNewVersionForOrigVar(cfg, origVar)
-                    print(f"\n * Versioned Variable: {version}")
-
+                bbEntry = cfg.nodes[succBB.getLinearStmtOrderInBB(cfg)[0]]
+                if not bbEntry.stmt._ssaIsPhi and len(succBB.nodes) > 1: 
+                    bbEntry = cfg.nodes[succBB.getLinearStmtOrderInBB(cfg)[1]]
+                stmts = succBB.getLinearStmtOrderInBB(cfg)
+                for stmtId in stmts:
+                    bbEntry = cfg.nodes[stmtId]
+                    if bbEntry.stmt._ssaIsPhi:
+                        phiLhs = bbEntry.stmt.target
+                        if isinstance(phiLhs, VarAccess):
+                            phiVar = phiLhs._var if not phiLhs._var._ssaIsVersionOfAVar else phiLhs._var._ssaUnversioned
+                            versionStack = var_stacks.get(phiVar) #pyright: ignore
+                            if len(versionStack) > 0:
+                                #we pop the top of the var stack here because a new def is now dominating from the phi
+                                cloneVersionedAccess = replace(versionStack.pop())
+                                phi = bbEntry.stmt.value
+                                EditCfg.addInputToPhi(cloneVersionedAccess, phi)

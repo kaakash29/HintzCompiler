@@ -267,7 +267,7 @@ class IRTransformer(Transformer):
                 # if var is None:
                 #    raise RuntimeError(f"\n Access of an undeclared variable {str(tok)}.")
                 
-                va = VarAccess(name=str(tok), _var=var, _symbol=symbol)
+                va = VarAccess(name=str(tok), _var=var)
                 return va
         return tok
 

@@ -70,8 +70,10 @@ class BasicBlockGraph:
     """
     def is_branch_node(self, node):
         #TODO: This is not the best way to check this, use the isinstance method here instead aaku.
-
-        return type(node.stmt).__name__ in {"If", "Switch", "Goto", "Return", "Break", "Continue"}
+        
+        # even if dojoin has exactly one successor it needs to be treated as a branch because a backedge plugs into it which means
+        # control flow may start at that node.
+        return type(node.stmt).__name__ in {"If", "Switch", "Goto", "Return", "Break", "Continue", "While", "DoWhile", "DoJoin" }
 
 
     """
@@ -172,4 +174,8 @@ class BasicBlockGraph:
                 dot.edge(str(node.name), str(succ.name))
 
         # Render graph
-        dot.render(output_path, view=False, cleanup=False)       
+        dot.render(output_path, view=False, cleanup=False)
+
+    def dump(self):
+        for block in self.blocks:
+            print(block)

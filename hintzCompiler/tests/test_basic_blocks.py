@@ -227,3 +227,91 @@ BB4: Nodes: [11, 13, 14, 15]  -"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
         self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+
+
+    def test_doWhile_loop(self):
+        code = """        
+        int main(int i, int j) {
+        i = 24;
+        do {
+            i = -1;
+            j = -1;
+        } while(i < j);
+        i = 112;
+        j = 123;
+        return i;
+        }"""
+
+        expected = """CFG:
+Fcn : main
+[0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 2
+[1] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 2, 5
+[2] DoJoin() -> 3
+[3] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
+[4] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 1
+[5] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 6
+[6] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 7
+[7] Return(value=VarAccess(name='i')) ->
+
+
+DFS:[0, 2, 3, 4, 1, 5, 6, 7]
+
+BB-GRAPH:
+BB1: Nodes: [0]  -> BB2
+BB2: Nodes: [2]  -> BB3
+BB3: Nodes: [3, 4, 1]  -> BB2, BB4
+BB4: Nodes: [5, 6, 7]  ->"""
+
+        bbgAsStr = self.computeAndEmitBBGForCode(code)
+        
+        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+
+
+    def test_doWhile_loop_using_ifs(self):
+        code = """        
+        int main(int i, int j) {
+        
+        i = 24;
+
+        l1:
+            i = -1;
+            j = -1;
+
+            if(i < j) {
+                goto l1;
+            }
+            
+            i = 112;
+            j = 123;
+
+            
+            return 0;
+        }"""
+
+        expected = """CFG:
+Fcn : main
+[0] Assignment(target=VarAccess(name='i'), value=Literal(value=24.0)) -> 1
+[1] Label(name='l1') -> 2
+[2] Assignment(target=VarAccess(name='i'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 3
+[3] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 4
+[4] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=VarAccess(name='j')) -> 6, 5
+[5] IfJoin() -> 7
+[6] Goto(label='l1') -> 1
+[7] Assignment(target=VarAccess(name='i'), value=Literal(value=112.0)) -> 8
+[8] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 9
+[9] Return(value=Literal(value=0.0)) ->
+
+
+DFS:[0, 1, 2, 3, 4, 6, 5, 7, 8, 9]
+
+BB-GRAPH:
+BB1: Nodes: [0]  -> BB2
+BB2: Nodes: [1, 2, 3, 4]  -> BB3, BB4
+BB3: Nodes: [6]  -> BB2
+BB4: Nodes: [5, 7, 8, 9]  ->"""
+
+        bbgAsStr = self.computeAndEmitBBGForCode(code)
+        
+        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+
+

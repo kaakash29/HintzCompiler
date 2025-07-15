@@ -13,6 +13,7 @@ class IRNode:
 
     _parent: Optional["IRNode"] = field(default=None, repr=False)
     _cfgNodeId: int = field(default=-1, repr=False)
+    _ssaIsPhi: bool = field(default=False, repr=False)
 
     def dump(self, indent=0):
         pad = '  ' * indent
@@ -21,21 +22,6 @@ class IRNode:
 
             if field.startswith("_"):
                 continue
-
-            #if field == "_symbol":
-            #    continue
-
-            #if field == "_var":
-            #    continue
-
-            #if field == "_parent":
-            #    continue
-
-            #if field == "_ssaReachingDef":
-            #    continue
-
-            #if field == "_cfgNodeId":
-            #    continue
 
             value = getattr(self, field)
             if isinstance(value, list):
@@ -90,7 +76,9 @@ class Variable(IRNode):
     type_spec: Optional[str]
     attributes: dict = field(default_factory=dict)
     _symbol: Optional[Symbol] = field(default=None, repr=False)
+    _ssaIsVersionOfAVar: bool = field(default=False, repr=False)
     _ssaVersions: List["Variable"] = field(default_factory=list, repr=False)
+    _ssaUnversioned: Optional["Variable"] = field(default=None, repr=False)
 
 @dataclass
 class BinaryOp(IRNode):
@@ -155,7 +143,6 @@ class Literal(IRNode):
 class VarAccess(IRNode):
     name: str
     _var: Optional[Variable] = field(default=None, repr=False)
-    _symbol: Optional[Symbol] = field(default=None, repr=False)
     _ssaReachingDef : Optional["VarAccess"] = field(default=None, repr=False)
 
 @dataclass

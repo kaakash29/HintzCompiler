@@ -1,6 +1,7 @@
+
 from hintzCompiler.src.cfg import *
 from hintzCompiler.src.ir_nodes import *
-
+from dataclasses import fields
 class EditCfg:
 
     @staticmethod
@@ -57,3 +58,22 @@ class EditCfg:
         newVar = Variable(varName, varType, varAttr, newVarSymbol)
         cfg.fcn.declaredVarsList.append(newVar)
         return newVar
+    
+    @staticmethod
+    def swapIntoCfg(newIRNode: IRNode, oldIRNode: IRNode):
+        newIRNode._parent = oldIRNode._parent
+        for field in fields(oldIRNode._parent):
+            pchild = getattr(oldIRNode._parent, field.name)
+            if pchild == oldIRNode:
+                setattr(oldIRNode._parent, field.name, newIRNode)
+                oldIRNode._parent = None
+                return True
+        return False
+
+    @staticmethod
+    def addInputToPhi(newAccess : IRNode, phi: FunctionCall):
+        phi.args.append(newAccess)
+        newAccess._parent = phi
+        
+
+
