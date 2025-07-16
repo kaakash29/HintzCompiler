@@ -212,6 +212,56 @@ DOM-TREE:
         self.assertFalse(doms.dominates(6, 8))
 
 
+    def test_complicated_if_else(self):
+        code = """
+        int main() {
+            int i;
+            int j;
+
+            j = 0;
+            for(i = 0; i < 10; i = i + 1) {
+                j = i;
+            }
+
+            return j;
+        }"""
+
+        expected = """CFG:
+Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[2] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
+[5] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=10.0)) -> 6, 8
+[6] Assignment(target=VarAccess(name='j'), value=VarAccess(name='i')) -> 7
+[7] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 5
+[8] Return(value=VarAccess(name='j')) ->
+
+
+BB-GRAPH:
+BB1: Nodes: [0, 1, 2, 3, 4]  -> BB2
+BB2: Nodes: [5]  -> BB3, BB4
+BB3: Nodes: [6, 7]  -> BB2
+BB4: Nodes: [8]  ->
+
+DOM-TREE:
+1
+  2
+    3
+    4
+
+SIMPLE-DOM-RELS:
+BB1 -> DOMS:[ BB1 ]
+BB2 -> DOMS:[ BB1 BB2 ]
+BB3 -> DOMS:[ BB1 BB2 BB3 ]
+BB4 -> DOMS:[ BB1 BB2 BB4 ]"""
+
+        domTreeAsStr = self.computeAndEmitDomTree(code)
+        strippedActual = domTreeAsStr.replace(" ", "")
+        strippedExpected = expected.replace(" ", "")
+        self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+
 
 
 

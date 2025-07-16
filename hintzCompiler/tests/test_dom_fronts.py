@@ -320,3 +320,64 @@ Fcn : main
             cctx.cfgs[0].dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
+    def test_dom_fronts_for_loop(self):
+        code = """
+        int main() {
+            int i;
+            int j;
+
+            j = 0;
+            for(i = 0; i < 10; i = i + 1) {
+                j = i;
+            }
+
+            return j;
+        }"""
+
+        cctx = Driver(code)
+        bbg0 = cctx.bbgs[0]
+        origCfg = """Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[2] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
+[5] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=10.0)) -> 6, 8
+[6] Assignment(target=VarAccess(name='j'), value=VarAccess(name='i')) -> 7
+[7] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 5
+[8] Return(value=VarAccess(name='j')) ->"""
+
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            cctx.cfgs[0].dump()
+            self.assertIn(origCfg.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+        expected = """DOMINANCE-FRONTIERS:
+BB1 -> DF:[ ]
+BB2 -> DF:[ BB2 ]
+BB3 -> DF:[ BB2 ]
+BB4 -> DF:[ ]
+CFG:
+Fcn : main
+[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[2] Assignment(target=VarAccess(name='j1'), value=Literal(value=0.0)) -> 3
+[3] for(init; cond; update) -> 4
+[4] Assignment(target=VarAccess(name='i1'), value=Literal(value=0.0)) -> 10
+[5] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i2'), right=Literal(value=10.0)) -> 6, 8
+[6] Assignment(target=VarAccess(name='j3'), value=VarAccess(name='i2')) -> 7
+[7] Assignment(target=VarAccess(name='i3'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i2'), right=Literal(value=1.0))) -> 10
+[8] Return(value=VarAccess(name='j2')) ->
+[9] Assignment(target=VarAccess(name='i2'), value=FunctionCall(name='phi', args=[VarAccess(name='i1'), VarAccess(name='i3')])) -> 5
+[10] Assignment(target=VarAccess(name='j2'), value=FunctionCall(name='phi', args=[VarAccess(name='j1'), VarAccess(name='j3')])) -> 9"""
+
+        doms = Dominators(bbg0)
+        domFs = DominanceFrontiers(doms)
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            print(f"DOMINANCE-FRONTIERS:")
+            domFs.dump()
+            print(f"CFG:")
+            cctx.cfgs[0].dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+
+
