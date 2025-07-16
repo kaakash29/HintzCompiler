@@ -13,6 +13,8 @@ from hintzCompiler.src.StmtBuilderFacade import HintzStatementBuilder
 from hintzCompiler.src.basic_blocks import BasicBlock, BasicBlockGraph
 
 
+############################################################################
+
 """
 Data Structure to hold a Var and its stack of versions.
 """
@@ -49,7 +51,12 @@ class VarVersionStackMap:
 
 ############################################################################
 
+"""
+This class as written is doing too much.
 
+NOTE: There should be a transform callled cfgToSSA.doit() should do the
+transformation.
+"""
 
 class DominanceFrontiers:
 
@@ -64,7 +71,6 @@ class DominanceFrontiers:
         self.computeDFs()
         self.computePhiLocsForVar()
         self.renameVersionsOfVars()
-
 
     def dump(self):
         
@@ -106,9 +112,8 @@ class DominanceFrontiers:
             for write in writes:
                 if write.baseVar == v:
                     collectedDefs.append(id)
-
         return collectedDefs
-        
+
     def findBBStmtBelongsIn(self, id:int, bbg:BasicBlockGraph):
         for bb in bbg.blocks:
             if id in bb.nodes:
@@ -137,6 +142,13 @@ class DominanceFrontiers:
             bb.nodes.append(newCfgNode.id)
             bb.entryNode = newCfgNode.id
 
+    def createNewVersionForOrigVar(self, cfg, origVar:Variable):
+        newVarName = origVar.name+f"{len(origVar._ssaVersions)+1}" 
+        newVar = EditCfg.createNewLocalVar(cfg, newVarName, origVar.type_spec, origVar.attributes)
+        origVar._ssaVersions.append(newVar)
+        newVar._ssaUnversioned = origVar
+        newVar._ssaIsVersionOfAVar = True
+        return newVar
 
     """
     Algorithm 3.1 from SSA Book:
@@ -208,10 +220,8 @@ class DominanceFrontiers:
             r = r._ssaReachingDef  # Walk up the def chain
         var_access._ssaReachingDef = r
 
-
     """
     Algorithm 3.3 from the SSA book
-
     ▷ rename variable definitions and uses to have one definition per variable name
 
     1 for each v:variable do
@@ -231,16 +241,10 @@ class DominanceFrontiers:
     15      let v:variable used by φ coming from BB
     16      updateReachingDef(v,end of BB)
     17      replace this use of v by v.reachingDef in φ
+
+    NOTE: in this algorithm the v.reachingDef is being used as a stack to keep track the
+    most recent definition 
     """
-
-    def createNewVersionForOrigVar(self, cfg, origVar:Variable):
-        newVarName = origVar.name+f"{len(origVar._ssaVersions)+1}" 
-        newVar = EditCfg.createNewLocalVar(cfg, newVarName, origVar.type_spec, origVar.attributes)
-        origVar._ssaVersions.append(newVar)
-        newVar._ssaUnversioned = origVar
-        newVar._ssaIsVersionOfAVar = True
-        return newVar
-
     def renameVersionsOfVars(self):
 
         var_stacks = VarVersionStackMap()
@@ -294,3 +298,6 @@ class DominanceFrontiers:
                                 cloneVersionedAccess = replace(versionStack.pop())
                                 phi = bbEntry.stmt.value
                                 EditCfg.addInputToPhi(cloneVersionedAccess, phi)
+
+########################################################################################
+
