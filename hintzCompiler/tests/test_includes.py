@@ -29,7 +29,7 @@ class TestCompiler(unittest.TestCase):
         code = preprocessor.preprocess(test_file_path)
         cctx = Driver(code)
 
-        prog = cctx.ast
+        prog = cctx._ast
         mainF = cast(Function, prog.declarations[1])
         block = cast(Block, mainF.body)
 
@@ -53,7 +53,7 @@ class TestCompiler(unittest.TestCase):
 
         code = preprocessor.preprocess(test_file_path)
         cctx = Driver(code)
-        prog = cctx.ast
+        prog = cctx._ast
         mainF = cast(Function, prog.declarations[0])
         block = cast(Block, mainF.body)
 

@@ -24,11 +24,25 @@ class SymbolTable:
         self.children = OrderedSet([])
         self.name = name
 
+
+    def dumpDownwards(self, indent=0):
+        pad = "  " * indent
+        print(f"{pad}Symbol Table [{self.name}]:")
+        for name, sym in self.symbols.items():
+            print(f"{pad}  {name}: {sym}")
+
+        if self.children:
+            print(f"{pad}  ↓ Child scope:")
+            for smChild in self.children:
+                smChild.dumpDownwards(indent + 1)
+
+    # actually dump upwards
     def dump(self, indent=0):
         pad = "  " * indent
         print(f"{pad}Symbol Table [{self.name}]:")
         for name, sym in self.symbols.items():
             print(f"{pad}  {name}: {sym}")
+
         if self.parent:
             print(f"{pad}  ↑ Parent scope:")
             self.parent.dump(indent + 1)

@@ -17,10 +17,11 @@ from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
 @dataclass
 class CompilationContext:
-    parseTree: ParseTree
-    ast: Program
+    _parseTree: ParseTree
+    _ast: Program
     cfgs: List[ControlFlowGraph]
     bbgs: List[BasicBlockGraph]
+    symbolTableGlobalScope: SymbolTable
 
 """
 Handles the compilation of a simplified compilation unit.
@@ -52,9 +53,15 @@ def Driver(code: str):
             allCfgs.append(cfg)
             allBbgs.append(bbg)
 
-    compCtx = CompilationContext(parseTree=tree, ast=ir, cfgs=allCfgs, bbgs=allBbgs)
+    compCtx = CompilationContext(_parseTree=tree, _ast=ir, cfgs=allCfgs, bbgs=allBbgs, symbolTableGlobalScope=transformer.symtab_manager.global_scope)
 
     """MIDDLE-END"""
+
+    for aCfg in compCtx.cfgs:
+        pass
+        #SSAConverter().apply(aCfg)
+        #SSAAwareDCE().apply(aCfg)
+        #SSAAwareDataFlowPeepholes.apply(aCfg)
 
     # may be we want :
     #
@@ -90,7 +97,7 @@ Main function for the Hintz Compiler
 def main(): #pragma: no cover
 
     parser = argparse.ArgumentParser(description="Hintz Compiler")
-    parser.add_argument("-w", "--dumpProgramToFile" , action="store_true"   , help="Path to write IR output")
+    parser.add_argument("-a", "--dumpAstToFile"     , action="store_true"   , help="Path to write IR output")
     parser.add_argument("-s", "--dumpSymbolTable"   , action="store_true"   , help="Dump symbol table for debugging")
     parser.add_argument("-p", "--dumpParseTree"     , action="store_true"   , help="Dump parse tree for debugging")
     parser.add_argument("-c", "--dumpCfgs"          , action="store_true"   , help="Dump control flow graph")
@@ -100,33 +107,28 @@ def main(): #pragma: no cover
     try:
         cctx = processInput(args.source)
 
-        parsetree   = cctx.parseTree;
-        ir          = cctx.ast;
-        symbolTable = cctx.symbol_table;
+        parsetree   = cctx._parseTree;
+        ir          = cctx._ast;
         cfgs        = cctx.cfgs 
+        globalScope = cctx.symbolTableGlobalScope
 
         if args.dumpParseTree:
             print("\n=== PARSE-TREE ===\n")
             print(parsetree.pretty())
-
-        if args.dumpSymbolTable:
-            print("\n=== SYMBOL-TABLE ===\n")
-            symbolTable.dump()
             
-        if args.dumpProgramToFile:
-            with open(args.save_ir, "w") as f:
-                f.write("\n=== AST-DUMP ===\n")
-                f.write(ir.toString())
-                print(f"✅ AST written to {args.save_ir}")
-        else:
+        if args.dumpAstToFile:
             print("\n=== AST-DUMP ===\n")
             ir.dump()
 
+        if args.dumpSymbolTable:
+            print("\n=== SYMBOL-TABLE ===\n")
+            globalScope.dumpDownwards()
+
         if args.dumpCfgs:
+            print(f"\n=== CFG-DUMP ===\n")
             if len(ir.declarations) == 0 or not isinstance(ir.declarations[0], Function):
                 raise ValueError("\n❌ CFG generation requires a function declaration.\n")
             
-            print(f"\n=== CFG-DUMP ===\n")
             for cfg in cfgs:
                 print(cfg);
                 cfg.to_graphviz(output_path=cfg._fcnName, view=False);

@@ -25,7 +25,7 @@ def index():
         action = request.form["action"]
 
         try:
-            ast = Driver(code).ast
+            ast = Driver(code)._ast
             if action == "ast":
                 ir_output = pprint.pformat(ast, indent=2)
 

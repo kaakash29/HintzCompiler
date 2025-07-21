@@ -54,7 +54,7 @@ class TestCompiler(unittest.TestCase):
             x = 5;
         }
         """
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         fcn = cast(Function, ir.declarations[0])
         body = cast(Block, fcn.body)
         self.assertTrue(any(stmt for stmt in body.statements if stmt.__class__.__name__ == "Assignment"))
@@ -88,7 +88,7 @@ class TestCompiler(unittest.TestCase):
                   ]
           ]"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -124,7 +124,7 @@ class TestCompiler(unittest.TestCase):
                 Literal:
              """
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -155,7 +155,7 @@ class TestCompiler(unittest.TestCase):
                 Literal:
                   value: 1.0"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -222,7 +222,7 @@ class TestCompiler(unittest.TestCase):
                   ]
           ]""";
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -273,7 +273,7 @@ class TestCompiler(unittest.TestCase):
                   is_postfix: True
               body:"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -308,7 +308,7 @@ class TestCompiler(unittest.TestCase):
                     Literal:
                       value: 5.0"""
         
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -373,7 +373,7 @@ class TestCompiler(unittest.TestCase):
                               value: 1.0
                   ]"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -463,7 +463,7 @@ class TestCompiler(unittest.TestCase):
                               is_postfix: False
                         Break:
                       ]"""
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
@@ -531,7 +531,7 @@ class TestCompiler(unittest.TestCase):
               name: label
             Assignment:"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -573,7 +573,7 @@ int main() {
                   is_postfix: True
               body:"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -608,7 +608,7 @@ int main() {
               value: None
           ]"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -643,7 +643,7 @@ int main() {
                       name: v2
                   ]"""
 
-        ir = Driver(code).ast
+        ir = Driver(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()

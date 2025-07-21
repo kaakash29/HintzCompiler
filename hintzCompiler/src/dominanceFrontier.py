@@ -199,6 +199,7 @@ class DominanceFrontiers:
                 self.insertPhiStmtForVar(v, bb, currCfg) 
 
     """
+    Algorithm 3.1.1 from SSA Book:
     Procedure updateReachingDef(v,p)
     Data: v : variable from program
     Data: p : program point
