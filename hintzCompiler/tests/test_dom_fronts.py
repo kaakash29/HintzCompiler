@@ -6,6 +6,7 @@ from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.compiler import Driver
 from hintzCompiler.src.dominators import Dominators
+from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
 
@@ -380,4 +381,51 @@ Fcn : main
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
 
+    def test_ssa_reaching_def(self):
+        code = """
+        int main() { 
+            int j;
+            if(j < 0) {
+                j = 12;
+            } else {
+                j = 13;
+            }
+            return j;
+        }"""
+        cctx = Driver(code)
+        bbg0 = cctx.bbgs[0]
+        doms = Dominators(bbg0)
+        domFs = DominanceFrontiers(doms)
 
+        expected = """DOMINANCE-FRONTIERS:
+BB1 -> DF:[ ]
+BB2 -> DF:[ BB3 ]
+BB3 -> DF:[ ]
+BB4 -> DF:[ BB3 ]
+CFG:
+Fcn : main
+[0] [Variable(name='j', type_spec='int', attributes={})] -> 1
+[1] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='j'), right=Literal(value=0.0)) -> 3, 4
+[2] IfJoin() -> 6
+[3] Assignment(target=VarAccess(name='j1'), value=Literal(value=12.0)) -> 2
+[4] Assignment(target=VarAccess(name='j3'), value=Literal(value=13.0)) -> 2
+[5] Return(value=VarAccess(name='j2')) ->
+[6] Assignment(target=VarAccess(name='j2'), value=FunctionCall(name='phi', args=[VarAccess(name='j1'), VarAccess(name='j3')])) -> 5"""
+
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            print(f"DOMINANCE-FRONTIERS:")
+            domFs.dump()
+            print(f"CFG:")
+            cctx.cfgs[0].dump()
+            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
+        expectedReach = """ReachingDef for Use:VarAccess(name='j2') on Return(value=VarAccess(name='j2')) is:
+ * Assignment(target=VarAccess(name='j2'), value=FunctionCall(name='phi', args=[VarAccess(name='j1'), VarAccess(name='j3')]))"""
+        cfg0 = cctx.cfgs[0]
+        drwa = ReadWriteAnalyzer(cfg0)
+        readsOnLastStmt = drwa.get_reads(cfg0.nodes[-2].id)
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            print(f"\nReachingDef for Use:{readsOnLastStmt[0].irVarAccessNode} on {readsOnLastStmt[0].irVarAccessNode.rootStmt()} is:\n * {readsOnLastStmt[0].irVarAccessNode._ssaReachingDef.rootStmt()} ")
+
+            self.assertIn(expectedReach.strip(), mock_stdout.getvalue().strip(),
+                          msg=f"\n\n[[-- FAILED --]]\nExpected:||{expectedReach.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")

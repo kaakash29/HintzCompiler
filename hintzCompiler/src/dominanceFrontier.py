@@ -199,29 +199,6 @@ class DominanceFrontiers:
                 self.insertPhiStmtForVar(v, bb, currCfg) 
 
     """
-    Algorithm 3.1.1 from SSA Book:
-    Procedure updateReachingDef(v,p)
-    Data: v : variable from program
-    Data: p : program point
-    ▷ search through chain of definitions for v until we find the closest definition that dominates
-    p, then update v.reachingDef in-place with this definition
-    1 r ← v
-    2 repeat
-    3 r ← r.reachingDef
-    4 until r == ⊥ or definition(r) dominates p
-    5 v.reachingDef ← r
-    """
-    def updateReachingDef(self, var_access: VarAccess, doms: Dominators):
-        r = var_access._ssaReachingDef
-        use_stmt = var_access.rootStmt()
-        while r is not None:
-            def_stmt = r.rootStmt()
-            if doms.dominates(def_stmt, use_stmt):
-                break  # Found the nearest dominating def
-            r = r._ssaReachingDef  # Walk up the def chain
-        var_access._ssaReachingDef = r
-
-    """
     Algorithm 3.3 from the SSA book
     ▷ rename variable definitions and uses to have one definition per variable name
 
@@ -253,39 +230,42 @@ class DominanceFrontiers:
         updatedReadWriteAnalyzer = ReadWriteAnalyzer(self.doms.bbg.cfg)
         updatedDominators = Dominators(self.doms.bbg)
 
+        #initialize the ReachingDefs to None
         for node_id, rw in updatedReadWriteAnalyzer.analysis.items():
             reads = rw['reads']
             for read in reads:
                 read.irVarAccessNode._ssaReachingDef = None
 
+        #order to giarantee that defs are seen before uses. 
         for eachBB in self.doms.dfs_preorder():
             for instId in eachBB.getLinearStmtOrderInBB(cfg):
 
+                #handle reads
                 readsInStmtInst = updatedReadWriteAnalyzer.get_reads(instId)
                 for readOcc in readsInStmtInst:
-                    self.updateReachingDef(readOcc.irVarAccessNode, updatedDominators)
                     if var_stacks.contains(readOcc.irVarAccessNode._var): #pyright: ignore
                         versionStack = var_stacks.get(readOcc.irVarAccessNode._var) #pyright: ignore
                         if len(versionStack) != 0:
-                            versionedAccess = replace(readOcc.irVarAccessNode, name=versionStack[-1].name, _var=versionStack[-1])
-                            EditCfg.swapIntoCfg(versionedAccess, readOcc.irVarAccessNode)
-                            #print(f"* Replaced read of {readOcc.irVarAccessNode.name} on {readOcc.irVarAccessNode.rootStmt()} with access {versionStack[-1]}")
+                            versionedReadAccess = replace(readOcc.irVarAccessNode, name=versionStack[-1].name, _var=versionStack[-1])
+                            EditCfg.swapIntoCfg(versionedReadAccess, readOcc.irVarAccessNode)
+                            versionedReadAccess._ssaReachingDef = versionStack[-1]
 
+                #handle writes
                 writesInStmtInst = updatedReadWriteAnalyzer.get_writes(instId)
                 for writeOcc in writesInStmtInst:
-                    self.updateReachingDef(writeOcc.irVarAccessNode, updatedDominators)
                     origVar = writeOcc.irVarAccessNode._var 
                     version = self.createNewVersionForOrigVar(cfg, origVar) #pyright: ignore
                     versionAccess = VarAccess(version.name, version, None)
                     EditCfg.swapIntoCfg(versionAccess, writeOcc.irVarAccessNode) 
                     var_stacks.insert(origVar, versionAccess) #pyright: ignore
-                    #print(f"* Created a new version of the variable {origVar.name} on stmt: {writeOcc.irVarAccessNode.rootStmt()} named: {version.name}")
 
+            #handle Phis
             for succBB in eachBB.successors:
 
                 bbEntry = cfg.nodes[succBB.getLinearStmtOrderInBB(cfg)[0]]
                 if not bbEntry.stmt._ssaIsPhi and len(succBB.nodes) > 1: 
                     bbEntry = cfg.nodes[succBB.getLinearStmtOrderInBB(cfg)[1]]
+                
                 stmts = succBB.getLinearStmtOrderInBB(cfg)
                 for stmtId in stmts:
                     bbEntry = cfg.nodes[stmtId]
@@ -296,9 +276,9 @@ class DominanceFrontiers:
                             versionStack = var_stacks.get(phiVar) #pyright: ignore
                             if len(versionStack) > 0:
                                 #we pop the top of the var stack here because a new def is now dominating from the phi
-                                cloneVersionedAccess = replace(versionStack.pop())
+                                cloneVersionedAccess = replace(versionStack[-1])
                                 phi = bbEntry.stmt.value
                                 EditCfg.addInputToPhi(cloneVersionedAccess, phi)
+                                cloneVersionedAccess._ssaReachingDef = versionStack.pop()
 
 ########################################################################################
-
