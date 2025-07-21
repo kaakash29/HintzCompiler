@@ -307,7 +307,7 @@ class ControlFlowGraph:
             self.stmt_id += 1
 
             for case in stmt.cases:
-                case_entry, last_node = self._build_branch(case.body)
+                case_entry, _ = self._build_branch(case.body)
                 switch_node.add_successor(case_entry)
 
             # All breaks in the switch go to the exit node

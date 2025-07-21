@@ -1,17 +1,14 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
-from ordered_set import OrderedSet
+from typing import List, Tuple 
 from dataclasses import replace
+from ordered_set import OrderedSet
 from hintzCompiler.src.ir_nodes import *
-from typing import List, Tuple, Optional
 from hintzCompiler.src.EditCfg import EditCfg
-from hintzCompiler.src.dominators import Dominators
-from hintzCompiler.src.cfg import ControlFlowGraph, CFGNode
 from hintzCompiler.src.cfg import ControlFlowGraph, CFGNode
 from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
 from hintzCompiler.src.StmtBuilderFacade import HintzStatementBuilder
 from hintzCompiler.src.basic_blocks import BasicBlock, BasicBlockGraph
-
 
 ############################################################################
 
@@ -124,7 +121,8 @@ class DominanceFrontiers:
         retList : List[BasicBlock] = []
         for stmtID in stmtsFordefsOfV:
             B = self.findBBStmtBelongsIn(stmtID, bbg)
-            retList.append(B) #pyright: ignore
+            assert(B is not None)
+            retList.append(B)
         return retList
 
     def insertPhiStmtForVar(self, v:Variable, bb: BasicBlock, cfg:ControlFlowGraph):
@@ -144,6 +142,7 @@ class DominanceFrontiers:
 
     def createNewVersionForOrigVar(self, cfg, origVar:Variable):
         newVarName = origVar.name+f"{len(origVar._ssaVersions)+1}" 
+        assert(origVar.type_spec is not None)
         newVar = EditCfg.createNewLocalVar(cfg, newVarName, origVar.type_spec, origVar.attributes)
         origVar._ssaVersions.append(newVar)
         newVar._ssaUnversioned = origVar
@@ -228,10 +227,9 @@ class DominanceFrontiers:
         var_stacks = VarVersionStackMap()
         cfg = self.doms.bbg.cfg
         updatedReadWriteAnalyzer = ReadWriteAnalyzer(self.doms.bbg.cfg)
-        updatedDominators = Dominators(self.doms.bbg)
 
         #initialize the ReachingDefs to None
-        for node_id, rw in updatedReadWriteAnalyzer.analysis.items():
+        for _, rw in updatedReadWriteAnalyzer.analysis.items():
             reads = rw['reads']
             for read in reads:
                 read.irVarAccessNode._ssaReachingDef = None
@@ -243,8 +241,9 @@ class DominanceFrontiers:
                 #handle reads
                 readsInStmtInst = updatedReadWriteAnalyzer.get_reads(instId)
                 for readOcc in readsInStmtInst:
-                    if var_stacks.contains(readOcc.irVarAccessNode._var): #pyright: ignore
-                        versionStack = var_stacks.get(readOcc.irVarAccessNode._var) #pyright: ignore
+                    assert(readOcc.irVarAccessNode._var is not None)
+                    if var_stacks.contains(readOcc.irVarAccessNode._var):
+                        versionStack = var_stacks.get(readOcc.irVarAccessNode._var)
                         if len(versionStack) != 0:
                             versionedReadAccess = replace(readOcc.irVarAccessNode, name=versionStack[-1].name, _var=versionStack[-1])
                             EditCfg.swapIntoCfg(versionedReadAccess, readOcc.irVarAccessNode)
@@ -253,11 +252,12 @@ class DominanceFrontiers:
                 #handle writes
                 writesInStmtInst = updatedReadWriteAnalyzer.get_writes(instId)
                 for writeOcc in writesInStmtInst:
+                    assert(writeOcc.irVarAccessNode._var is not None)
                     origVar = writeOcc.irVarAccessNode._var 
-                    version = self.createNewVersionForOrigVar(cfg, origVar) #pyright: ignore
+                    version = self.createNewVersionForOrigVar(cfg, origVar)
                     versionAccess = VarAccess(version.name, version, None)
                     EditCfg.swapIntoCfg(versionAccess, writeOcc.irVarAccessNode) 
-                    var_stacks.insert(origVar, versionAccess) #pyright: ignore
+                    var_stacks.insert(origVar, versionAccess)
 
             #handle Phis
             for succBB in eachBB.successors:
@@ -272,8 +272,10 @@ class DominanceFrontiers:
                     if bbEntry.stmt._ssaIsPhi:
                         phiLhs = bbEntry.stmt.target
                         if isinstance(phiLhs, VarAccess):
+                            assert(phiLhs._var is not None)
                             phiVar = phiLhs._var if not phiLhs._var._ssaIsVersionOfAVar else phiLhs._var._ssaUnversioned
-                            versionStack = var_stacks.get(phiVar) #pyright: ignore
+                            assert(phiVar is not None)
+                            versionStack = var_stacks.get(phiVar)
                             if len(versionStack) > 0:
                                 #we pop the top of the var stack here because a new def is now dominating from the phi
                                 cloneVersionedAccess = replace(versionStack[-1])

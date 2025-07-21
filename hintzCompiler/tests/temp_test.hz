@@ -1,7 +1,7 @@
 
-            #define MINE 5
+            #include "utils.hz"
             int main() {
                 int x;
-                x = MINE;
+                x = 5;
             }
             

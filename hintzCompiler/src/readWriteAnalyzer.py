@@ -113,7 +113,8 @@ class ReadWriteAnalyzer:
         if isinstance(smMemE, VarAccess):
             if smMemE._var is None:
                 RuntimeError("Ran into a Variable Access where the variable is UNKNOWN")
-            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _var=smMemE._var)) #pyright: ignore
+            assert(smMemE._var is not None)
+            memAccessPattern.append(MemAccessVariable(varname=smMemE.name, _var=smMemE._var))
         else:
             memAccessPattern = []
         
@@ -127,7 +128,8 @@ class ReadWriteAnalyzer:
         def visit(node, memOccPath):
 
             if isinstance(node, VarAccess):
-                memOccPath.append(MemAccessVariable(node.name, _var=node._var)) #pyright: ignore
+                assert(node._var is not None)
+                memOccPath.append(MemAccessVariable(node.name, _var=node._var))
                 memOccPath.reverse()
                 readO = ReadOcc(node._var, memOccPath, node)
                 reads.append(readO)
@@ -136,6 +138,7 @@ class ReadWriteAnalyzer:
                 if isinstance(node.target, (VarAccess, FieldAccess, ArrayAccess)):
                     simplifiedAccess, writeMemOccPath = self._simplifyMemoryAccess(node.target)
                     if isinstance(simplifiedAccess, VarAccess):
+                        assert(simplifiedAccess._var is not None)
                         writeO = WriteOcc(simplifiedAccess._var, writeMemOccPath, simplifiedAccess)
                         writes.append(writeO)
                 visit(node.value, [])

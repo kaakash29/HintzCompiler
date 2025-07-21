@@ -1,10 +1,8 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 from lark import Transformer, Token 
-from typing import cast
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.symbol_table import Symbol, ScopedSymbolTableManager
-from dataclasses import fields
 
 from hintzCompiler.src.ir_nodes import VarAccess, IRNode
 
@@ -13,15 +11,15 @@ class VarAccessCollector:
         self.var_accesses = []
 
     def visit(self, node: IRNode):
-
-        if not isinstance(node, IRNode):
-            return
-
-        if node is None:
-            return
         
         if isinstance(node, VarAccess):
             self.var_accesses.append(node)
+
+        if isinstance(node, list):
+            for item in node:
+                if isinstance(item, IRNode):
+                    self.visit(item)
+                    return
 
         # Recursively visit children if node has attributes that are IRNodes or lists of IRNodes
         for name, attr in vars(node).items():
@@ -33,6 +31,8 @@ class VarAccessCollector:
                 for item in attr:
                     if isinstance(item, IRNode):
                         self.visit(item)
+        
+
 
 """
 Inherits from the Lark Transformer class and provides a visitor like traversal f
@@ -157,25 +157,18 @@ class IRTransformer(Transformer):
     def function_def(self, items):
         return_type = items[0]
         fcnname = str(items[1])
-        
         params = items[2]
         body = items[3]
 
         fcnIrNode = Function(return_type=return_type, name=fcnname, params=params, body=body, symbolTable=self.symtab_manager.current_scope, declaredVarsList=self.decldFcnVars)
        
-
         for stmt in body.statements:
             vas = IRTransformer.collect_from(stmt)
-            #print(f"STMT: {stmt} VAS: {vas}")
             for va in vas:
                 if va._var is None:
-                    #print(f"\n * VAR was None. Looking for {va.name} in {self.decldFcnVars}")
-
                     varForSlot = next((v for v in self.decldFcnVars if v.name == va.name), None)
                     if varForSlot is not None:
                         va._var = varForSlot
-                        #print(f" Set now.")
-
 
         if self.symtab_manager.isInFcnBody:
             self.symtab_manager.current_scope.name = f"{fcnname}"
@@ -194,7 +187,8 @@ class IRTransformer(Transformer):
         if len(items) > 2:
             for param in items[1]:
                 if isinstance(param, Variable):
-                    newS = Symbol(name=param.name, type=param.type_spec)  # pyright: ignore
+                    assert(param.type_spec is not None)
+                    newS = Symbol(name=param.name, type=param.type_spec)
                     self.symtab_manager.current_scope.define(newS)
 
                     param._symbol = newS
@@ -264,9 +258,6 @@ class IRTransformer(Transformer):
                 if symbol is None:
                     raise RuntimeError(f"\n Access of an undeclared symbol {str(tok)}.")
 
-                # if var is None:
-                #    raise RuntimeError(f"\n Access of an undeclared variable {str(tok)}.")
-                
                 va = VarAccess(name=str(tok), _var=var)
                 return va
         return tok
@@ -302,15 +293,15 @@ class IRTransformer(Transformer):
         base = items[0]
         field = str(items[2])
         fa = FieldAccess(base=base, field=field)
-        fa.base._parent = fa #pyright: ignore
+        fa.base._parent = fa
         return fa
 
     def array_access(self, items):
         base = items[0]
         index = items[2]
         aa = ArrayAccess(base=base, index=index)
-        aa.base._parent = aa #pyright: ignore
-        aa.index._parent = aa #pyright: ignore
+        aa.base._parent = aa
+        aa.index._parent = aa
         return aa
 
     def return_stmt(self, items):
@@ -324,7 +315,6 @@ class IRTransformer(Transformer):
         name = str(items[0])
         fcnC = FunctionCall(name=name, args=[])
         if len(items) > 3:
-            #fncC.args = [arg for arg in items[2:-1] if not (isinstance(arg, Token) and arg.type == "COMMA")]
             for item in items[2:-1]:
                 if not isinstance(item, Token):
                     fcnC.args.append(item)

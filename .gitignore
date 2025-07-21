@@ -12,6 +12,9 @@ __pycache__/
 *.dot
 *.svg
 
+# HintzCompilerInputs
+*.hz
+
 # Distribution / packaging
 .Python
 build/
