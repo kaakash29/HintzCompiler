@@ -15,6 +15,7 @@ class Dominators:
         self.dom = self.computeDoms();
         self.idoms = self.computeIDoms();
         self.domTree = self.buildDomTree();
+        self._createdWithVersion = bbg._createdWithVersion
 
     """
     Answers if stmtA dominates stmtB

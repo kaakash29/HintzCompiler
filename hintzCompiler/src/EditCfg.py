@@ -15,7 +15,7 @@ class EditCfg:
         nodeToInsert.add_predecessor(nodeBefore)
         cfg.nodes.append(nodeToInsert)
         cfg.stmt_id += 1
-        cfg.version += 1
+        cfg._version += 1
 
     @staticmethod
     def deleteNode(cfg:ControlFlowGraph, nodeIndex:int):
@@ -43,7 +43,7 @@ class EditCfg:
         nodeToInsert.successors = [nodeAfter]
         cfg.nodes.append(nodeToInsert)
         cfg.stmt_id += 1
-        cfg.version += 1
+        cfg._version += 1
 
     @staticmethod
     def createNewLocalVar(cfg: ControlFlowGraph, varName: str, varType: str, varAttr: dict):
@@ -62,6 +62,7 @@ class EditCfg:
     @staticmethod
     def swapIntoCfg(newIRNode: IRNode, oldIRNode: IRNode):
         newIRNode._parent = oldIRNode._parent
+        assert(oldIRNode._parent is not None)
         for field in fields(oldIRNode._parent):
             pchild = getattr(oldIRNode._parent, field.name)
             if pchild == oldIRNode:

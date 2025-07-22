@@ -35,8 +35,8 @@ class VarAccessCollector:
 
 
 """
-Inherits from the Lark Transformer class and provides a visitor like traversal f
-or every rule in the grammar, builds the AstNodes top down.
+Inherits from the Lark Transformer class and provides a visitor like traversal 
+for every rule in the grammar, builds the AstNodes top down.
 
 Shouts if an unhandled rule is encountered while parsing.
 """

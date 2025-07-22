@@ -21,12 +21,15 @@ class TestEditingCFG(unittest.TestCase):
         """
         ir = Driver(code)
         cfg = ir.cfgs[0]
+        bbg = ir.bbgs[0]
 
-        expected = """Fcn : main
+        expected = """BB1: Nodes: [0, 1]  -> 
+Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='i'), value=Literal(value=23.0)) ->"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            bbg.dump()
             cfg.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
 
@@ -36,14 +39,20 @@ class TestEditingCFG(unittest.TestCase):
         newCfgNode = CFGNode(id=cfg.stmt_id, stmt=newAstNode)
         EditCfg.addNodeAfter(cfg, 0, newCfgNode)
 
-        expected = """Fcn : main
+        expected = """BB1: Nodes: [0, 1]  -> 
+Fcn : main
 [0] [Variable(name='i', type_spec='int', attributes={})] -> 2
 [1] Assignment(target=VarAccess(name='i'), value=Literal(value=23.0)) ->
-[2] Assignment(target=VarAccess(name='i'), value=Literal(value=12.0)) -> 1"""
+[2] Assignment(target=VarAccess(name='i'), value=Literal(value=12.0)) -> 1
+
+CFG Version: 1 BBG Version: 0"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            bbg.dump()
             cfg.dump()
+            print(f"\nCFG Version: {cfg._version} BBG Version: {ir.bbgs[0]._createdWithVersion}")
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+
 
 
     def test_simple_removal(self):

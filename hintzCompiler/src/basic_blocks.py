@@ -55,12 +55,34 @@ class BasicBlockGraph:
         self.cfg = cfg
         self.label_map: Dict[str, BasicBlock] = {}
         self.blocks: List[BasicBlock] = self.build_basic_blocks_from_cfg(cfg)
+        self._createdWithVersion = cfg._version
 
     def belongsToBB(self, stmtId):
         for bb in self.blocks:
             if stmtId in bb.nodes:
                 return bb
         return None
+
+    def dump(self):
+        for block in self.blocks:
+            print(block)
+
+    def to_graphviz(self, output_path="cfg"): #pragma: no cover
+        dot = graphviz.Digraph(comment="Basic Block Graph", format="svg")
+
+        # Add nodes with labels
+        for node in self.blocks:
+            label = f"{node.name}\n{node.nodes}"
+            dot.node(str(node.name), label)
+
+        # Add edges
+        for node in self.blocks:
+            for succ in node.successors:
+                dot.edge(str(node.name), str(succ.name))
+
+        # Render graph
+        dot.render(output_path, view=False, cleanup=False)
+
 
     #private:
 
@@ -160,22 +182,4 @@ class BasicBlockGraph:
                     
         return basic_blocks
 
-    def to_graphviz(self, output_path="cfg"): #pragma: no cover
-        dot = graphviz.Digraph(comment="Basic Block Graph", format="svg")
 
-        # Add nodes with labels
-        for node in self.blocks:
-            label = f"{node.name}\n{node.nodes}"
-            dot.node(str(node.name), label)
-
-        # Add edges
-        for node in self.blocks:
-            for succ in node.successors:
-                dot.edge(str(node.name), str(succ.name))
-
-        # Render graph
-        dot.render(output_path, view=False, cleanup=False)
-
-    def dump(self):
-        for block in self.blocks:
-            print(block)

@@ -5,6 +5,7 @@ from dataclasses import replace
 from ordered_set import OrderedSet
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.EditCfg import EditCfg
+from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.cfg import ControlFlowGraph, CFGNode
 from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
 from hintzCompiler.src.StmtBuilderFacade import HintzStatementBuilder
@@ -62,9 +63,10 @@ class DominanceFrontiers:
     """
     A do-it-all constructor.
     """
-    def __init__(self, dominators):
+    def __init__(self, dominators:Dominators):
         self.doms   = dominators
         self.DFs    = {}
+        self._createdWithVersion = dominators._createdWithVersion
         self.computeDFs()
         self.computePhiLocsForVar()
         self.renameVersionsOfVars()
