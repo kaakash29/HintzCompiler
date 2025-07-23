@@ -1,3 +1,4 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 from dataclasses import is_dataclass, fields
 from typing import Callable, Iterator
 from hintzCompiler.src.ir_nodes import IRNode  # Adjust import paths if needed

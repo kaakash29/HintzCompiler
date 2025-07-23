@@ -1,3 +1,4 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 from hintzCompiler.src.cfg import *
 from hintzCompiler.src.ir_nodes import *

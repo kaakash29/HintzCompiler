@@ -1,3 +1,4 @@
+# Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 import os
 from lark import Lark
 from hintzCompiler.src.ir_nodes import *
