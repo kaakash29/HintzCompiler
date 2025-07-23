@@ -8,7 +8,7 @@ from typing import cast
 from unittest.mock import patch
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.src.ir_nodes import Function, Block
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 
 class TestCompiler(unittest.TestCase):
 
@@ -54,7 +54,7 @@ class TestCompiler(unittest.TestCase):
             x = 5;
         }
         """
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         fcn = cast(Function, ir.declarations[0])
         body = cast(Block, fcn.body)
         self.assertTrue(any(stmt for stmt in body.statements if stmt.__class__.__name__ == "Assignment"))
@@ -88,7 +88,7 @@ class TestCompiler(unittest.TestCase):
                   ]
           ]"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -124,7 +124,7 @@ class TestCompiler(unittest.TestCase):
                 Literal:
              """
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -155,7 +155,7 @@ class TestCompiler(unittest.TestCase):
                 Literal:
                   value: 1.0"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -222,7 +222,7 @@ class TestCompiler(unittest.TestCase):
                   ]
           ]""";
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -273,7 +273,7 @@ class TestCompiler(unittest.TestCase):
                   is_postfix: True
               body:"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -308,7 +308,7 @@ class TestCompiler(unittest.TestCase):
                     Literal:
                       value: 5.0"""
         
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -373,7 +373,7 @@ class TestCompiler(unittest.TestCase):
                               value: 1.0
                   ]"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -463,7 +463,7 @@ class TestCompiler(unittest.TestCase):
                               is_postfix: False
                         Break:
                       ]"""
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
@@ -531,7 +531,7 @@ class TestCompiler(unittest.TestCase):
               name: label
             Assignment:"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -573,7 +573,7 @@ int main() {
                   is_postfix: True
               body:"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -608,7 +608,7 @@ int main() {
               value: None
           ]"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -643,7 +643,7 @@ int main() {
                       name: v2
                   ]"""
 
-        ir = Driver(code)._ast
+        ir = buildCompilationContext(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()

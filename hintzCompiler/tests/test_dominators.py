@@ -4,7 +4,7 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.basic_blocks import *
 
@@ -12,7 +12,7 @@ from hintzCompiler.src.basic_blocks import *
 class TestDominators(unittest.TestCase):
 
     def computeAndEmitDomTree(self, code):
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbgs = cctx.bbgs
         doms = Dominators(bbgs[0])
         retn = ""
@@ -204,7 +204,7 @@ DOM-TREE:
         }
         """
 
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbgs = cctx.bbgs
         doms = Dominators(bbgs[0])
         self.assertTrue(doms.dominates(3, 4))

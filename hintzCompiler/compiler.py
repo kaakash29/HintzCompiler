@@ -13,6 +13,9 @@ from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.src.ir_nodes import Function, Program
 from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
+from hintzCompiler.src.dominators import Dominators
+from hintzCompiler.src.ssaConverter import SSAConverter
+from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
 
 @dataclass
@@ -23,14 +26,8 @@ class CompilationContext:
     bbgs: List[BasicBlockGraph]
     symbolTableGlobalScope: SymbolTable
 
-"""
-Handles the compilation of a simplified compilation unit.
-Top level driver for a hypothetical compiler written in python
-"""
-def Driver(code: str):
 
-    """FRONT-END"""
-
+def buildCompilationContext(code: str):
     # Text to ParseTree
     grammar_path = os.path.join(os.path.dirname(__file__), "grammar", "c89.lark")
     with open(grammar_path) as f:
@@ -54,19 +51,38 @@ def Driver(code: str):
             allBbgs.append(bbg)
 
     compCtx = CompilationContext(_parseTree=tree, _ast=ir, cfgs=allCfgs, bbgs=allBbgs, symbolTableGlobalScope=transformer.symtab_manager.global_scope)
+    return compCtx
+
+"""
+Handles the compilation of a simplified compilation unit.
+Top level driver for a hypothetical compiler written in python
+"""
+def Driver(code: str):
+
+    """FRONT-END"""
+
+    compCtx = buildCompilationContext(code)
 
     """MIDDLE-END"""
 
-    for aCfg in compCtx.cfgs:
-        pass
-        #SSAConverter().apply(aCfg)
-        #SSAAwareDCE().apply(aCfg)
+    
+    # 1) cfg level optimizations ?
+    for aBfg in compCtx.bbgs:
+        aCfg  = aBfg.cfg
+
+        doms  = Dominators(aBfg)
+        domFs = DominanceFrontiers(doms)
+        toSSA = SSAConverter(domFs)
+        toSSA.doit()
+
+        #dceSSA = SSAAwareDCE(cfg)
+        #dceSSA.doit()
+
         #SSAAwareDataFlowPeepholes.apply(aCfg)
 
     # may be we want :
     #
-    # 1) program level optimizations ?
-    # 2) cfg level optimizations ?
+    # 2) program level optimizations ?
     # 3) both (what are we trying to get to?)
     # 4) none (rely solely on the backend optimizations?)
 
@@ -125,7 +141,7 @@ def main(): #pragma: no cover
             globalScope.dumpDownwards()
 
         if args.dumpCfgs:
-            print(f"\n=== CFG-DUMP ===\n")
+            print(f"\n=== INITIAL CFG-DUMP ===\n")
             if len(ir.declarations) == 0 or not isinstance(ir.declarations[0], Function):
                 raise ValueError("\n❌ CFG generation requires a function declaration.\n")
             

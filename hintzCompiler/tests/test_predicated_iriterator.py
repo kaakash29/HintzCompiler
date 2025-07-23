@@ -4,7 +4,7 @@ import unittest
 from typing import cast
 from io import StringIO
 from unittest.mock import patch
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.PredicatedIRNodeIterator import *
@@ -24,7 +24,7 @@ class TestCFG(unittest.TestCase):
 
         }
         """
-        comp = Driver(code)
+        comp = buildCompilationContext(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -57,7 +57,7 @@ class TestCFG(unittest.TestCase):
 
         }
         """
-        comp = Driver(code)
+        comp = buildCompilationContext(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)

@@ -4,7 +4,7 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.ssaConverter import SSAConverter
@@ -35,7 +35,7 @@ class TestToSSA(unittest.TestCase):
             return out;
         }
         """
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
@@ -86,7 +86,7 @@ class TestToSSA(unittest.TestCase):
             return x;
         }
         """
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
@@ -131,7 +131,7 @@ class TestToSSA(unittest.TestCase):
             return x;
         }
         """
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
@@ -184,7 +184,7 @@ class TestToSSA(unittest.TestCase):
 
         }
         """
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
@@ -243,7 +243,7 @@ class TestToSSA(unittest.TestCase):
             
             return 0;
         }        """
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
@@ -299,7 +299,7 @@ class TestToSSA(unittest.TestCase):
 
             return j;
         }"""
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
@@ -349,7 +349,7 @@ class TestToSSA(unittest.TestCase):
             }
             return j;
         }"""
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         bbg0 = cctx.bbgs[0]
 
         expected = """Fcn : main

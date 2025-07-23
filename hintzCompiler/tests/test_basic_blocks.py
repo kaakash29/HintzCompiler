@@ -4,13 +4,13 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
 class TestBasicBlockGraph(unittest.TestCase):
 
     def computeAndEmitBBGForCode(self, code):
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         cfgs = cctx.cfgs
         dcfg = cfgs[0]
         bbg  = BasicBlockGraph(dcfg)

@@ -3,7 +3,7 @@
 import unittest
 from io import StringIO
 from unittest.mock import patch
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 from hintzCompiler.src.cfg import *
 from hintzCompiler.src.StmtBuilderFacade import HintzStatementBuilder
 from hintzCompiler.src.EditCfg import EditCfg
@@ -19,7 +19,7 @@ class TestEditingCFG(unittest.TestCase):
             i = 23;
         }
         """
-        ir = Driver(code)
+        ir = buildCompilationContext(code)
         cfg = ir.cfgs[0]
         bbg = ir.bbgs[0]
 
@@ -62,7 +62,7 @@ CFG Version: 1 BBG Version: 0"""
             i = 23;
         }
         """
-        ir = Driver(code)
+        ir = buildCompilationContext(code)
         cfg = ir.cfgs[0]
         EditCfg.deleteNode(cfg, 1)
         expected = """Fcn : main

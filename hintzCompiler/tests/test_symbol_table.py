@@ -4,12 +4,12 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 
 class TestSymbolTable(unittest.TestCase):
 
     def computeAndEmitSymbolTableForCode(self, code):
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         cfgs = cctx.cfgs
         retStr = ""
         for cfg in cfgs:
@@ -89,7 +89,7 @@ Symbol Table [foo]:
   y: <Symbol y: type=int, attrs={}>
   foo: <Symbol foo: type=int, attrs={'params': [Variable(name='x', type_spec='int', attributes=None), Token('COMMA', ','), Variable(name='y', type_spec='int', attributes=None)]}>"""
 
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         cfgMain = cctx.cfgs[1]
         fcnMain = cfgMain.fcn
         symT = fcnMain.symbolTable

@@ -4,14 +4,14 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.compiler import Driver
+from hintzCompiler.compiler import buildCompilationContext
 from hintzCompiler.src.basic_blocks import *
 from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
 
 class TestReadWriteAnalyzer(unittest.TestCase):
 
     def rwaAsStr(self, code):
-        cctx = Driver(code)
+        cctx = buildCompilationContext(code)
         cfg = cctx.cfgs[0]
         rwa = ReadWriteAnalyzer(cfg)
         rwaAsStr = ""
