@@ -76,9 +76,9 @@ DOM-TREE:
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='a', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='b', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='c', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='a', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='b', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='c', type_spec='int', attributes={})] -> 3
 [3] Assignment(target=VarAccess(name='a'), value=Literal(value=0.0)) -> 4
 [4] Assignment(target=VarAccess(name='b'), value=Literal(value=0.0)) -> 5
 [5] Assignment(target=VarAccess(name='c'), value=Literal(value=0.0)) -> 6
@@ -149,8 +149,8 @@ BB6 -> DOMS:[ BB1 BB6 ]"""
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='out', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='out', type_spec='int', attributes={})] -> 2
 [2] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='in'), right=Literal(value=0.0)) -> 4, 3
 [3] IfJoin() -> 6
 [4] Assignment(target=VarAccess(name='x'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 5
@@ -228,8 +228,8 @@ DOM-TREE:
 
         expected = """CFG:
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5

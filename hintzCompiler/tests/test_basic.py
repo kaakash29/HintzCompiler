@@ -43,8 +43,32 @@ class TestCompiler(unittest.TestCase):
       body:
         Block:
           statements: [
-            [Variable(name='x', type_spec='int', attributes={})]
-          ]"""
+            Declaration:
+              decls: [
+                Variable:
+                  name: x
+                  type_spec: int
+                  attributes: {}
+              ]
+          ]
+      symbolTable: a: <Symbol a: type=int, attrs={}>
+b: <Symbol b: type=int, attrs={}>
+x: <Symbol x: type=int, attrs={}>
+      declaredVarsList: [
+        Variable:
+          name: a
+          type_spec: int
+          attributes: {'isiovar': True}
+        Variable:
+          name: b
+          type_spec: int
+          attributes: {'isiovar': True}
+        Variable:
+          name: x
+          type_spec: int
+          attributes: {}
+      ]
+  ]"""
         self.assertIn(expected.strip(), ir.toString(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{ir.toString().strip()}||")
 
     def test_variable_assignment(self):
@@ -72,7 +96,13 @@ class TestCompiler(unittest.TestCase):
         """
 
         expected = """statements: [
-            [Variable(name='result', type_spec='int', attributes={})]
+            Declaration:
+              decls: [
+                Variable:
+                  name: result
+                  type_spec: int
+                  attributes: {}
+              ]
             Assignment:
               target:
                 VarAccess:
@@ -102,7 +132,9 @@ class TestCompiler(unittest.TestCase):
         }
         """
 
-        expected = """Function:
+        expected = """Program:
+  declarations: [
+    Function:
       return_type: int
       name: main
       params: [
@@ -110,7 +142,13 @@ class TestCompiler(unittest.TestCase):
       body:
         Block:
           statements: [
-            [Variable(name='m', type_spec='float', attributes={'dimensions': [3]})]
+            Declaration:
+              decls: [
+                Variable:
+                  name: m
+                  type_spec: float
+                  attributes: {'dimensions': [3]}
+              ]
             Assignment:
               target:
                 ArrayAccess:
@@ -122,7 +160,16 @@ class TestCompiler(unittest.TestCase):
                       value: 0.0
               value:
                 Literal:
-             """
+                  value: 10.0
+          ]
+      symbolTable: m: <Symbol m: type=matrix, attrs={'element_type': 'float', 'dimensions': [3]}>
+      declaredVarsList: [
+        Variable:
+          name: m
+          type_spec: float
+          attributes: {'dimensions': [3]}
+      ]
+  ]"""
 
         ir = buildCompilationContext(code)._ast
         self.maxDiff = None

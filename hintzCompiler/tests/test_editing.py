@@ -25,7 +25,7 @@ class TestEditingCFG(unittest.TestCase):
 
         expected = """BB1: Nodes: [0, 1]  -> 
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='i'), value=Literal(value=23.0)) ->"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
@@ -41,7 +41,7 @@ Fcn : main
 
         expected = """BB1: Nodes: [0, 1]  -> 
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [1] Assignment(target=VarAccess(name='i'), value=Literal(value=23.0)) ->
 [2] Assignment(target=VarAccess(name='i'), value=Literal(value=12.0)) -> 1
 
@@ -66,7 +66,7 @@ CFG Version: 1 BBG Version: 0"""
         cfg = ir.cfgs[0]
         EditCfg.deleteNode(cfg, 1)
         expected = """Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] ->"""
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] ->"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()

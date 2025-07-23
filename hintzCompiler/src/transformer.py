@@ -142,7 +142,7 @@ class IRTransformer(Transformer):
 
             decl.type_spec=type_spec
             vars.append(decl)
-        return vars
+        return Declaration(vars)
 
      
 

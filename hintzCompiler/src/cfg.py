@@ -215,6 +215,8 @@ class ControlFlowGraph:
         self.nodes.append(node)
         self.stmt_id += 1
         
+        #print(f"\n * stmt building: {stmt} class : {stmt.__class__}")
+        
         if isinstance(stmt, Label):
             self.label_map[stmt.name] = node
 
@@ -331,7 +333,6 @@ class ControlFlowGraph:
         entry = None
         prev = None
         for stmt in block.statements:
-
             node = self._handle_stmt(stmt)
 
             if prev:

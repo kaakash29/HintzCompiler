@@ -45,8 +45,8 @@ class TestCFG(unittest.TestCase):
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='x'), value=VarAccess(name='i')) -> 3
 [3] Assignment(target=VarAccess(name='i'), value=VarAccess(name='x')) -> 4
 [4] Assignment(target=VarAccess(name='x'), value=VarAccess(name='i')) ->""";
@@ -73,8 +73,8 @@ class TestCFG(unittest.TestCase):
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] for(init; cond; update) -> 3
 [3] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 4
 [4] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=5.0)) -> 5, 7
@@ -113,8 +113,8 @@ class TestCFG(unittest.TestCase):
         cfg = ControlFlowGraph(function)
         
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] switch VarAccess(name='x') -> 4, 6, 8
 [3] SwitchJoin() -> 10
 [4] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 5
@@ -159,7 +159,7 @@ class TestCFG(unittest.TestCase):
 
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
 [2] If BinaryOp(op=Token('EQ_OP', '=='), left=VarAccess(name='x'), right=Literal(value=1.0)) -> 4, 5
 [3] IfJoin() -> 6
@@ -197,7 +197,7 @@ class TestCFG(unittest.TestCase):
         self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
 [2] If BinaryOp(op=Token('EQ_OP', '=='), left=VarAccess(name='x'), right=Literal(value=1.0)) -> 4, 3
 [3] IfJoin() ->
@@ -232,7 +232,7 @@ class TestCFG(unittest.TestCase):
 
         expected = """
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 2
 [2] If BinaryOp(op=Token('EQ_OP', '=='), left=VarAccess(name='x'), right=Literal(value=1.0)) -> 4, 3
 [3] IfJoin() -> 5
@@ -256,7 +256,7 @@ Fcn : main
         }"""
 
         expected = """Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 2
 [2] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=10.0)) -> 3, 4
 [3] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 2
@@ -289,8 +289,8 @@ Fcn : main
         }"""
 
         expected = """Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 4
 [3] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=10.0)) -> 4, 8
 [4] DoJoin() -> 5
@@ -347,8 +347,8 @@ Fcn : main
         self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 3
 [3] If BinaryOp(op=Token('EQ_OP', '=='), left=VarAccess(name='x'), right=Literal(value=1.0)) -> 5, 12
 [4] IfJoin() -> 13
@@ -401,8 +401,8 @@ Fcn : main
         self.assertEqual(len(if_node[0].successors), 2)  # then & else branches
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='x'), value=Literal(value=1.0)) -> 3
 [3] If BinaryOp(op=Token('EQ_OP', '=='), left=VarAccess(name='x'), right=Literal(value=1.0)) -> 5, 6
 [4] IfJoin() -> 13
@@ -448,9 +448,9 @@ Fcn : main
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='j', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 3
 [3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=5.0)) -> 5, 4
 [4] IfJoin() -> 9
 [5] Assignment(target=VarAccess(name='x'), value=VarAccess(name='i')) -> 6
@@ -485,9 +485,9 @@ Fcn : main
         """
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='j', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 3
 [3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=5.0)) -> 5, 4
 [4] IfJoin() -> 10
 [5] Assignment(target=VarAccess(name='x'), value=VarAccess(name='i')) -> 6
@@ -535,8 +535,8 @@ Fcn : main
         }"""
 
         expected = """Fcn : main
-[0] [Variable(name='l', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='out', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='l', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='out', type_spec='int', attributes={})] -> 2
 [2] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='l'), right=Literal(value=12.0)) -> 4, 12
 [3] IfJoin() -> 13
 [4] switch VarAccess(name='l') -> 6, 8, 10
@@ -579,8 +579,8 @@ Fcn : main
         """
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=0.0)) -> 4, 3
 [3] IfJoin() ->
 [4] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=20.0)) -> 5, 3
@@ -619,8 +619,8 @@ Fcn : main
         """
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
 [2] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=0.0)) -> 5, 3
 [3] IfJoin() -> 8
 [4] DoWhile BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=20.0)) -> 5, 3
@@ -667,9 +667,9 @@ Fcn : main
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='j', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
 [5] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=5.0)) -> 6, 13
@@ -716,9 +716,9 @@ Fcn : main
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='j', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
 [5] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=5.0)) -> 6, 11
@@ -765,9 +765,9 @@ Fcn : main
         cfg = ControlFlowGraph(function)
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='i', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='j', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
 [5] BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='i'), right=Literal(value=5.0)) -> 6, 13
@@ -800,8 +800,8 @@ int main() {
 }"""
 
         expected = """Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 3
 [3] for(init; cond; update) -> 3, 4, 5
 [4] Assignment(target=VarAccess(name='j'), value=VarAccess(name='i')) -> 3
@@ -921,9 +921,9 @@ int main() {
         }
         """
         expected = """Fcn : main
-[0] [Variable(name='a', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='b', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='c', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='a', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='b', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='c', type_spec='int', attributes={})] -> 3
 [3] Assignment(target=VarAccess(name='a'), value=VarAccess(name='b')) -> 4
 [4] Assignment(target=VarAccess(name='b'), value=VarAccess(name='c')) -> 5
 [5] Assignment(target=VarAccess(name='c'), value=VarAccess(name='a')) -> 6
@@ -969,9 +969,9 @@ int main() {
         }
         """
         expected = """Fcn : main
-[0] [Variable(name='a', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='b', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='c', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='a', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='b', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='c', type_spec='int', attributes={})] -> 3
 [3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='a'), right=VarAccess(name='b')) -> 5, 6
 [4] IfJoin() -> 7
 [5] Assignment(target=VarAccess(name='a'), value=VarAccess(name='b')) -> 4
@@ -1018,9 +1018,9 @@ int main() {
         }
         """
         expected = """Fcn : main
-[0] [Variable(name='a', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='b', type_spec='int', attributes={})] -> 2
-[2] [Variable(name='c', type_spec='int', attributes={})] -> 3
+[0] Declaration: [Variable(name='a', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='b', type_spec='int', attributes={})] -> 2
+[2] Declaration: [Variable(name='c', type_spec='int', attributes={})] -> 3
 [3] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='a'), right=VarAccess(name='b')) -> 4, 6
 [4] Assignment(target=VarAccess(name='a'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='a'), right=Literal(value=1.0))) -> 5
 [5] Assignment(target=VarAccess(name='b'), value=VarAccess(name='c')) -> 3

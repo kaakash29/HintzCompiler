@@ -63,10 +63,12 @@ class SSAConverter():
     def doit(self):
         self.computePhiLocsForVar() # Phase 01
         self.renameVersionsOfVars() # Phase 02
-        pass
+        self.dom_fronts.doms.bbg.cfg.fcn._isInSSA = True
+
+    def xformName(self):
+        return "SSA-Conversion"
 
     #private
-
 
     """
     Algorithm 3.1 from SSA Book:

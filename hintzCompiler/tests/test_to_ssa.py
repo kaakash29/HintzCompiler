@@ -39,8 +39,8 @@ class TestToSSA(unittest.TestCase):
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='out', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='out', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 3
 [3] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 5, 6
 [4] IfJoin() -> 7
@@ -53,8 +53,8 @@ class TestToSSA(unittest.TestCase):
         self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='out', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='out', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='x1'), value=Literal(value=0.0)) -> 3
 [3] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 5, 6
 [4] IfJoin() -> 9
@@ -90,7 +90,7 @@ class TestToSSA(unittest.TestCase):
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 2
 [2] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 3, 4
 [3] Assignment(target=VarAccess(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x'), right=Literal(value=1.0))) -> 2
@@ -100,7 +100,7 @@ class TestToSSA(unittest.TestCase):
         self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x1'), value=Literal(value=0.0)) -> 5
 [2] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x2'), right=Literal(value=5.0)) -> 3, 4
 [3] Assignment(target=VarAccess(name='x3'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x2'), right=Literal(value=1.0))) -> 5
@@ -135,7 +135,7 @@ class TestToSSA(unittest.TestCase):
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 2
 [2] Label(name='L1') -> 3
 [3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 5, 4
@@ -148,7 +148,7 @@ class TestToSSA(unittest.TestCase):
         self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
 
         expected = """Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x1'), value=Literal(value=0.0)) -> 2
 [2] Label(name='L1') -> 8
 [3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x2'), right=Literal(value=5.0)) -> 5, 4
@@ -303,8 +303,8 @@ class TestToSSA(unittest.TestCase):
         bbg0 = cctx.bbgs[0]
 
         origCfg = """Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
@@ -317,8 +317,8 @@ class TestToSSA(unittest.TestCase):
         self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
 
         expected = """Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='j1'), value=Literal(value=0.0)) -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i1'), value=Literal(value=0.0)) -> 10
@@ -353,7 +353,7 @@ class TestToSSA(unittest.TestCase):
         bbg0 = cctx.bbgs[0]
 
         expected = """Fcn : main
-[0] [Variable(name='j', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 1
 [1] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='j'), right=Literal(value=0.0)) -> 3, 4
 [2] IfJoin() -> 6
 [3] Assignment(target=VarAccess(name='j1'), value=Literal(value=12.0)) -> 2

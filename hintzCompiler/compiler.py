@@ -67,18 +67,17 @@ def Driver(code: str):
 
     
     # 1) cfg level optimizations ?
-    for aBfg in compCtx.bbgs:
-        aCfg  = aBfg.cfg
+    for _, aBfg in zip(compCtx.cfgs, compCtx.bbgs):
 
         doms  = Dominators(aBfg)
         domFs = DominanceFrontiers(doms)
         toSSA = SSAConverter(domFs)
         toSSA.doit()
 
-        #dceSSA = SSAAwareDCE(cfg)
-        #dceSSA.doit()
+        # ssaDce = SSAAwareDCE(aCfg)
+        # ssaDce.doit()
 
-        #SSAAwareDataFlowPeepholes.apply(aCfg)
+        # SSAAwareDataFlowPeepholes.apply(aCfg)
 
     # may be we want :
     #
@@ -87,8 +86,10 @@ def Driver(code: str):
     # 4) none (rely solely on the backend optimizations?)
 
     """BACK-END"""
-    
+
     # may be lower to a well-supported ir MLIR/LLVM ir ?
+    # toVM = convertToVM(compCtx)
+    # toVM.doit()
 
     return compCtx
 

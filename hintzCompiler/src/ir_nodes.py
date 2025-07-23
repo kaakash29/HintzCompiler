@@ -69,6 +69,7 @@ class Function(IRNode):
     body: IRNode
     symbolTable: SymbolTable
     declaredVarsList: List['Variable'] = field(repr=False)
+    _isInSSA : bool = field(default=False, repr=False)
 
 @dataclass
 class Variable(IRNode):
@@ -206,3 +207,10 @@ class IfJoin(IRNode):
 @dataclass
 class DoJoin(IRNode):
     pass
+
+@dataclass
+class Declaration(IRNode):
+    decls : List[Variable] = field(default_factory=list, repr=False)
+
+    def __str__(self):
+        return f"Declaration: {self.decls}"

@@ -39,8 +39,8 @@ BB3 -> DF:[ ]
 BB4 -> DF:[ BB3 ]
 CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='out', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='out', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 3
 [3] If BinaryOp(op=Token('GT_OP', '>'), left=VarAccess(name='in'), right=Literal(value=5.0)) -> 5, 6
 [4] IfJoin() -> 7
@@ -81,7 +81,7 @@ BB3 -> DF:[ BB2 ]
 BB4 -> DF:[ ]
 CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 2
 [2] While BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 3, 4
 [3] Assignment(target=VarAccess(name='x'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='x'), right=Literal(value=1.0))) -> 2
@@ -122,7 +122,7 @@ BB3 -> DF:[ BB2 ]
 BB4 -> DF:[ ]
 CFG:
 Fcn : main
-[0] [Variable(name='x', type_spec='int', attributes={})] -> 1
+[0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
 [1] Assignment(target=VarAccess(name='x'), value=Literal(value=0.0)) -> 2
 [2] Label(name='L1') -> 3
 [3] If BinaryOp(op=Token('LT_OP', '<'), left=VarAccess(name='x'), right=Literal(value=5.0)) -> 5, 4
@@ -262,8 +262,8 @@ BB3 -> DF:[ BB2 ]
 BB4 -> DF:[ ]
 CFG:
 Fcn : main
-[0] [Variable(name='i', type_spec='int', attributes={})] -> 1
-[1] [Variable(name='j', type_spec='int', attributes={})] -> 2
+[0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
+[1] Declaration: [Variable(name='j', type_spec='int', attributes={})] -> 2
 [2] Assignment(target=VarAccess(name='j'), value=Literal(value=0.0)) -> 3
 [3] for(init; cond; update) -> 4
 [4] Assignment(target=VarAccess(name='i'), value=Literal(value=0.0)) -> 5
