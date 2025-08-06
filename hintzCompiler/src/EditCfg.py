@@ -20,9 +20,16 @@ class EditCfg:
 
     @staticmethod
     def deleteNode(cfg:ControlFlowGraph, nodeIndex:int):
-        assert(0 <= nodeIndex < len(cfg.nodes))
-        nodeToDelete = cfg.nodes[nodeIndex]
-        
+        #assert(0 <= nodeIndex < len(cfg.nodes))
+        #nodeToDelete = cfg.nodes[nodeIndex]
+        nodeToDelete = None
+        for cfgNode in cfg.nodes:
+            if cfgNode.id == nodeIndex:
+                nodeToDelete = cfgNode
+
+        if nodeToDelete is None:
+            raise RuntimeError("Could not find the node to Delete in the Cfg")
+
         for predNode in nodeToDelete.predecessors:
             predNode.successors = nodeToDelete.successors
 

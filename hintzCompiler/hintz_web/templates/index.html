@@ -59,11 +59,12 @@
 
   <form method="post">
     <textarea name="code" rows="20" cols="80">{{ request.form.code or '' }}</textarea><br>
-    <button type="submit" name="action" value="ast">Generate IR</button>
+    <button type="submit" name="action" value="ast">Show AST</button>
     <button type="submit" name="action" value="cfg">Show CFG</button>
     <button type="submit" name="action" value="bbg">Show BBG</button>
-    <button type="submit" name="action" value="dmt">Show DomT</button>
-    <button type="submit" name="action" value="toSSA">Show CFG toSSA</button>
+    <button type="submit" name="action" value="dmt">Show DOM</button>
+    <button type="submit" name="action" value="toSSA">Run toSSA</button>
+    <button type="submit" name="action" value="ssaDCE">Run ssaDCE</button>
   </form>
 
   {% if ir_output %}

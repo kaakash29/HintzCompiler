@@ -19,7 +19,7 @@ class SSAAwareDeadCodeElimination():
 
     def doit(self):
         if self._cfg.fcn._isInSSA == False:
-            raise RuntimeError("SSA Aware DeadCodeElimination can only be run on Fcn which are already in SSA form.")
+            raise RuntimeError("SSA Aware DeadCodeElimination can only be run on Fcns which are already in SSA form.")
 
         self.determineRoots()
         self.mark()
@@ -31,14 +31,19 @@ class SSAAwareDeadCodeElimination():
     #private:
 
     def determineRoots(self):
+
         # control flow roots
         for cfgNode in self._cfg.nodes: 
             n = cfgNode.stmt
             if isinstance(n, (If, IfJoin, While, DoWhile, DoJoin, For, Declaration)): 
                 self._rootStmtIDList.append(cfgNode.id)
+
         # data flow roots
         for eachNode in IRNodeIterator(self._cfg.fcn, lambda n: isinstance(n, Return)):
-            self._rootStmtIDList.append(eachNode.rootStmt()._cfgNodeId)
+            stmt = eachNode.rootStmt()
+            if stmt is None:
+                raise RuntimeError("Found a node whose root Stmt is None")
+            self._rootStmtIDList.append(stmt._cfgNodeId)
 
     def traverseBackwardsInDataFlow(self, liveStmtId):
         self._markedStmtIDList.append(liveStmtId)
@@ -46,7 +51,10 @@ class SSAAwareDeadCodeElimination():
         for eachLiveRead in liveStmtReads:
             reachingDefForLiveRead = eachLiveRead.irVarAccessNode._ssaReachingDef
             if reachingDefForLiveRead is not None:
-                self.traverseBackwardsInDataFlow(reachingDefForLiveRead.rootStmt()._cfgNodeId)
+                stmt = reachingDefForLiveRead.rootStmt()
+                if stmt is None:
+                    raise RuntimeError("Found a node whose root Stmt is None")
+                self.traverseBackwardsInDataFlow(stmt._cfgNodeId)
 
     def startMarkingFrom(self, stmtID):
         self.traverseBackwardsInDataFlow(stmtID)

@@ -15,6 +15,7 @@ from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.ssaConverter import SSAConverter
+from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
 
@@ -67,17 +68,19 @@ def Driver(code: str):
 
     
     # 1) cfg level optimizations ?
-    for _, aBfg in zip(compCtx.cfgs, compCtx.bbgs):
+    for aCfg, aBfg in zip(compCtx.cfgs, compCtx.bbgs):
 
         doms  = Dominators(aBfg)
         domFs = DominanceFrontiers(doms)
+
         toSSA = SSAConverter(domFs)
         toSSA.doit()
 
-        # ssaDce = SSAAwareDCE(aCfg)
-        # ssaDce.doit()
+        ssaDce = SSAAwareDeadCodeElimination(aCfg)
+        ssaDce.doit()
 
-        # SSAAwareDataFlowPeepholes.apply(aCfg)
+        #ssaPe = SSAAwareDataFlowPeepholeEngine(aCfg)
+        #ssaPe.doit()
 
     # may be we want :
     #
