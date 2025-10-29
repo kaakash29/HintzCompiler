@@ -3,7 +3,7 @@ import os
 import pprint
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.ssaConverter import SSAConverter
-from hintzCompiler.compiler import buildCompilationContext
+from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from flask import Flask, render_template, request, send_file
 from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
@@ -15,7 +15,7 @@ cctx_cache = {}
 def get_cached_cctx(code: str):
     key = sha256(code.encode()).hexdigest()
     if key not in cctx_cache:
-        cctx_cache[key] = buildCompilationContext(code)
+        cctx_cache[key] = parseAndBuildCompilationContextFromInput(code)
     return cctx_cache[key]
 
 app = Flask(__name__)

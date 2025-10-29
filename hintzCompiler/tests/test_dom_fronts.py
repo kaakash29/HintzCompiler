@@ -4,7 +4,7 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 from hintzCompiler.src.ir_nodes import *
-from hintzCompiler.compiler import buildCompilationContext
+from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
@@ -29,7 +29,7 @@ class TestDominanceFrontiers(unittest.TestCase):
         }
         """
 
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         bbg0 = cctx.bbgs[0]
 
         expected = """DOMINANCE-FRONTIERS:
@@ -71,7 +71,7 @@ Fcn : main
         }
         """
 
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         bbg0 = cctx.bbgs[0]
 
         expected = """DOMINANCE-FRONTIERS:
@@ -112,7 +112,7 @@ Fcn : main
         }
         """
 
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         bbg0 = cctx.bbgs[0]
 
         expected = """DOMINANCE-FRONTIERS:
@@ -157,7 +157,7 @@ Fcn : main
 
         }"""
 
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         bbg0 = cctx.bbgs[0]
 
         expected = """DOMINANCE-FRONTIERS:
@@ -208,7 +208,7 @@ Fcn : main
             return 0;
         }"""
 
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         bbg0 = cctx.bbgs[0]
 
         expected = """DOMINANCE-FRONTIERS:
@@ -253,7 +253,7 @@ Fcn : main
             return j;
         }"""
 
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         bbg0 = cctx.bbgs[0]
         expected = """DOMINANCE-FRONTIERS:
 BB1 -> DF:[ ]

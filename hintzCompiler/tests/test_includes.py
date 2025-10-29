@@ -3,7 +3,7 @@
 import os
 import unittest
 from typing import cast
-from hintzCompiler.compiler import buildCompilationContext
+from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from hintzCompiler.preprocessor import Preprocessor
 from hintzCompiler.src.ir_nodes import Function, Block
 
@@ -27,7 +27,7 @@ class TestCompiler(unittest.TestCase):
             """)
 
         code = preprocessor.preprocess(test_file_path)
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
 
         prog = cctx._ast
         mainF = cast(Function, prog.declarations[1])
@@ -52,7 +52,7 @@ class TestCompiler(unittest.TestCase):
             """)
 
         code = preprocessor.preprocess(test_file_path)
-        cctx = buildCompilationContext(code)
+        cctx = parseAndBuildCompilationContextFromInput(code)
         prog = cctx._ast
         mainF = cast(Function, prog.declarations[0])
         block = cast(Block, mainF.body)

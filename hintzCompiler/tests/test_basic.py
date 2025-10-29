@@ -8,7 +8,7 @@ from typing import cast
 from unittest.mock import patch
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.src.ir_nodes import Function, Block
-from hintzCompiler.compiler import buildCompilationContext
+from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 
 class TestCompiler(unittest.TestCase):
 
@@ -78,7 +78,7 @@ x: <Symbol x: type=int, attrs={}>
             x = 5;
         }
         """
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         fcn = cast(Function, ir.declarations[0])
         body = cast(Block, fcn.body)
         self.assertTrue(any(stmt for stmt in body.statements if stmt.__class__.__name__ == "Assignment"))
@@ -118,7 +118,7 @@ x: <Symbol x: type=int, attrs={}>
                   ]
           ]"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -171,7 +171,7 @@ x: <Symbol x: type=int, attrs={}>
       ]
   ]"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -202,7 +202,7 @@ x: <Symbol x: type=int, attrs={}>
                 Literal:
                   value: 1.0"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -269,7 +269,7 @@ x: <Symbol x: type=int, attrs={}>
                   ]
           ]""";
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -320,7 +320,7 @@ x: <Symbol x: type=int, attrs={}>
                   is_postfix: True
               body:"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -355,7 +355,7 @@ x: <Symbol x: type=int, attrs={}>
                     Literal:
                       value: 5.0"""
         
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -420,7 +420,7 @@ x: <Symbol x: type=int, attrs={}>
                               value: 1.0
                   ]"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -510,7 +510,7 @@ x: <Symbol x: type=int, attrs={}>
                               is_postfix: False
                         Break:
                       ]"""
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
             self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
@@ -578,7 +578,7 @@ x: <Symbol x: type=int, attrs={}>
               name: label
             Assignment:"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -620,7 +620,7 @@ int main() {
                   is_postfix: True
               body:"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -655,7 +655,7 @@ int main() {
               value: None
           ]"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
@@ -690,7 +690,7 @@ int main() {
                       name: v2
                   ]"""
 
-        ir = buildCompilationContext(code)._ast
+        ir = parseAndBuildCompilationContextFromInput(code)._ast
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()

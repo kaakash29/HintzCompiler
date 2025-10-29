@@ -7,7 +7,7 @@ from hintzCompiler.src.ir_nodes import *
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.ssaConverter import SSAConverter
-from hintzCompiler.compiler import buildCompilationContext
+from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
@@ -48,7 +48,7 @@ class TestSSADce(unittest.TestCase):
 [8] Return(value=VarAccess(name='out1')) ->
 [9] Assignment(target=VarAccess(name='x3'), value=FunctionCall(name='phi', args=[VarAccess(name='x2'), VarAccess(name='x4')])) -> 7"""
 
-        cctx  = buildCompilationContext(code)
+        cctx  = parseAndBuildCompilationContextFromInput(code)
 
         bbg0  = cctx.bbgs[0]
         doms  = Dominators(bbg0)
@@ -81,7 +81,7 @@ class TestSSADce(unittest.TestCase):
         }
         """
 
-        cctx  = buildCompilationContext(code)
+        cctx  = parseAndBuildCompilationContextFromInput(code)
 
         expected = """Fcn : main
 [0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1

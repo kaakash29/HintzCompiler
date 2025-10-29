@@ -19,6 +19,8 @@ from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
 
+##############################################################################################
+
 @dataclass
 class CompilationContext:
     _parseTree: ParseTree
@@ -27,8 +29,14 @@ class CompilationContext:
     bbgs: List[BasicBlockGraph]
     symbolTableGlobalScope: SymbolTable
 
+##############################################################################################
 
-def buildCompilationContext(code: str):
+"""
+Parses the preprocessed-input program with Lark based grammar, and builds SymbolTables,
+ControlFlowGraph and BasicBlocksGraphs for all functions in the input. Wraps all the info
+into a CompilationContext object and returns it.
+"""
+def parseAndBuildCompilationContextFromInput(code):
     # Text to ParseTree
     grammar_path = os.path.join(os.path.dirname(__file__), "grammar", "c89.lark")
     with open(grammar_path) as f:
@@ -54,6 +62,7 @@ def buildCompilationContext(code: str):
     compCtx = CompilationContext(_parseTree=tree, _ast=ir, cfgs=allCfgs, bbgs=allBbgs, symbolTableGlobalScope=transformer.symtab_manager.global_scope)
     return compCtx
 
+
 """
 Handles the compilation of a simplified compilation unit.
 Top level driver for a hypothetical compiler written in python
@@ -62,11 +71,12 @@ def Driver(code: str):
 
     """FRONT-END"""
 
-    compCtx = buildCompilationContext(code)
+    compCtx = parseAndBuildCompilationContextFromInput(code)
+
+
 
     """MIDDLE-END"""
 
-    
     # 1) cfg level optimizations ?
     for aCfg, aBfg in zip(compCtx.cfgs, compCtx.bbgs):
 
@@ -83,10 +93,11 @@ def Driver(code: str):
         #ssaPe.doit()
 
     # may be we want :
-    #
     # 2) program level optimizations ?
     # 3) both (what are we trying to get to?)
     # 4) none (rely solely on the backend optimizations?)
+
+
 
     """BACK-END"""
 
@@ -96,10 +107,12 @@ def Driver(code: str):
 
     return compCtx
 
+##############################################################################################
+
 """
 Handles compilation of the provided input files, often includes some include directives.
 """
-def processInput(path: str) -> CompilationContext: #pragma: no cover
+def compile(path: str) -> CompilationContext: #pragma: no cover
     if not path.endswith(".hz"):
         raise ValueError(f"❌ Only .hz files are supported: {path}")
 
@@ -125,7 +138,7 @@ def main(): #pragma: no cover
     args = parser.parse_args()
 
     try:
-        cctx = processInput(args.source)
+        cctx = compile(args.source)
 
         parsetree   = cctx._parseTree;
         ir          = cctx._ast;

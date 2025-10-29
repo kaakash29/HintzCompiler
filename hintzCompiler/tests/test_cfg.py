@@ -4,7 +4,7 @@ import unittest
 from typing import cast
 from io import StringIO
 from unittest.mock import patch
-from hintzCompiler.compiler import buildCompilationContext
+from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.src.ir_nodes import *
 
@@ -17,7 +17,7 @@ class TestCFG(unittest.TestCase):
         int main() {
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -40,7 +40,7 @@ class TestCFG(unittest.TestCase):
             x = i;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -68,7 +68,7 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -107,7 +107,7 @@ class TestCFG(unittest.TestCase):
 
                 return x;
             }"""
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -144,7 +144,7 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -183,7 +183,7 @@ class TestCFG(unittest.TestCase):
             }
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -220,7 +220,7 @@ class TestCFG(unittest.TestCase):
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -262,7 +262,7 @@ Fcn : main
 [3] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 2
 [4] Return(value=VarAccess(name='i')) ->"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -299,7 +299,7 @@ Fcn : main
 [7] Assignment(target=VarAccess(name='j'), value=Literal(value=1.0)) -> 3
 [8] Return(value=VarAccess(name='i')) ->"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -333,7 +333,7 @@ Fcn : main
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -387,7 +387,7 @@ Fcn : main
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -441,7 +441,7 @@ Fcn : main
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
 
         function = cast(Function, ir.declarations[0])
@@ -497,7 +497,7 @@ Fcn : main
 [9] Assignment(target=VarAccess(name='x'), value=VarAccess(name='j')) -> 7
 [10] Return(value=VarAccess(name='x')) ->""";
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -549,7 +549,7 @@ Fcn : main
 [11] Break() -> 5
 [12] Assignment(target=VarAccess(name='out'), value=Literal(value=11.0)) -> 3
 [13] Return(value=VarAccess(name='out')) ->"""
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -587,7 +587,7 @@ Fcn : main
 [5] Assignment(target=VarAccess(name='x'), value=VarAccess(name='i')) -> 6
 [6] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 4"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -629,7 +629,7 @@ Fcn : main
 [7] Assignment(target=VarAccess(name='i'), value=BinaryOp(op=Token('ADD_OP', '+'), left=VarAccess(name='i'), right=Literal(value=1.0))) -> 4
 [8] Return(value=VarAccess(name='x')) ->"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
 
         function = cast(Function, ir.declarations[0])
@@ -661,7 +661,7 @@ Fcn : main
             return x;
         }"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -710,7 +710,7 @@ Fcn : main
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -758,7 +758,7 @@ Fcn : main
             return x;
         }
         """
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
 
         function = cast(Function, ir.declarations[0])
@@ -807,7 +807,7 @@ int main() {
 [4] Assignment(target=VarAccess(name='j'), value=VarAccess(name='i')) -> 3
 [5] Return(value=VarAccess(name='i')) ->"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -850,7 +850,7 @@ int main() {
 [7] Assignment(target=VarAccess(name='j'), value=UnaryOp(op=Token('SUB_OP', '-'), operand=Literal(value=1.0), is_postfix=False)) -> 8
 [8] Return(value=Literal(value=0.0)) ->"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -893,7 +893,7 @@ int main() {
 [7] Assignment(target=VarAccess(name='j'), value=Literal(value=123.0)) -> 8
 [8] Return(value=Literal(value=0.0)) ->"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -933,7 +933,7 @@ int main() {
 
  DFS: [0, 1, 2, 3, 4, 5, 6]"""
         
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
         function = cast(Function, ir.declarations[0])
         cfg = ControlFlowGraph(function)
@@ -983,7 +983,7 @@ int main() {
 
  DFS: [0, 1, 2, 3, 5, 4, 7, 8, 6]"""
         
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
 
         function = cast(Function, ir.declarations[0])
@@ -1031,7 +1031,7 @@ int main() {
 
  DFS: [0, 1, 2, 3, 4, 5, 6, 7]"""
         
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
 
         function = cast(Function, ir.declarations[0])
@@ -1070,7 +1070,7 @@ int main() {
 Downwards Root: VarAccess(name='g')
 Upwards Root: Assignment(target=ArrayAccess(base=FieldAccess(base=VarAccess(name='g'), field='data'), index=Literal(value=5.0)), value=Literal(value=55.0))"""
 
-        comp = buildCompilationContext(code)
+        comp = parseAndBuildCompilationContextFromInput(code)
         ir = comp._ast
 
         function = cast(Function, ir.declarations[0])
