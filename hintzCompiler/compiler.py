@@ -4,7 +4,8 @@ import os
 import sys
 import argparse
 from typing import List, cast
-from lark import Lark, ParseTree
+from lark import Lark
+from lark import Tree
 from dataclasses import dataclass
 from hintzCompiler.src.cfg import ControlFlowGraph
 from hintzCompiler.preprocessor import Preprocessor
@@ -23,7 +24,7 @@ from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 
 @dataclass
 class CompilationContext:
-    _parseTree: ParseTree
+    _parseTree: Tree
     _ast: Program
     cfgs: List[ControlFlowGraph]
     bbgs: List[BasicBlockGraph]
