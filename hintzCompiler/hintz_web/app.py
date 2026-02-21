@@ -7,6 +7,7 @@ from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from flask import Flask, render_template, request, send_file
 from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
+from hintzCompiler.src.hintz_dumper import HintzCfgDumper
 
 # Global cache (keyed by source code string)
 from hashlib import sha256
@@ -94,6 +95,7 @@ def index():
                     toSSA.doit()
                     
                     cfg = cctx.cfgs[0]
+                    ir_output = HintzCfgDumper(cfg, de_ssa=True).dump()
                     dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                     svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
                     cfg.to_graphviz(dot_path)
@@ -116,6 +118,8 @@ def index():
                     ssaDCE.doit()
                     
                     cfg = cctx.cfgs[0]
+                    cfg.makeCompact()
+                    ir_output = HintzCfgDumper(cfg, de_ssa=True).dump()
                     dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")
                     svg_path = os.path.join(UPLOAD_DIR, "cfg.svg")
                     cfg.to_graphviz(dot_path)
