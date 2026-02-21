@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -43,8 +44,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 [5] reads: [c], writes: [b]"""
 
         rwaS = self.rwaAsStr(code)
-        self.assertIn(rwaS, expected,
-                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+        assertContains(rwaS, expected)
 
 
     #@unittest.skip("Tmp")
@@ -66,8 +66,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 """
 
         rwaS = self.rwaAsStr(code)
-        self.assertIn(rwaS, expected,
-                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+        assertContains(rwaS, expected)
 
 
     def test_rwa_structs_2(self):
@@ -89,8 +88,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 [2] reads: [v->x], writes: [y]"""
 
         rwaS = self.rwaAsStr(code)
-        self.assertIn(rwaS, expected,
-                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+        assertContains(rwaS, expected)
 
     def test_rwa_matrix(self):
         code = """
@@ -118,8 +116,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 [9] reads: [v->5.0], writes: [y]"""
 
         rwaS = self.rwaAsStr(code)
-        self.assertIn(rwaS, expected,
-                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+        assertContains(rwaS, expected)
 
 
     def test_rwa_struct_matrix(self):
@@ -153,8 +150,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 [9] reads: [v->x->5.0], writes: [y]"""
 
         rwaS = self.rwaAsStr(code)
-        self.assertIn(rwaS, expected,
-                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+        assertContains(rwaS, expected)
 
     def test_rwa_phi_expr(self):
         code = """
@@ -183,8 +179,7 @@ class TestReadWriteAnalyzer(unittest.TestCase):
 [8] reads: None, writes: None"""
 
         rwaS = self.rwaAsStr(code)
-        self.assertIn(rwaS, expected,
-                      msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{rwaS}||")
+        assertContains(rwaS, expected)
 
 """
 The readWriteAnalyzer is only covered 86% and there is a lot of scope for writing unit tests for the RWA

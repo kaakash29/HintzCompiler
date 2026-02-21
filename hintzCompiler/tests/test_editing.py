@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -31,7 +32,7 @@ Fcn : main
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             bbg.dump()
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
         nodeAsText = "i = 12;";
@@ -51,7 +52,7 @@ CFG Version: 1 BBG Version: 0"""
             bbg.dump()
             cfg.dump()
             print(f"\nCFG Version: {cfg._version} BBG Version: {ir.bbgs[0]._createdWithVersion}")
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -70,4 +71,4 @@ CFG Version: 1 BBG Version: 0"""
 
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)

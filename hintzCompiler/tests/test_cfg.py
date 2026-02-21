@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -26,7 +27,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simple_straight_line(self):
@@ -54,7 +55,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_simple_for(self):
         code = """
@@ -85,7 +86,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_simple_switch(self):
         code = """
@@ -128,7 +129,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simple_ifs(self):
@@ -170,7 +171,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simple_if_no_else(self):
@@ -207,7 +208,7 @@ class TestCFG(unittest.TestCase):
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_simple_if_no_else_2(self):
         code = """
@@ -242,7 +243,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_simple_while_loop(self):
         code = """int main() {
@@ -269,10 +270,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_simple_do_while_loop(self):
         code = """int main() {
@@ -306,10 +304,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     ## Nesting control structures inside IF/ELSE.
@@ -366,7 +361,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
  
     def test_for_in_else(self):
         code = """
@@ -421,7 +416,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     #NOTE: @unittest.skip("Skipping this test for now")
     def test_if_in_if(self):
@@ -462,7 +457,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_if_in_if_2(self):
         code = """
@@ -504,7 +499,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_switch_in_if(self):
@@ -556,10 +551,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_while_in_if(self):
         code = """
@@ -594,10 +586,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_do_while_in_if(self):
         code = """
@@ -637,10 +626,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     ## Nesting control structures inside FOR-LOOPS.
 
@@ -687,7 +673,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     #@unittest.skip("Skipping this test for now")
@@ -734,7 +720,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_while_in_for(self):
         code = """
@@ -783,7 +769,7 @@ Fcn : main
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_do_for_without_init_cond_update(self):
         code = """
@@ -814,10 +800,7 @@ int main() {
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simple_goto_label_forward_jump(self):
@@ -857,10 +840,7 @@ int main() {
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_simple_goto_label_backwards_jump(self):
         code = """
@@ -900,10 +880,7 @@ int main() {
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_traversal_orders_straight_line(self):
@@ -945,10 +922,7 @@ int main() {
             cfg.dump()
             print(f"\n BFS: {border}")
             print(f"\n DFS: {dorder}")
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_traversal_orders_if_stmt(self):
@@ -996,10 +970,7 @@ int main() {
             cfg.dump()
             print(f"\n BFS: {border}")
             print(f"\n DFS: {dorder}")
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_traversal_orders_while_loops(self):
         code = """
@@ -1044,10 +1015,7 @@ int main() {
             cfg.dump()
             print(f"\n BFS: {border}")
             print(f"\n DFS: {dorder}")
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_bidirectional_expr_traversal(self):
@@ -1090,9 +1058,6 @@ Upwards Root: Assignment(target=ArrayAccess(base=FieldAccess(base=VarAccess(name
             rootS = lhs3.rootStmt()
             print(f"Upwards Root: {rootS}")
 
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\
-                          \nExpected:||{expected.strip()}||\
-                          \nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     

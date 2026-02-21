@@ -160,6 +160,59 @@ class ControlFlowGraph:
         # Render graph
         dot.render(output_path, view=view, cleanup=False)
 
+    """
+    Remove AST statements that are no longer connected in the CFG.
+    This is useful after CFG-level transforms (e.g., SSA DCE) to keep the AST in sync.
+    """
+    def makeCompact(self):
+        live_ids = set(self.get_dfs_traversal_order())
+        self.fcn.body = self._compact_block(cast(Block, self.fcn.body), live_ids)
+
+    def _compact_block(self, block: Block, live_ids: set[int]) -> Block:
+        new_statements: List[IRNode] = []
+        for stmt in block.statements:
+            stmt_id = getattr(stmt, "_cfgNodeId", -1)
+            if stmt_id not in live_ids:
+                continue
+
+            if isinstance(stmt, Block):
+                new_statements.append(self._compact_block(stmt, live_ids))
+                continue
+
+            if isinstance(stmt, If):
+                if stmt.then_branch is not None:
+                    stmt.then_branch = self._compact_block(cast(Block, stmt.then_branch), live_ids)
+                if stmt.else_branch is not None:
+                    stmt.else_branch = self._compact_block(cast(Block, stmt.else_branch), live_ids)
+                new_statements.append(stmt)
+                continue
+
+            if isinstance(stmt, While):
+                stmt.body = self._compact_block(cast(Block, stmt.body), live_ids)
+                new_statements.append(stmt)
+                continue
+
+            if isinstance(stmt, DoWhile):
+                stmt.body = self._compact_block(cast(Block, stmt.body), live_ids)
+                new_statements.append(stmt)
+                continue
+
+            if isinstance(stmt, For):
+                stmt.body = self._compact_block(cast(Block, stmt.body), live_ids)
+                new_statements.append(stmt)
+                continue
+
+            if isinstance(stmt, Switch):
+                for case in stmt.cases:
+                    case.body = self._compact_block(case.body, live_ids)
+                new_statements.append(stmt)
+                continue
+
+            new_statements.append(stmt)
+
+        block.statements = new_statements
+        return block
+
     ############################################################
 
     #private:

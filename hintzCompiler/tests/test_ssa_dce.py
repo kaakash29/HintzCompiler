@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -10,6 +11,7 @@ from hintzCompiler.src.ssaConverter import SSAConverter
 from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
 from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
+from hintzCompiler.src.hintz_dumper import HintzCfgDumper
 
 
 class TestSSADce(unittest.TestCase):
@@ -18,6 +20,14 @@ class TestSSADce(unittest.TestCase):
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             cfg.dump()
             return mock_stdout.getvalue().strip()
+
+    def dumpHintzAfterDce(self, cfg: ControlFlowGraph) -> None:
+        hintz = HintzCfgDumper(cfg, de_ssa=True).dump()
+        print("\nDCE Hintz:\n" + hintz)
+
+    def cfgToHintzString(self, cfg: ControlFlowGraph) -> str:
+        hintz = HintzCfgDumper(cfg, de_ssa=True).dump()
+        return hintz
 
     def test_dce_basic(self):
         code = """
@@ -60,8 +70,26 @@ class TestSSADce(unittest.TestCase):
         ssaDce = SSAAwareDeadCodeElimination(cctx.cfgs[0])
         ssaDce.doit()
 
+        cctx.cfgs[0].makeCompact()
+
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
+
+        expected = """
+        int main(int in) {
+            int x;
+            int out;
+            if (in > 5) {
+                x = 1;
+            }
+            else {
+                x = 2;
+            }
+            out = x;
+            return out;
+        }"""
+        outputHintz = self.cfgToHintzString(cctx.cfgs[0])
+        assertContains(outputHintz, expected)
 
     def test_dce_basic_make_ifs_empty(self):
         code = """
@@ -100,7 +128,23 @@ class TestSSADce(unittest.TestCase):
 
         ssaDce = SSAAwareDeadCodeElimination(cctx.cfgs[0])
         ssaDce.doit()
+        cctx.cfgs[0].makeCompact()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
+
+        expected = """
+        int main(int in) {
+            int x;
+            int out;
+            if (in > 5) {
+            }
+            else {
+            }
+            out = 23;
+            return out;
+        }"""
+        outputHintz = self.cfgToHintzString(cctx.cfgs[0])
+        assertContains(outputHintz, expected)
+
 

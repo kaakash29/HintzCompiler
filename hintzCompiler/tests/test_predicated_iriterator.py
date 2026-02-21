@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -40,7 +41,7 @@ class TestCFG(unittest.TestCase):
                 i = i + 1
                 print(f"* {i}. {varAccess} at {varAccess.rootStmt()}");
 
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -71,7 +72,7 @@ class TestCFG(unittest.TestCase):
                 i = i + 1
                 print(f"* {i}. {varAccess}");
 
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
             

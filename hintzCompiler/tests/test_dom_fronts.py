@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -56,7 +57,7 @@ Fcn : main
             domFs.dump()
             print(f"CFG:")
             cctx.cfgs[0].dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_domFronts_while_simple(self):
         code = """
@@ -94,7 +95,7 @@ Fcn : main
             domFs.dump()
             print(f"CFG:")
             cctx.cfgs[0].dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_domFronts_while_simulated(self):
@@ -138,7 +139,7 @@ Fcn : main
             domFs.dump()
             print(f"CFG:")
             cctx.cfgs[0].dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_do_while(self):
         code = """
@@ -184,7 +185,7 @@ Fcn : main
             domFs.dump()
             print(f"CFG:")
             cctx.cfgs[0].dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simulated_do_while_(self):
@@ -237,7 +238,7 @@ Fcn : main
             domFs.dump()
             print(f"CFG:")
             cctx.cfgs[0].dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_dom_fronts_for_loop(self):
         code = """
@@ -279,6 +280,6 @@ Fcn : main
             domFs.dump()
             print(f"CFG:")
             cctx.cfgs[0].dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 

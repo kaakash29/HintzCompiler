@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import os
@@ -69,7 +70,7 @@ x: <Symbol x: type=int, attrs={}>
           attributes: {}
       ]
   ]"""
-        self.assertIn(expected.strip(), ir.toString(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{ir.toString().strip()}||")
+        assertContains(ir.toString(), expected)
 
     def test_variable_assignment(self):
         code = """
@@ -122,7 +123,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_array_access(self):
         code = """
@@ -175,7 +176,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -206,7 +207,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -273,7 +274,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -324,7 +325,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simple_while_stmt(self):
@@ -359,7 +360,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -424,7 +425,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
 
@@ -513,7 +514,7 @@ x: <Symbol x: type=int, attrs={}>
         ir = parseAndBuildCompilationContextFromInput(code)._ast
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_simple_got_label_stmt(self):
@@ -582,7 +583,7 @@ x: <Symbol x: type=int, attrs={}>
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_for_with_no_init(self):
@@ -624,7 +625,7 @@ int main() {
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
 
     def test_void_void_function(self):
@@ -659,7 +660,7 @@ int main() {
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)
 
     def test_phi_expr(self):
         code = """
@@ -694,4 +695,4 @@ int main() {
         self.maxDiff = None
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             ir.dump()
-            self.assertIn(expected.strip(), mock_stdout.getvalue().strip(), msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expected)

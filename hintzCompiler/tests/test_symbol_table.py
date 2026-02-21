@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -63,7 +64,7 @@ Symbol Table [foo]:
     foo: <Symbol foo: type=int, attrs={'params': [Variable(name='a', type_spec='int', attributes={'isiovar': True}), Variable(name='b', type_spec='int', attributes={'isiovar': True})]}>"""
 
         retStr = self.computeAndEmitSymbolTableForCode(code)
-        self.assertIn(expected.strip(), retStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{retStr}||")
+        assertContains(retStr, expected)
 
     def test_basic_blocks_for_simple_lookup(self):
         code = """
@@ -95,6 +96,6 @@ Symbol Table [foo]:
         symT = fcnMain.symbolTable
         retStr = str(symT.lookup("xx"))  
         expected = """<Symbol xx: type=int, attrs={}>"""
-        self.assertIn(expected.strip(), retStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{retStr}||")
+        assertContains(retStr, expected)
 
 

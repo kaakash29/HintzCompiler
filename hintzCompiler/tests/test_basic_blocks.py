@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -56,7 +57,7 @@ BB2: Nodes: [4]  -> BB3
 BB3: Nodes: [3, 5]  ->"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
 
     def test_basic_blocks_straightline_code(self):
@@ -84,7 +85,7 @@ BB-GRAPH:
 BB1: Nodes: [0, 1, 2, 3, 4]  ->"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
 
     def test_basic_blocks_whileloop(self):
@@ -125,7 +126,7 @@ BB2: Nodes: [4]  -> BB3, BB4
 BB3: Nodes: [5, 6, 7]  -> BB2
 BB4: Nodes: [8]  ->"""
         bbgAsStr = self.computeAndEmitBBGForCode(code)
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
     def test_basic_block_for_loop(self):
         code = """
@@ -168,7 +169,7 @@ BB2: Nodes: [6]  -> BB3, BB4
 BB3: Nodes: [7, 8, 9]  -> BB2
 BB4: Nodes: [10]  ->"""
         bbgAsStr = self.computeAndEmitBBGForCode(code)
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
     def test_basic_blocks_conditional_jump(self):
         code = """
@@ -226,7 +227,7 @@ BB3: Nodes: [12]  -> BB2
 BB4: Nodes: [11, 13, 14, 15]  -"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
 
     def test_doWhile_loop(self):
@@ -264,7 +265,7 @@ BB4: Nodes: [5, 6, 7]  ->"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
         
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
 
     def test_doWhile_loop_using_ifs(self):
@@ -312,7 +313,7 @@ BB4: Nodes: [5, 7, 8, 9]  ->"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
         
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)
 
     def test_forLoop_basic(self):
         code = """
@@ -351,4 +352,4 @@ BB3: Nodes: [6, 7]  -> BB2
 BB4: Nodes: [8]  ->"""
 
         bbgAsStr = self.computeAndEmitBBGForCode(code)
-        self.assertIn(expected.strip(), bbgAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}\nActual:||{bbgAsStr}||")
+        assertContains(bbgAsStr, expected)

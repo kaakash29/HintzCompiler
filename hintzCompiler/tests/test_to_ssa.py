@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -50,7 +51,7 @@ class TestToSSA(unittest.TestCase):
 [8] Return(value=VarAccess(name='out')) ->"""
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, origCfg)
 
         expected = """Fcn : main
 [0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
@@ -71,7 +72,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
 
     def test_toSSA_simpleWhile(self):
@@ -97,7 +98,7 @@ class TestToSSA(unittest.TestCase):
 [4] Return(value=VarAccess(name='x')) ->"""
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, origCfg)
 
         expected = """Fcn : main
 [0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
@@ -114,7 +115,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
 
     def test_toSSA_simulatedWhile(self):
@@ -145,7 +146,7 @@ class TestToSSA(unittest.TestCase):
 [7] Return(value=VarAccess(name='x')) ->"""
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, origCfg)
 
         expected = """Fcn : main
 [0] Declaration: [Variable(name='x', type_spec='int', attributes={})] -> 1
@@ -165,7 +166,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
     def test_toSSA_DoWhile(self):
         code = """
@@ -199,7 +200,7 @@ class TestToSSA(unittest.TestCase):
 [8] Return(value=VarAccess(name='i')) ->"""
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, origCfg)
 
         expected = """Fcn : main
 [0] Assignment(target=VarAccess(name='i1'), value=Literal(value=24.0)) -> 1
@@ -221,7 +222,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
     def test_toSSA_SimulatedDoWhile(self):
         code = """
@@ -260,7 +261,7 @@ class TestToSSA(unittest.TestCase):
 [10] Return(value=Literal(value=0.0)) ->"""
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, origCfg)
 
         expected = """Fcn : main
 [0] Assignment(target=VarAccess(name='i1'), value=Literal(value=24.0)) -> 1
@@ -284,7 +285,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
     def test_toSSA_for_loop(self):
         code = """
@@ -314,7 +315,7 @@ class TestToSSA(unittest.TestCase):
 [8] Return(value=VarAccess(name='j')) ->"""
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(origCfg.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{origCfg.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, origCfg)
 
         expected = """Fcn : main
 [0] Declaration: [Variable(name='i', type_spec='int', attributes={})] -> 1
@@ -336,7 +337,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
     def test_ssa_reaching_def(self):
         code = """
@@ -367,7 +368,7 @@ class TestToSSA(unittest.TestCase):
         toSSA.doit()
 
         cfgStr = self.cfgToString(cctx.cfgs[0])
-        self.assertIn(expected.strip(), cfgStr, msg=f"\n\n[[-- FAILED --]]\nExpected:||{expected.strip()}||\n\nActual:||{cfgStr}||")
+        assertContains(cfgStr, expected)
 
         expectedReach = """ReachingDef for Use:VarAccess(name='j2') on Return(value=VarAccess(name='j2')) is:
  * Assignment(target=VarAccess(name='j2'), value=FunctionCall(name='phi', args=[VarAccess(name='j1'), VarAccess(name='j3')]))"""
@@ -376,5 +377,4 @@ class TestToSSA(unittest.TestCase):
         readsOnLastStmt = drwa.get_reads(cfg0.nodes[-2].id)
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             print(f"\nReachingDef for Use:{readsOnLastStmt[0].irVarAccessNode} on {readsOnLastStmt[0].irVarAccessNode.rootStmt()} is:\n * {readsOnLastStmt[0].irVarAccessNode._ssaReachingDef.rootStmt()}")
-            self.assertIn(expectedReach.strip(), mock_stdout.getvalue().strip(),
-                          msg=f"\n\n[[-- FAILED --]]\nExpected:||{expectedReach.strip()}||\n\nActual:||{mock_stdout.getvalue().strip()}||")
+            assertContains(mock_stdout.getvalue().strip(), expectedReach)

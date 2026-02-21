@@ -1,3 +1,4 @@
+from tests.assert_utils import assertContains
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
 import unittest
@@ -49,7 +50,7 @@ BB1: Nodes: [0, 1, 2, 3, 4, 5]  ->
 DOM-TREE:
 1"""
         domTreeAsStr = self.computeAndEmitDomTree(code)
-        self.assertIn(expected.strip(), domTreeAsStr, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+        assertContains(domTreeAsStr, expected)
 
 
     def test_dominators_if_else(self):
@@ -120,7 +121,7 @@ BB6 -> DOMS:[ BB1 BB6 ]"""
         domTreeAsStr = self.computeAndEmitDomTree(code)
         strippedActual = domTreeAsStr.replace(" ", "")
         strippedExpected = expected.replace(" ", "")
-        self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+        assertContains(strippedActual, strippedExpected)
 
     def test_complicated_if_else(self):
         code = """
@@ -185,7 +186,7 @@ DOM-TREE:
         domTreeAsStr = self.computeAndEmitDomTree(code)
         strippedActual = domTreeAsStr.replace(" ", "")
         strippedExpected = expected.replace(" ", "")
-        self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+        assertContains(strippedActual, strippedExpected)
 
     def test_dominates_relationships(self):
 
@@ -260,7 +261,7 @@ BB4 -> DOMS:[ BB1 BB2 BB4 ]"""
         domTreeAsStr = self.computeAndEmitDomTree(code)
         strippedActual = domTreeAsStr.replace(" ", "")
         strippedExpected = expected.replace(" ", "")
-        self.assertIn(strippedExpected, strippedActual, msg=f"\n\n[[-- FAILED --]]\n\nExpecting:||{expected.strip()}||\nActual:||{domTreeAsStr}||")
+        assertContains(strippedActual, strippedExpected)
 
 
 
