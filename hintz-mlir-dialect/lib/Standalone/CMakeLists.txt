@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This builds the main C++ dialect library from implementation source files.
 add_mlir_dialect_library(MLIRStandalone
         StandaloneTypes.cpp
         StandaloneDialect.cpp

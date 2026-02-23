@@ -1,3 +1,5 @@
+# BEGINNER NOTE: This is the top-level build recipe for the whole Hintz MLIR dialect project.
+# It tells CMake which subfolders to build and which tools/features to enable.
 cmake_minimum_required(VERSION 3.20.0)
 project(standalone-dialect LANGUAGES CXX C)
 

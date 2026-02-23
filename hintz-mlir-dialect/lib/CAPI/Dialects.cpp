@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This file implements C API glue for registering/using the dialect from C programs.
 //===- Dialects.cpp - CAPI for dialects -----------------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.

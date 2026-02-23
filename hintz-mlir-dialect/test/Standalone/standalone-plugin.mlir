@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This MLIR test file is input for automated checks of dialect behavior and tooling.
 // RUN: mlir-opt %s --load-dialect-plugin=%standalone_libs/StandalonePlugin%shlibext --pass-pipeline="builtin.module(standalone-switch-bar-foo)" | FileCheck %s
 
 module {

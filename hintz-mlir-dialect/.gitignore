@@ -1,1 +1,2 @@
+# BEGINNER NOTE: This file tells git which local/generated files (like build output) should not be committed.
 build/

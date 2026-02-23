@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This plugin entrypoint lets mlir-opt load this dialect and its passes at runtime.
 //===- standalone-plugin.cpp ------------------------------------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
@@ -21,6 +22,7 @@ using namespace mlir;
 /// Dialect plugin registration mechanism.
 /// Observe that it also allows to register passes.
 /// Necessary symbol to register the dialect plugin.
+/// This function is called by MLIR when loading the dialect plugin shared library.
 extern "C" LLVM_ATTRIBUTE_WEAK DialectPluginLibraryInfo
 mlirGetDialectPluginInfo() {
   return {MLIR_PLUGIN_API_VERSION, "Standalone", LLVM_VERSION_STRING,
@@ -32,6 +34,7 @@ mlirGetDialectPluginInfo() {
 
 /// Pass plugin registration mechanism.
 /// Necessary symbol to register the pass plugin.
+/// This function is called by MLIR when loading the pass plugin shared library.
 extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo mlirGetPassPluginInfo() {
   return {MLIR_PLUGIN_API_VERSION, "StandalonePasses", LLVM_VERSION_STRING,
           []() { mlir::standalone::registerPasses(); }};

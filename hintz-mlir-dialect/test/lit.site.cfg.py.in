@@ -1,3 +1,4 @@
+# BEGINNER NOTE: These files configure LLVM's lit test runner (what tests to run and how to find tools).
 @LIT_SITE_CFG_IN_HEADER@
 
 config.llvm_tools_dir = lit_config.substitute("@LLVM_TOOLS_DIR@")

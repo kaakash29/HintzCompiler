@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This header declares the core dialect/op/type/pass interfaces used by the C++ implementation.
 //===- StandaloneDialect.h - Standalone dialect -----------------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.

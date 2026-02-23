@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This header exposes C API hooks so C code can register the dialect.
 //===- Dialects.h - CAPI for dialects -----------------------------*- C -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.

@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This file asks MLIR TableGen to generate dialect/ops/pass code from .td files.
 add_mlir_dialect(StandaloneOps hintz)
 add_mlir_doc(StandaloneDialect StandaloneDialect Standalone/ -gen-dialect-doc)
 add_mlir_doc(StandaloneOps StandaloneOps Standalone/ -gen-op-doc)

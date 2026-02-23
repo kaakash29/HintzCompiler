@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This TableGen file describes which dialect ops should be exposed to Python.
 //===-- StandaloneOps.td - Python bindings for standalone --*- tablegen -*-===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.

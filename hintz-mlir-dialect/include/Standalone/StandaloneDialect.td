@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This TableGen file is a blueprint. MLIR generates C++ code from it during build.
 //===- StandaloneDialect.td - Standalone dialect -----------*- tablegen -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.

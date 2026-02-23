@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This tool entrypoint registers translation callbacks for conversion experiments.
 //===- standalone-translate.cpp ---------------------------------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
@@ -20,10 +21,14 @@
 #include "mlir/Tools/mlir-translate/Translation.h"
 #include "llvm/Support/raw_ostream.h"
 
+// This is the main entrypoint for the translation tool.
+// It registers translation handlers and then runs mlir-translate.
 int main(int argc, char **argv) {
   mlir::registerAllTranslations();
 
   // TODO: Register standalone translations here.
+  // This callback is a placeholder translation body for demonstration.
+  // It currently succeeds without changing output.
   mlir::TranslateFromMLIRRegistration withdescription(
       "option", "different from option",
       [](mlir::Operation *op, llvm::raw_ostream &output) {

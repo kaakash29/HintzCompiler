@@ -1,3 +1,4 @@
+# BEGINNER NOTE: These files configure LLVM's lit test runner (what tests to run and how to find tools).
 # -*- Python -*-
 
 import os

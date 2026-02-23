@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This build file creates a translation utility for converting MLIR to/from other forms.
 set(LLVM_LINK_COMPONENTS
   Support
   )

@@ -1,3 +1,6 @@
+<!-- BEGINNER NOTE: This document explains how to build and test this dialect project.
+It is the main quick-start guide for humans, not generated build output. -->
+
 # An out-of-tree MLIR dialect
 
 This is an example of an out-of-tree [MLIR](https://mlir.llvm.org/) dialect along with a standalone `opt`-like tool to operate on that dialect.

@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This tool entrypoint sets up dialects/passes and runs MLIR's opt-style pipeline.
 //===- standalone-opt.cpp ---------------------------------------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
@@ -15,6 +16,8 @@
 #include "Standalone/StandaloneDialect.h"
 #include "Standalone/StandalonePasses.h"
 
+// This is the main entrypoint for the optimizer tool.
+// It registers passes/dialects, then hands control to MLIR's generic opt driver.
 int main(int argc, char **argv) {
   mlir::registerAllPasses();
   mlir::standalone::registerPasses();

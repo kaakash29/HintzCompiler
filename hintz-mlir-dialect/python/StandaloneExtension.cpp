@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This file exposes a small Python extension module that registers the dialect in Python MLIR contexts.
 //===- StandaloneExtension.cpp - Extension module -------------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
@@ -11,12 +12,15 @@
 
 using namespace mlir::python::adaptors;
 
+// Python module entrypoint.
+// Exposes helper functions so Python users can register/load the dialect.
 PYBIND11_MODULE(_standaloneDialects, m) {
   //===--------------------------------------------------------------------===//
   // standalone dialect
   //===--------------------------------------------------------------------===//
   auto standaloneM = m.def_submodule("standalone");
 
+  // This function registers the dialect with a context, and optionally loads it.
   standaloneM.def(
       "register_dialect",
       [](MlirContext context, bool load) {

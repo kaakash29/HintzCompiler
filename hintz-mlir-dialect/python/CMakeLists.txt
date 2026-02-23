@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This build file creates Python bindings so Python users can load and use the dialect.
 include(AddMLIRPython)
 
 # Specifies that all MLIR packages are co-located under the `mlir_standalone`

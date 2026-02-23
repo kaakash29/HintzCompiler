@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This MLIR test file is input for automated checks of dialect behavior and tooling.
 // RUN: standalone-opt %s | standalone-opt | FileCheck %s
 
 module {

@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This builds/runs C API tests that verify the dialect works through the C interface.
 # Here we create a single aggregate shared library with the parts of the CAPI
 # that we want to bundle together. Then we link a simple C executable
 # against it to demonstrate that it does have the fully self contained

@@ -1,3 +1,5 @@
+// BEGINNER NOTE: This file contains hand-written C++ implementation code for the dialect.
+// Generated code is included via .inc files, but this file controls how pieces are wired together.
 //===- StandalonePasses.cpp - Standalone passes -----------------*- C++ -*-===//
 //
 // This file is licensed under the Apache License v2.0 with LLVM Exceptions.
@@ -21,6 +23,8 @@ namespace {
 class StandaloneSwitchBarFooRewriter : public OpRewritePattern<func::FuncOp> {
 public:
   using OpRewritePattern<func::FuncOp>::OpRewritePattern;
+  // Looks for a function named "bar" and renames it to "foo".
+  // Returns success only when a rename actually happened.
   LogicalResult matchAndRewrite(func::FuncOp op,
                                 PatternRewriter &rewriter) const final {
     if (op.getSymName() == "bar") {
@@ -36,6 +40,8 @@ class StandaloneSwitchBarFoo
 public:
   using impl::StandaloneSwitchBarFooBase<
       StandaloneSwitchBarFoo>::StandaloneSwitchBarFooBase;
+  // This is the pass body.
+  // It applies the rewriter patterns to the current operation/module.
   void runOnOperation() final {
     RewritePatternSet patterns(&getContext());
     patterns.add<StandaloneSwitchBarFooRewriter>(&getContext());

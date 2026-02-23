@@ -1,3 +1,4 @@
+// BEGINNER NOTE: This is a small C test program that verifies C API registration and parsing behavior.
 //===- standalone-cap-demo.c - Simple demo of C-API -----------------------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM
@@ -15,6 +16,8 @@
 #include "mlir-c/IR.h"
 #include "mlir-c/RegisterEverything.h"
 
+// Helper that loads all upstream MLIR dialects into a context.
+// This keeps the demo simple because our test string uses arith ops too.
 static void registerAllUpstreamDialects(MlirContext ctx) {
   MlirDialectRegistry registry = mlirDialectRegistryCreate();
   mlirRegisterAllDialects(registry);
@@ -22,6 +25,8 @@ static void registerAllUpstreamDialects(MlirContext ctx) {
   mlirDialectRegistryDestroy(registry);
 }
 
+// C test entrypoint.
+// It builds a tiny module, dumps it, and returns success/failure.
 int main(int argc, char **argv) {
   MlirContext ctx = mlirContextCreate();
   // TODO: Create the dialect handles for the builtin dialects and avoid this.

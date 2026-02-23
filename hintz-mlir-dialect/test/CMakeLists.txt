@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This build file wires the regression tests and their runtime dependencies.
 llvm_canonicalize_cmake_booleans(
         MLIR_ENABLE_BINDINGS_PYTHON
 )

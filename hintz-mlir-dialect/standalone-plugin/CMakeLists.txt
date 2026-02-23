@@ -1,3 +1,4 @@
+# BEGINNER NOTE: This build file creates a loadable plugin for dialect and pass registration.
 add_llvm_library(StandalonePlugin
         # BUILDTREE_ONLY is only for testing purposes
         MODULE BUILDTREE_ONLY
