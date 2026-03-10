@@ -33,10 +33,29 @@
       resize: vertical;
     }
     button {
-      margin-top: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
+      height: 42px;
+      min-width: 140px;
+      padding: 0 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
+      border: 1px solid #1f2937;
+      border-radius: 6px;
+      background-color: #ffffff;
+      color: #1f2937;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+    button:hover {
+      background-color: #f3f4f6;
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    .actions {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
     pre {
       background-color: #eee;
@@ -58,13 +77,16 @@
   </header>
 
   <form method="post">
-    <textarea name="code" rows="20" cols="80">{{ request.form.code or '' }}</textarea><br>
-    <button type="submit" name="action" value="ast">Show AST</button>
-    <button type="submit" name="action" value="cfg">Show CFG</button>
-    <button type="submit" name="action" value="bbg">Show BBG</button>
-    <button type="submit" name="action" value="dmt">Show DOM</button>
-    <button type="submit" name="action" value="toSSA">Run toSSA</button>
-    <button type="submit" name="action" value="ssaDCE">Run ssaDCE</button>
+    <textarea id="code-input" name="code" rows="20" cols="80">{{ request.form.code or '' }}</textarea><br>
+    <div class="actions">
+      <button id="random-sample-btn" type="button" title="Load random sample from tests">🎲 Random Sample</button>
+      <button type="submit" name="action" value="ast">Show AST</button>
+      <button type="submit" name="action" value="cfg">Show CFG</button>
+      <button type="submit" name="action" value="bbg">Show BBG</button>
+      <button type="submit" name="action" value="dmt">Show DOM</button>
+      <button type="submit" name="action" value="toSSA">Run toSSA</button>
+      <button type="submit" name="action" value="ssaDCE">Run ssaDCE</button>
+    </div>
   </form>
 
   {% if ir_output %}
@@ -78,7 +100,17 @@
       Your browser does not support SVG.
     </object>
   {% endif %}
+
+  <script>
+    document.getElementById("random-sample-btn").addEventListener("click", async () => {
+      const response = await fetch("/random-sample");
+      if (!response.ok) {
+        alert("Could not load a sample program.");
+        return;
+      }
+      const payload = await response.json();
+      document.getElementById("code-input").value = payload.code || "";
+    });
+  </script>
 </body>
 </html>
-
-

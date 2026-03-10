@@ -1,10 +1,13 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 import os
 import pprint
+import random
+import re
+import textwrap
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.ssaConverter import SSAConverter
 from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
-from flask import Flask, render_template, request, send_file
+from flask import Flask, jsonify, render_template, request, send_file
 from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 from hintzCompiler.src.hintz_dumper import HintzCfgDumper
@@ -21,6 +24,35 @@ def get_cached_cctx(code: str):
 
 app = Flask(__name__)
 UPLOAD_DIR = "static"
+
+def _extract_code_snippets_from_text(test_text: str):
+    snippets = []
+    pattern = re.compile(r'code\s*=\s*(?P<q>"""|\'\'\')(?P<body>.*?)(?P=q)', re.DOTALL)
+    for match in pattern.finditer(test_text):
+        snippet = textwrap.dedent(match.group("body")).strip()
+        if snippet:
+            snippets.append(snippet)
+    return snippets
+
+def _load_random_samples_from_tests():
+    tests_dir = os.path.join(os.path.dirname(__file__), "..", "tests")
+    samples = []
+    for root, _, files in os.walk(tests_dir):
+        for filename in sorted(files):
+            if not (filename.startswith("test_") and filename.endswith(".py")):
+                continue
+            path = os.path.join(root, filename)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    samples.extend(_extract_code_snippets_from_text(f.read()))
+            except OSError:
+                continue
+
+    # Remove duplicates while preserving order.
+    deduped = list(dict.fromkeys(samples))
+    return deduped
+
+SAMPLE_PROGRAMS = _load_random_samples_from_tests()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -130,6 +162,12 @@ def index():
             ir_output = f"❌ Error: {str(e)}"
 
     return render_template("index.html", ir_output=ir_output, cfg_generated=cfg_generated)
+
+@app.route("/random-sample", methods=["GET"])
+def random_sample():
+    if not SAMPLE_PROGRAMS:
+        return jsonify({"code": "", "error": "No samples found"}), 404
+    return jsonify({"code": random.choice(SAMPLE_PROGRAMS), "count": len(SAMPLE_PROGRAMS)})
 
 @app.route("/static/cfg.svg")
 def serve_svg():
