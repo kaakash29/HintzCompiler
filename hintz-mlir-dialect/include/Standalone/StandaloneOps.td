@@ -18,7 +18,7 @@ def Standalone_FooOp : Standalone_Op<"foo", [Pure,
                                              SameOperandsAndResultType]> {
     let summary = "Illustrates how to define an operation.";
     let description = [{
-        The `standalone.foo` operation illustrates how to define a new
+        The `hintz.foo` operation illustrates how to define a new
         operation in a dialect. It uses an operation trait to declare that it
         has no side effects.
 
@@ -29,7 +29,7 @@ def Standalone_FooOp : Standalone_Op<"foo", [Pure,
         ```mlir
         %0 = arith.constant 2 : i32
         // Apply the foo operation to %0
-        %1 = standalone.foo %0 : i32
+        %1 = hintz.foo %0 : i32
         ```
     }];
 

@@ -24,7 +24,7 @@ class Standalone_Type<string name, string typeMnemonic, list<Trait> traits = []>
 
 def Standalone_CustomType : Standalone_Type<"Custom", "custom"> {
     let summary = "Standalone custom type";
-    let description = "Custom type in standalone dialect";
+    let description = "Custom type in hintz dialect";
     let parameters = (ins StringRefParameter<"the custom value">:$value);
     let assemblyFormat = "`<` $value `>`";
 }

@@ -15,7 +15,7 @@
 
 #include "Standalone/StandalonePasses.h"
 
-namespace mlir::standalone {
+namespace mlir::hintz {
 #define GEN_PASS_DEF_STANDALONESWITCHBARFOO
 #include "Standalone/StandalonePasses.h.inc"
 
@@ -51,4 +51,4 @@ public:
   }
 };
 } // namespace
-} // namespace mlir::standalone
+} // namespace mlir::hintz

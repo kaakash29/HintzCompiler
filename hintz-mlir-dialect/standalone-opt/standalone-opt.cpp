@@ -20,7 +20,7 @@
 // It registers passes/dialects, then hands control to MLIR's generic opt driver.
 int main(int argc, char **argv) {
   mlir::registerAllPasses();
-  mlir::standalone::registerPasses();
+  mlir::hintz::registerPasses();
   // TODO: Register standalone passes here.
 
   mlir::DialectRegistry registry;
@@ -32,5 +32,5 @@ int main(int argc, char **argv) {
   // registerAllDialects(registry);
 
   return mlir::asMainReturnCode(
-      mlir::MlirOptMain(argc, argv, "Standalone optimizer driver\n", registry));
+      mlir::MlirOptMain(argc, argv, "Hintz optimizer driver\n", registry));
 }

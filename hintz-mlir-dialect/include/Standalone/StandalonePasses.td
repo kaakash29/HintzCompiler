@@ -12,7 +12,7 @@
 
 include "mlir/Pass/PassBase.td"
 
-def StandaloneSwitchBarFoo: Pass<"standalone-switch-bar-foo", "::mlir::ModuleOp"> {
+def StandaloneSwitchBarFoo: Pass<"hintz-switch-bar-foo", "::mlir::ModuleOp"> {
   let summary = "Switches the name of a FuncOp named `bar` to `foo` and folds.";
   let description = [{
     Switches the name of a FuncOp named `bar` to `foo` and folds.

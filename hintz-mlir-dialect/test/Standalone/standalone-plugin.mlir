@@ -1,5 +1,5 @@
 // BEGINNER NOTE: This MLIR test file is input for automated checks of dialect behavior and tooling.
-// RUN: mlir-opt %s --load-dialect-plugin=%standalone_libs/StandalonePlugin%shlibext --pass-pipeline="builtin.module(standalone-switch-bar-foo)" | FileCheck %s
+// RUN: mlir-opt %s --load-dialect-plugin=%standalone_libs/StandalonePlugin%shlibext --pass-pipeline="builtin.module(hintz-switch-bar-foo)" | FileCheck %s
 
 module {
   // CHECK-LABEL: func @foo()
@@ -7,8 +7,8 @@ module {
     return
   }
 
-  // CHECK-LABEL: func @standalone_types(%arg0: !standalone.custom<"10">)
-  func.func @standalone_types(%arg0: !standalone.custom<"10">) {
+  // CHECK-LABEL: func @hintz_types(%arg0: !hintz.custom<"10">)
+  func.func @hintz_types(%arg0: !hintz.custom<"10">) {
     return
   }
 }

@@ -15,13 +15,13 @@
 #include <memory>
 
 namespace mlir {
-namespace standalone {
+namespace hintz {
 #define GEN_PASS_DECL
 #include "Standalone/StandalonePasses.h.inc"
 
 #define GEN_PASS_REGISTRATION
 #include "Standalone/StandalonePasses.h.inc"
-} // namespace standalone
+} // namespace hintz
 } // namespace mlir
 
 #endif

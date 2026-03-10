@@ -12,5 +12,5 @@
 #include "Standalone/StandaloneDialect.h"
 #include "mlir/CAPI/Registration.h"
 
-MLIR_DEFINE_CAPI_DIALECT_REGISTRATION(Standalone, standalone,
-                                      mlir::standalone::StandaloneDialect)
+MLIR_DEFINE_CAPI_DIALECT_REGISTRATION(Hintz, hintz,
+                                      mlir::hintz::StandaloneDialect)

@@ -25,10 +25,10 @@ using namespace mlir;
 /// This function is called by MLIR when loading the dialect plugin shared library.
 extern "C" LLVM_ATTRIBUTE_WEAK DialectPluginLibraryInfo
 mlirGetDialectPluginInfo() {
-  return {MLIR_PLUGIN_API_VERSION, "Standalone", LLVM_VERSION_STRING,
+  return {MLIR_PLUGIN_API_VERSION, "Hintz", LLVM_VERSION_STRING,
           [](DialectRegistry *registry) {
-            registry->insert<mlir::standalone::StandaloneDialect>();
-            mlir::standalone::registerPasses();
+            registry->insert<mlir::hintz::StandaloneDialect>();
+            mlir::hintz::registerPasses();
           }};
 }
 
@@ -36,6 +36,6 @@ mlirGetDialectPluginInfo() {
 /// Necessary symbol to register the pass plugin.
 /// This function is called by MLIR when loading the pass plugin shared library.
 extern "C" LLVM_ATTRIBUTE_WEAK PassPluginLibraryInfo mlirGetPassPluginInfo() {
-  return {MLIR_PLUGIN_API_VERSION, "StandalonePasses", LLVM_VERSION_STRING,
-          []() { mlir::standalone::registerPasses(); }};
+  return {MLIR_PLUGIN_API_VERSION, "HintzPasses", LLVM_VERSION_STRING,
+          []() { mlir::hintz::registerPasses(); }};
 }

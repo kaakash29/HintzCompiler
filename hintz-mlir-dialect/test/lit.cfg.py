@@ -56,7 +56,7 @@ tool_dirs = [config.standalone_tools_dir, config.llvm_tools_dir]
 tools = [
     "mlir-opt",
     "standalone-capi-test",
-    "standalone-opt",
+    "hintz-opt",
     "standalone-translate",
 ]
 

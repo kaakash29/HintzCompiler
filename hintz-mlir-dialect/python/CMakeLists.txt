@@ -18,8 +18,8 @@ declare_mlir_dialect_python_bindings(
   ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/mlir_standalone"
   TD_FILE dialects/StandaloneOps.td
   SOURCES
-    dialects/standalone.py
-  DIALECT_NAME standalone)
+    dialects/hintz.py
+  DIALECT_NAME hintz)
 
 declare_mlir_python_extension(StandalonePythonSources.Extension
   MODULE_NAME _standaloneDialects

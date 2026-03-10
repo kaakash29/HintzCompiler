@@ -32,11 +32,11 @@ int main(int argc, char **argv) {
   // TODO: Create the dialect handles for the builtin dialects and avoid this.
   // This adds dozens of MB of binary size over just the standalone dialect.
   registerAllUpstreamDialects(ctx);
-  mlirDialectHandleRegisterDialect(mlirGetDialectHandle__standalone__(), ctx);
+  mlirDialectHandleRegisterDialect(mlirGetDialectHandle__hintz__(), ctx);
 
   MlirModule module = mlirModuleCreateParse(
       ctx, mlirStringRefCreateFromCString("%0 = arith.constant 2 : i32\n"
-                                          "%1 = standalone.foo %0 : i32\n"));
+                                          "%1 = hintz.foo %0 : i32\n"));
   if (mlirModuleIsNull(module)) {
     printf("ERROR: Could not parse.\n");
     mlirContextDestroy(ctx);
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
   MlirOperation op = mlirModuleGetOperation(module);
 
   // CHECK: %[[C:.*]] = arith.constant 2 : i32
-  // CHECK: standalone.foo %[[C]] : i32
+  // CHECK: hintz.foo %[[C]] : i32
   mlirOperationDump(op);
 
   mlirModuleDestroy(module);

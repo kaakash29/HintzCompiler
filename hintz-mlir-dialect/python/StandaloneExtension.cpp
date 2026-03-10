@@ -16,15 +16,15 @@ using namespace mlir::python::adaptors;
 // Exposes helper functions so Python users can register/load the dialect.
 PYBIND11_MODULE(_standaloneDialects, m) {
   //===--------------------------------------------------------------------===//
-  // standalone dialect
+  // hintz dialect
   //===--------------------------------------------------------------------===//
-  auto standaloneM = m.def_submodule("standalone");
+  auto hintzM = m.def_submodule("hintz");
 
   // This function registers the dialect with a context, and optionally loads it.
-  standaloneM.def(
+  hintzM.def(
       "register_dialect",
       [](MlirContext context, bool load) {
-        MlirDialectHandle handle = mlirGetDialectHandle__standalone__();
+        MlirDialectHandle handle = mlirGetDialectHandle__hintz__();
         mlirDialectHandleRegisterDialect(handle, context);
         if (load) {
           mlirDialectHandleLoadDialect(handle, context);

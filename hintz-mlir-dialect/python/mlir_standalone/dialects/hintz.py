@@ -3,5 +3,5 @@
 #  See https://llvm.org/LICENSE.txt for license information.
 #  SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# Backward-compatible shim: import the renamed hintz dialect bindings.
-from .hintz import *
+from ._hintz_ops_gen import *
+from .._mlir_libs._standaloneDialects.hintz import *
