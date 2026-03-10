@@ -4,6 +4,8 @@ import pprint
 import random
 import re
 import textwrap
+from contextlib import redirect_stdout
+from io import StringIO
 from hintzCompiler.src.dominators import Dominators
 from hintzCompiler.src.ssaConverter import SSAConverter
 from hintzCompiler.compiler import parseAndBuildCompilationContextFromInput
@@ -11,6 +13,7 @@ from flask import Flask, jsonify, render_template, request, send_file
 from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 from hintzCompiler.src.hintz_dumper import HintzCfgDumper
+from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
 
 # Global cache (keyed by source code string)
 from hashlib import sha256
@@ -54,6 +57,15 @@ def _load_random_samples_from_tests():
 
 SAMPLE_PROGRAMS = _load_random_samples_from_tests()
 
+def _rwa_as_text(cctx):
+    if len(cctx.cfgs) == 0:
+        return "No functions found. Read/Write analysis requires a function."
+    rwa = ReadWriteAnalyzer(cctx.cfgs[0])
+    buf = StringIO()
+    with redirect_stdout(buf):
+        rwa.dump()
+    return buf.getvalue().strip()
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     ir_output = ""
@@ -70,6 +82,8 @@ def index():
             ast = cctx._ast
             if action == "ast":
                 ir_output = pprint.pformat(ast, indent=2)
+            elif action == "rwa":
+                ir_output = _rwa_as_text(cctx)
 
             elif action == "cfg":
                 dot_path = os.path.join(UPLOAD_DIR, "cfg.dot")

@@ -1,5 +1,7 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
+from types import SimpleNamespace
+
 import hintzCompiler.hintz_web.app as web_app
 
 
@@ -32,3 +34,14 @@ def test_random_sample_endpoint_returns_sample(monkeypatch):
     payload = response.get_json()
     assert payload["code"] == "int main() { return 0; }"
     assert payload["count"] == 1
+
+
+def test_rwa_action_renders_output(monkeypatch):
+    fake_cctx = SimpleNamespace(_ast={}, cfgs=[], bbgs=[])
+    monkeypatch.setattr(web_app, "get_cached_cctx", lambda code: fake_cctx)
+    monkeypatch.setattr(web_app, "_rwa_as_text", lambda cctx: "[0] reads: [a], writes: [b]")
+
+    client = web_app.app.test_client()
+    response = client.post("/", data={"code": "int main(){ }", "action": "rwa"})
+    assert response.status_code == 200
+    assert b"[0] reads: [a], writes: [b]" in response.data
