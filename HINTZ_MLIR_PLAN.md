@@ -15,7 +15,7 @@ This plan is test-gated. Each step has required tests. A step is marked done onl
 ## Current Baseline (Measured)
 - `hintz-mlir-dialect/build && ninja hintz-opt`: passes
 - `hintz-opt --show-dialects < /dev/null`: shows `hintz`
-- `PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests`: `81 passed`
+- `PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests`: `87 passed`
 
 ## Status Legend
 - `[ ]` not started
@@ -99,6 +99,7 @@ Status: `[~]`
 - Added ops: `hintz.const`, `hintz.add`, `hintz.return`.
 - Added test: `hintz-mlir-dialect/test/Standalone/hintz-ops.mlir`.
 - `ninja check-standalone` passes (run outside sandbox due to multiprocessing semaphore permissions).
+- Not yet implemented: `load`, `store`, `cmp`, other arithmetic.
 
 ---
 
@@ -131,6 +132,7 @@ Status: `[~]`
 - CLI flag `--emit-mlir` added in `hintzCompiler/compiler.py`.
 - Tests added in `hintzCompiler/tests/test_mlir_emitter_basic.py`.
 - `PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests` -> `87 passed`.
+- Not yet supported: variables, control flow, function calls, non-`+` ops.
 
 ---
 
@@ -164,11 +166,12 @@ Status: `[~]`
   - `hintz.return` -> `func.return`
 - Added test: `hintz-mlir-dialect/test/Standalone/hintz-lowering.mlir`.
 - `ninja check-standalone` passes (run outside sandbox due to multiprocessing semaphore permissions).
+- Not yet implemented: lowering for variables, control flow, comparisons, calls.
 
 ---
 
 ## Step 5: End-to-End Compile to Binary
-Status: `[ ]`
+Status: `[~]`
 
 ### What this step covers
 - Wire complete script/commands:
@@ -189,6 +192,14 @@ Status: `[ ]`
 
 ### Exit criteria
 - One canonical sample compiles and runs end-to-end in local dev environment.
+
+### Progress notes
+- Pipeline wired in `hintzCompiler/compiler.py` with:
+  - `--emit-hintz-mlir`, `--emit-lowered-mlir`, `--emit-llvm`, `--emit-exe`
+  - tool discovery with `tools/` fallback
+- Added integration test: `hintzCompiler/tests/test_mlir_pipeline.py` (skips if tools missing).
+- Minimal sample (`return 1 + 2;`) compiles to binary and returns exit code `3`.
+- Not yet working for real samples with variables/control flow (emitter lacks `load/store`).
 
 ---
 
@@ -217,3 +228,11 @@ Status: `[ ]`
 - Only mark a step `[x]` after all listed tests for that step pass.
 - If a test fails, keep step as `[~]` or `[ ]` and log the blocker.
 - Prefer small, reviewable commits per step (no large mixed changes).
+
+---
+
+## Known Blockers / Gaps
+- No `hintz.load` / `hintz.store` yet, so variables cannot be emitted or lowered.
+- No control flow ops (if/while/for) in the dialect or emitter yet.
+- No comparison ops or non-`+` arithmetic ops.
+- End-to-end pipeline currently only works for constant `return` or `return a + b` where `a/b` are literals.
