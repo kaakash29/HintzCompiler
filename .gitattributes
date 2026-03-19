@@ -1,0 +1,2 @@
+tools/mlir-opt filter=lfs diff=lfs merge=lfs -text
+tools/mlir-translate filter=lfs diff=lfs merge=lfs -text
