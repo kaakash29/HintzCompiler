@@ -1,165 +1,167 @@
 # Hintz Compiler
 
-A lightweight compiler for a C89-inspired language, supporting:
-- Constants, variables, and types (`int`, `float`, `double`, `char`, `void`, `matrix`)
-- Control flow: `if`, `while`, `do-while`, `return`
-- Structs and array access
-- Function calls and definitions (including `void`)
-- `#include` support (planned)
-- Symbol table and intermediate representation (IR) generation
-- Command-line interface with custom `.hz` extension
+Hintz is a C89‑inspired compiler project with a Python frontend and a custom MLIR dialect. The current pipeline is intentionally minimal and focuses on a small, test‑gated subset to keep progress measurable.
+
+Current MLIR support (minimal subset)
+- Hintz dialect ops: `hintz.const`, `hintz.add`, `hintz.return`
+- Emitter: CFG‑based and emits `i64` everywhere
+- Lowering: `hintz.*` -> `arith`/`func` -> LLVM dialect -> LLVM IR -> native binary
 
 ---
 
-## 🛠 Usage
+## Quick Start
 
-### Run from source
+### Emit Hintz MLIR
 ```bash
-python hintzcompiler/compiler.py path/to/file.hz
+python -m hintzCompiler.compiler --emit-mlir samples/exampleOfForLoop.hz
 ```
 
-### Run as installed CLI
+### End‑to‑end binary (minimal example)
 ```bash
-hintz file.hz -s out.hzir
+cat > /tmp/hintz_simple.hz <<'EOFSAMPLE'
+int main() {
+    return 1 + 2;
+}
+EOFSAMPLE
+
+python -m hintzCompiler.compiler \
+  --emit-hintz-mlir --emit-lowered-mlir --emit-llvm --emit-exe \
+  /tmp/hintz_simple.hz
+
+/tmp/hintz_simple
+echo $?
 ```
+Expected exit code: `3`
 
 ---
 
-## ⚙️ CLI Options
+## Pipeline Overview
 
-- `-s <file>`: Save IR dump to a file
-- `-n`: Enable debug mode (dumps parse tree and symbol table)
-- Input must have `.hz` extension
-
----
-
-## 🧪 Run Unit Tests
-
-```bash
-python -m unittest discover -s tests
+Textual flow
+```
+Hintz source (.hz)
+  -> Hintz IR (Python)
+  -> Hintz MLIR (hintz.*)
+  -> arith/func MLIR
+  -> LLVM dialect MLIR
+  -> LLVM IR (.ll)
+  -> native executable
 ```
 
----
-
-## 📦 Installation (Development Mode)
-
-To install Hintz Compiler locally for development and enable the `hintz` command globally:
-
-1. Clone the repository:
-```bash
-git clone https://github.com/kaakash29/HintzCompiler.git
-cd HintzCompiler
+Command flow
 ```
-
-2. Create a virtual environment (recommended):
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-3. Install in editable mode:
-```bash
-pip install -e .
-```
-
-You can now compile `.hz` files from anywhere:
-```bash
-hintz program.hz -s output.hzir -n
+python -m hintzCompiler.compiler --emit-hintz-mlir
+  -> hintz-opt --convert-hintz-to-arith-func
+  -> mlir-opt --convert-arith-to-llvm --convert-func-to-llvm --reconcile-unrealized-casts
+  -> mlir-translate --mlir-to-llvmir
+  -> clang
 ```
 
 ---
 
-## 📁 Project Layout
+## CLI
+
+Primary entrypoint:
+```bash
+python -m hintzCompiler.compiler <file.hz> [options]
+```
+
+Key options:
+- `--emit-mlir`: print Hintz MLIR to stdout
+- `--emit-hintz-mlir`: write `<base>.hintz.mlir`
+- `--emit-lowered-mlir`: write `<base>.lowered.mlir`
+- `--emit-llvm`: write `<base>.ll`
+- `--emit-exe`: build native executable at `<base>`
+- `--out <path>`: base output path (default: source path without extension)
+- Tool overrides:
+  - `--hintz-opt`, `--mlir-opt`, `--mlir-translate`, `--clang`
+
+Example with explicit tool paths:
+```bash
+python -m hintzCompiler.compiler \
+  --emit-exe \
+  --mlir-opt /path/to/mlir-opt \
+  --mlir-translate /path/to/mlir-translate \
+  --clang /path/to/clang \
+  /tmp/hintz_simple.hz
+```
+
+---
+
+## External Tool Dependencies
+
+To produce executables, the compiler shells out to the following tools:
+
+- `hintz-opt` (built from `hintz-mlir-dialect/`)
+- `mlir-opt` (from LLVM/MLIR)
+- `mlir-translate` (from LLVM/MLIR)
+- `clang` (system or LLVM build)
+
+Tool discovery order
+1. CLI flag (e.g. `--mlir-opt /path/to/mlir-opt`)
+2. Environment variable (e.g. `MLIR_OPT`)
+3. Repo‑local `tools/` directory (e.g. `tools/mlir-opt`)
+4. PATH (via `which`)
+
+Recommended layout for bundling tools
+```
+HintzCompiler/
+└── tools/
+    ├── hintz-opt
+    ├── mlir-opt
+    ├── mlir-translate
+    └── clang
+```
+
+---
+
+## Tests
+
+Run all frontend tests:
+```bash
+PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests
+```
+
+Pipeline integration test:
+- Located at `hintzCompiler/tests/test_mlir_pipeline.py`
+- Skips automatically if MLIR/LLVM tools are missing
+
+---
+
+## Project Layout (Key Parts)
 
 ```
 HintzCompiler/
-├── hintzcompiler/
-│   ├── compiler.py        # CLI entry point
+├── hintzCompiler/
+│   ├── compiler.py
 │   ├── src/
-│   │   └── transformer.py # IR generation
-│   └── __init__.py
-├── grammar/
-│   └── c89.lark           # Lark grammar
-├── tests/
-│   ├── test_basic.py
-│   └── test_sample.hz
-├── setup.py
-├── pyproject.toml
-└── README.md
+│   │   ├── ir_nodes.py
+│   │   ├── cfg.py
+│   │   ├── mlir_emitter.py
+│   │   └── ...
+│   └── tests/
+├── hintz-mlir-dialect/
+│   ├── include/Standalone/
+│   ├── lib/Standalone/
+│   ├── test/Standalone/
+│   └── build/ (out of tree)
+├── samples/
+├── HINTZ_MLIR_PLAN.md
+└── AI-Context.md
 ```
 
 ---
 
-## 📚 Docs
+## Known Limitations (Current)
 
-- [IR Format](docs/IR.md)
-- [Symbol Table](docs/SymbolTable.md)
-
----
-
-## 🧾 Example
-
-### Sample `test_sample.hz` source
-
-```c
-struct Vec2 {
-    int x;
-    float y;
-};
-
-int main() {
-    int a;
-    struct Vec2 v;
-    a = 42;
-    v.x = a;
-    return 0;
-}
-```
-
-### Example IR Output
-
-```
-Program:
-  declarations: [
-    Function:
-      return_type: int
-      name: main
-      params: [
-      ]
-      body:
-        Block:
-          statements: [
-            Variable(name='a', type_spec='int')
-            Variable(name='v', type_spec='Vec2')
-            Assignment:
-              target:
-                Identifier(name='a')
-              value:
-                Literal(value=42)
-            Assignment:
-              target:
-                FieldAccess(
-                  base=Identifier(name='v'),
-                  field='x'
-                )
-              value:
-                Identifier(name='a')
-            Return:
-              value:
-                Literal(value=0)
-          ]
-  ]
-```
-
-Generate this using:
-
-```bash
-hintz tests/test_sample.hz -n
-```
+- MLIR emitter only supports:
+  - integer constants
+  - binary add (`+`)
+  - return
+- Variables, control flow, and function calls are not yet lowered to MLIR.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
-
