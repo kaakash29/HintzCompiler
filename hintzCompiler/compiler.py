@@ -3,6 +3,8 @@
 import os
 import sys
 import argparse
+import shutil
+import subprocess
 from typing import List, cast
 from lark import Lark
 from lark import Tree
@@ -12,6 +14,7 @@ from hintzCompiler.preprocessor import Preprocessor
 from hintzCompiler.src.symbol_table import SymbolTable
 from hintzCompiler.src.transformer import IRTransformer
 from hintzCompiler.src.ir_nodes import Function, Program
+from hintzCompiler.src.mlir_emitter import emit_mlir
 from hintzCompiler.src.basic_blocks import BasicBlockGraph
 
 from hintzCompiler.src.dominators import Dominators
@@ -135,6 +138,16 @@ def main(): #pragma: no cover
     parser.add_argument("-s", "--dumpSymbolTable"   , action="store_true"   , help="Dump symbol table for debugging")
     parser.add_argument("-p", "--dumpParseTree"     , action="store_true"   , help="Dump parse tree for debugging")
     parser.add_argument("-c", "--dumpCfgs"          , action="store_true"   , help="Dump control flow graph")
+    parser.add_argument("--emit-mlir"              , action="store_true"   , help="Emit Hintz MLIR")
+    parser.add_argument("--emit-hintz-mlir"         , action="store_true"   , help="Write Hintz MLIR to a file")
+    parser.add_argument("--emit-lowered-mlir"       , action="store_true"   , help="Lower Hintz MLIR to arith/func and write to a file")
+    parser.add_argument("--emit-llvm"              , action="store_true"   , help="Lower to LLVM dialect and emit LLVM IR (.ll)")
+    parser.add_argument("--emit-exe"               , action="store_true"   , help="Compile to a native executable")
+    parser.add_argument("--out"                                         , help="Base output path (default: source path without extension)")
+    parser.add_argument("--hintz-opt"                                   , help="Path to hintz-opt")
+    parser.add_argument("--mlir-opt"                                    , help="Path to mlir-opt")
+    parser.add_argument("--mlir-translate"                              , help="Path to mlir-translate")
+    parser.add_argument("--clang"                                       , help="Path to clang")
     parser.add_argument("source"                                            , help="Path to input .hz (hintz) source file")
     args = parser.parse_args()
 
@@ -149,10 +162,17 @@ def main(): #pragma: no cover
         if args.dumpParseTree:
             print("\n=== PARSE-TREE ===\n")
             print(parsetree.pretty())
-            
+
         if args.dumpAstToFile:
             print("\n=== AST-DUMP ===\n")
             ir.dump()
+
+        if args.emit_mlir:
+            print("\n=== HINTZ-MLIR ===\n")
+            print(emit_mlir(cctx))
+
+        if args.emit_hintz_mlir or args.emit_lowered_mlir or args.emit_llvm or args.emit_exe:
+            _run_mlir_pipeline(args, cctx)
 
         if args.dumpSymbolTable:
             print("\n=== SYMBOL-TABLE ===\n")
@@ -174,6 +194,139 @@ def main(): #pragma: no cover
         sys.exit(1)
 
 ##############################################################################################
+
+def _run_mlir_pipeline(args, cctx: CompilationContext) -> None:
+    base = args.out if args.out else os.path.splitext(args.source)[0]
+    hintz_mlir_path = f"{base}.hintz.mlir"
+    lowered_mlir_path = f"{base}.lowered.mlir"
+    llvm_dialect_path = f"{base}.llvm.mlir"
+    llvm_ir_path = f"{base}.ll"
+    exe_path = base
+
+    hintz_mlir = emit_mlir(cctx)
+    _write_text(hintz_mlir_path, hintz_mlir)
+    if args.emit_hintz_mlir:
+        print(f"\n=== HINTZ-MLIR (file) ===\n{hintz_mlir_path}")
+
+    if not (args.emit_lowered_mlir or args.emit_llvm or args.emit_exe):
+        return
+
+    hintz_opt = _resolve_tool(
+        name="hintz-opt",
+        arg_value=args.hintz_opt,
+        env_var="HINTZ_OPT",
+        default_path=_default_hintz_opt_path(),
+    )
+
+    _run_cmd([hintz_opt, hintz_mlir_path, "--convert-hintz-to-arith-func"], lowered_mlir_path)
+    if args.emit_lowered_mlir or args.emit_llvm or args.emit_exe:
+        print(f"\n=== LOWERED-MLIR (file) ===\n{lowered_mlir_path}")
+
+    if not (args.emit_llvm or args.emit_exe):
+        return
+
+    mlir_opt = _resolve_tool(
+        name="mlir-opt",
+        arg_value=args.mlir_opt,
+        env_var="MLIR_OPT",
+    )
+    _run_cmd(
+        [
+            mlir_opt,
+            lowered_mlir_path,
+            "--convert-arith-to-llvm",
+            "--convert-func-to-llvm",
+            "--reconcile-unrealized-casts",
+        ],
+        llvm_dialect_path,
+    )
+
+    mlir_translate = _resolve_tool(
+        name="mlir-translate",
+        arg_value=args.mlir_translate,
+        env_var="MLIR_TRANSLATE",
+    )
+    _run_cmd(
+        [mlir_translate, "--mlir-to-llvmir", llvm_dialect_path],
+        llvm_ir_path,
+    )
+    print(f"\n=== LLVM-IR (file) ===\n{llvm_ir_path}")
+
+    if not args.emit_exe:
+        return
+
+    clang = _resolve_tool(
+        name="clang",
+        arg_value=args.clang,
+        env_var="CLANG",
+    )
+    _run_cmd([clang, llvm_ir_path, "-o", exe_path], output_path=None)
+    print(f"\n=== EXECUTABLE ===\n{exe_path}")
+
+
+def _write_text(path: str, content: str) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+
+def _run_cmd(cmd: list[str], output_path: str | None) -> None:
+    if output_path:
+        with open(output_path, "w", encoding="utf-8") as out:
+            subprocess.run(cmd, check=True, stdout=out)
+    else:
+        subprocess.run(cmd, check=True)
+
+
+def _resolve_tool(name: str, arg_value: str | None, env_var: str, default_path: str | None = None) -> str:
+    tool = _find_tool(
+        name=name,
+        arg_value=arg_value,
+        env_var=env_var,
+        default_path=default_path,
+    )
+    if tool:
+        return tool
+    raise RuntimeError(
+        f"❌ Unable to find '{name}'. Set {env_var}, pass --{name}, or add it to PATH."
+    )
+
+
+def _find_tool(name: str, arg_value: str | None, env_var: str, default_path: str | None = None) -> str | None:
+    if arg_value:
+        return arg_value
+    env_value = os.environ.get(env_var)
+    if env_value:
+        return env_value
+    bundled = _bundled_tool_path(name)
+    if bundled:
+        return bundled
+    if default_path and os.path.exists(default_path):
+        return default_path
+    return shutil.which(name)
+
+
+def _bundled_tool_path(name: str) -> str | None:
+    tools_dir = _tools_dir()
+    if not tools_dir:
+        return None
+    candidate = os.path.join(tools_dir, name)
+    if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+        return candidate
+    return None
+
+
+def _tools_dir() -> str | None:
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    tools_dir = os.path.join(repo_root, "tools")
+    if os.path.isdir(tools_dir):
+        return tools_dir
+    return None
+
+
+def _default_hintz_opt_path() -> str:
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    return os.path.join(repo_root, "hintz-mlir-dialect", "build", "bin", "hintz-opt")
+
 
 if __name__ == "__main__":
     main()

@@ -69,7 +69,7 @@ Status: `[x]`
 ---
 
 ## Step 2: Define Minimal Hintz Dialect Ops for Frontend Mapping
-Status: `[ ]`
+Status: `[~]`
 
 ### What this step covers
 - Add the smallest useful op set to represent current Hintz IR subset.
@@ -95,10 +95,15 @@ Status: `[ ]`
 - New ops parse/print and verify correctly.
 - Test files demonstrate valid IR examples for each new op.
 
+### Progress notes
+- Added ops: `hintz.const`, `hintz.add`, `hintz.return`.
+- Added test: `hintz-mlir-dialect/test/Standalone/hintz-ops.mlir`.
+- `ninja check-standalone` passes (run outside sandbox due to multiprocessing semaphore permissions).
+
 ---
 
 ## Step 3: Hintz IR -> Hintz MLIR Emitter in Frontend Repo
-Status: `[ ]`
+Status: `[~]`
 
 ### What this step covers
 - Implement emitter from Python Hintz IR nodes to textual `hintz` MLIR module.
@@ -121,10 +126,16 @@ Status: `[ ]`
 ### Exit criteria
 - Frontend can emit valid, parseable hintz-MLIR text for the supported subset.
 
+### Progress notes
+- CFG-based MLIR emitter added (`hintzCompiler/src/mlir_emitter.py`).
+- CLI flag `--emit-mlir` added in `hintzCompiler/compiler.py`.
+- Tests added in `hintzCompiler/tests/test_mlir_emitter_basic.py`.
+- `PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests` -> `87 passed`.
+
 ---
 
 ## Step 4: Lowering Passes (Hintz Dialect -> Core MLIR Dialects)
-Status: `[ ]`
+Status: `[~]`
 
 ### What this step covers
 - Implement conversion passes from `hintz` ops to `arith`/`func`/`cf` (and `scf` if needed).
@@ -145,6 +156,14 @@ Status: `[ ]`
 ### Exit criteria
 - Supported `hintz` ops are fully eliminated after lowering pipeline.
 - Resulting IR uses only intended downstream dialects.
+
+### Progress notes
+- Added pass `--convert-hintz-to-arith-func` lowering:
+  - `hintz.const` -> `arith.constant`
+  - `hintz.add` -> `arith.addi`
+  - `hintz.return` -> `func.return`
+- Added test: `hintz-mlir-dialect/test/Standalone/hintz-lowering.mlir`.
+- `ninja check-standalone` passes (run outside sandbox due to multiprocessing semaphore permissions).
 
 ---
 

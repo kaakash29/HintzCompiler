@@ -7,16 +7,20 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
+#include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/IR/DialectRegistry.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Rewrite/FrozenRewritePatternSet.h"
 #include "mlir/Support/LogicalResult.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
 
+#include "Standalone/StandaloneOps.h"
 #include "Standalone/StandalonePasses.h"
 
 namespace mlir::hintz {
 #define GEN_PASS_DEF_STANDALONESWITCHBARFOO
+#define GEN_PASS_DEF_STANDALONECONVERTHINTZTOARITHFUNC
 #include "Standalone/StandalonePasses.h.inc"
 
 namespace {
@@ -45,6 +49,57 @@ public:
   void runOnOperation() final {
     RewritePatternSet patterns(&getContext());
     patterns.add<StandaloneSwitchBarFooRewriter>(&getContext());
+    FrozenRewritePatternSet patternSet(std::move(patterns));
+    if (failed(applyPatternsAndFoldGreedily(getOperation(), patternSet)))
+      signalPassFailure();
+  }
+};
+
+class HintzConstLowering : public OpRewritePattern<ConstOp> {
+public:
+  using OpRewritePattern<ConstOp>::OpRewritePattern;
+  LogicalResult matchAndRewrite(ConstOp op,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<arith::ConstantOp>(op, op.getValueAttr());
+    return success();
+  }
+};
+
+class HintzAddLowering : public OpRewritePattern<AddOp> {
+public:
+  using OpRewritePattern<AddOp>::OpRewritePattern;
+  LogicalResult matchAndRewrite(AddOp op,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<arith::AddIOp>(op, op.getLhs(), op.getRhs());
+    return success();
+  }
+};
+
+class HintzReturnLowering : public OpRewritePattern<ReturnOp> {
+public:
+  using OpRewritePattern<ReturnOp>::OpRewritePattern;
+  LogicalResult matchAndRewrite(ReturnOp op,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<func::ReturnOp>(op, op.getValue());
+    return success();
+  }
+};
+
+class StandaloneConvertHintzToArithFunc
+    : public impl::StandaloneConvertHintzToArithFuncBase<
+          StandaloneConvertHintzToArithFunc> {
+public:
+  using impl::StandaloneConvertHintzToArithFuncBase<
+      StandaloneConvertHintzToArithFunc>::StandaloneConvertHintzToArithFuncBase;
+
+  void getDependentDialects(DialectRegistry &registry) const override {
+    registry.insert<arith::ArithDialect, func::FuncDialect>();
+  }
+
+  void runOnOperation() final {
+    RewritePatternSet patterns(&getContext());
+    patterns.add<HintzConstLowering, HintzAddLowering, HintzReturnLowering>(
+        &getContext());
     FrozenRewritePatternSet patternSet(std::move(patterns));
     if (failed(applyPatternsAndFoldGreedily(getOperation(), patternSet)))
       signalPassFailure();

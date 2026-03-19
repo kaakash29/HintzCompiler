@@ -28,4 +28,15 @@ def StandaloneSwitchBarFoo: Pass<"hintz-switch-bar-foo", "::mlir::ModuleOp"> {
   }];
 }
 
+def StandaloneConvertHintzToArithFunc
+    : Pass<"convert-hintz-to-arith-func", "::mlir::ModuleOp"> {
+  let summary = "Lower hintz.const/add/return to arith/func.";
+  let description = [{
+    Converts the minimal Hintz ops to core MLIR dialects:
+    - hintz.const -> arith.constant
+    - hintz.add -> arith.addi
+    - hintz.return -> func.return
+  }];
+}
+
 #endif // STANDALONE_PASS

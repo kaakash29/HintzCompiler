@@ -41,4 +41,40 @@ def Standalone_FooOp : Standalone_Op<"foo", [Pure,
     }];
 }
 
+def Standalone_ConstOp : Standalone_Op<"const", [Pure]> {
+    let summary = "Integer constant";
+    let description = [{
+        Produces an integer constant value.
+    }];
+
+    let arguments = (ins I64Attr:$value);
+    let results = (outs I64:$result);
+
+    let assemblyFormat = "$value attr-dict `:` type($result)";
+}
+
+def Standalone_AddOp : Standalone_Op<"add", [Pure, SameOperandsAndResultType]> {
+    let summary = "Integer add";
+    let description = [{
+        Adds two integers.
+    }];
+
+    let arguments = (ins I64:$lhs, I64:$rhs);
+    let results = (outs I64:$result);
+
+    let assemblyFormat = "$lhs `,` $rhs attr-dict `:` type($lhs)";
+}
+
+def Standalone_ReturnOp : Standalone_Op<"return", [Terminator]> {
+    let summary = "Return from function";
+    let description = [{
+        Returns a single integer value from a function.
+    }];
+
+    let arguments = (ins I64:$value);
+    let results = (outs);
+
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
 #endif // STANDALONE_OPS
