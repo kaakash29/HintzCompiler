@@ -6,6 +6,7 @@ import argparse
 import shutil
 import subprocess
 from typing import List, cast
+from hintzCompiler import __version__
 from lark import Lark
 from lark import Tree
 from dataclasses import dataclass
@@ -120,7 +121,7 @@ def compile(path: str) -> CompilationContext: #pragma: no cover
     if not path.endswith(".hz"):
         raise ValueError(f"❌ Only .hz files are supported: {path}")
 
-    fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "includes") 
+    fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "hintzlib") 
     preprocessor = Preprocessor(include_paths=[fullIncludePath])
     code = preprocessor.preprocess(path)
     cctx = Driver(code)
@@ -133,23 +134,38 @@ Main function for the Hintz Compiler
 """
 def main(): #pragma: no cover
 
-    parser = argparse.ArgumentParser(description="Hintz Compiler")
-    parser.add_argument("-a", "--dumpAstToFile"     , action="store_true"   , help="Path to write IR output")
-    parser.add_argument("-s", "--dumpSymbolTable"   , action="store_true"   , help="Dump symbol table for debugging")
-    parser.add_argument("-p", "--dumpParseTree"     , action="store_true"   , help="Dump parse tree for debugging")
-    parser.add_argument("-c", "--dumpCfgs"          , action="store_true"   , help="Dump control flow graph")
-    parser.add_argument("--emit-mlir"              , action="store_true"   , help="Emit Hintz MLIR")
-    parser.add_argument("--emit-hintz-mlir"         , action="store_true"   , help="Write Hintz MLIR to a file")
-    parser.add_argument("--emit-lowered-mlir"       , action="store_true"   , help="Lower Hintz MLIR to arith/func and write to a file")
-    parser.add_argument("--emit-llvm"              , action="store_true"   , help="Lower to LLVM dialect and emit LLVM IR (.ll)")
-    parser.add_argument("--emit-exe"               , action="store_true"   , help="Compile to a native executable")
-    parser.add_argument("--out"                                         , help="Base output path (default: source path without extension)")
-    parser.add_argument("--hintz-opt"                                   , help="Path to hintz-opt")
-    parser.add_argument("--mlir-opt"                                    , help="Path to mlir-opt")
-    parser.add_argument("--mlir-translate"                              , help="Path to mlir-translate")
-    parser.add_argument("--clang"                                       , help="Path to clang")
-    parser.add_argument("source"                                            , help="Path to input .hz (hintz) source file")
+    parser = argparse.ArgumentParser(description="Hintz Compiler", add_help=False)
+    parser.add_argument("source", nargs="?", help="Path to input .hz (hintz) source file")
+    primary = parser.add_argument_group("main options")
+    primary.add_argument("-h", "--help", action="help", help="show this help message and exit")
+    primary.add_argument("-v", "--version", action="version", version=f"hintz {__version__}", help="show program's version number and exit")
+    primary.add_argument("-o", "--out", help="Base output path for pipeline artifacts; executable defaults to ./<source>.out when omitted")
+
+    pipeline = parser.add_argument_group("pipeline options")
+    pipeline.add_argument("--emit-exe", action="store_true", help="Compile to a native executable")
+    pipeline.add_argument("--emit-mlir", action="store_true", help="Emit Hintz MLIR")
+    pipeline.add_argument("--emit-hintz-mlir", action="store_true", help="Write Hintz MLIR to a file")
+    pipeline.add_argument("--emit-lowered-mlir", action="store_true", help="Lower Hintz MLIR to arith/func and write to a file")
+    pipeline.add_argument("--emit-llvm", action="store_true", help="Lower to LLVM dialect and emit LLVM IR (.ll)")
+
+    tooling = parser.add_argument_group("tool overrides")
+    tooling.add_argument("--hintz-opt", help="Path to hintz-opt")
+    tooling.add_argument("--mlir-opt", help="Path to mlir-opt")
+    tooling.add_argument("--mlir-translate", help="Path to mlir-translate")
+    tooling.add_argument("--clang", help="Path to clang")
+
+    debug = parser.add_argument_group("debug options")
+    debug.add_argument("-a", "--dumpAstToFile", action="store_true", help="Path to write IR output")
+    debug.add_argument("-s", "--dumpSymbolTable", action="store_true", help="Dump symbol table for debugging")
+    debug.add_argument("-p", "--dumpParseTree", action="store_true", help="Dump parse tree for debugging")
+    debug.add_argument("-c", "--dumpCfgs", action="store_true", help="Dump control flow graph")
     args = parser.parse_args()
+
+    if not args.source:
+        parser.error("the following arguments are required: source")
+
+    if _should_default_to_emit_exe(args):
+        args.emit_exe = True
 
     try:
         cctx = compile(args.source)
@@ -201,7 +217,7 @@ def _run_mlir_pipeline(args, cctx: CompilationContext) -> None:
     lowered_mlir_path = f"{base}.lowered.mlir"
     llvm_dialect_path = f"{base}.llvm.mlir"
     llvm_ir_path = f"{base}.ll"
-    exe_path = base
+    exe_path = _default_exe_path(args, base)
 
     hintz_mlir = emit_mlir(cctx)
     _write_text(hintz_mlir_path, hintz_mlir)
@@ -262,6 +278,29 @@ def _run_mlir_pipeline(args, cctx: CompilationContext) -> None:
     )
     _run_cmd([clang, llvm_ir_path, "-o", exe_path], output_path=None)
     print(f"\n=== EXECUTABLE ===\n{exe_path}")
+
+
+def _should_default_to_emit_exe(args) -> bool:
+    return not any(
+        [
+            args.dumpAstToFile,
+            args.dumpSymbolTable,
+            args.dumpParseTree,
+            args.dumpCfgs,
+            args.emit_mlir,
+            args.emit_hintz_mlir,
+            args.emit_lowered_mlir,
+            args.emit_llvm,
+            args.emit_exe,
+        ]
+    )
+
+
+def _default_exe_path(args, base: str) -> str:
+    if args.out:
+        return base
+    source_stem = os.path.splitext(os.path.basename(args.source))[0]
+    return os.path.join(os.getcwd(), f"{source_stem}.out")
 
 
 def _write_text(path: str, content: str) -> None:

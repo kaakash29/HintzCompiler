@@ -8,6 +8,18 @@ Build a reliable pipeline:
 4. -> LLVM IR
 5. -> native binary
 
+Initial product requirement for delivery:
+- Linux first.
+- User-facing CLI should support `hintz simple.hz`.
+- User-facing CLI should use standard option forms:
+  - `-h`, `--help`
+  - `-v`, `--version`
+  - `-o`, `--out`
+- Default output should be `simple.out` in the current working directory.
+- Required backend tools (`hintz-opt`, `mlir-opt`, `mlir-translate`) should be installable as part of the Hintz distribution story.
+- `clang` is an explicit host dependency for native executable generation on Linux.
+- Repo should include an install script that installs the Hintz compiler and configures the runtime/tool lookup needed for the Linux workflow.
+
 This plan is test-gated. Each step has required tests. A step is marked done only when its tests pass.
 
 ---
@@ -174,24 +186,40 @@ Status: `[~]`
 Status: `[~]`
 
 ### What this step covers
-- Wire complete script/commands:
+- Wire complete local compile flow:
   - emit hintz-MLIR
   - lower with `hintz-opt` and/or `mlir-opt`
   - translate to LLVM IR (`mlir-translate`)
   - compile with `clang`
+- Add first Linux user-facing CLI behavior:
+  - `hintz simple.hz`
+  - emits `simple.out` in the current working directory by default
+  - supports explicit output override through `-o` / `--out`
+  - exposes `-h` / `--help` and `-v` / `--version`
 
 ### Planned code areas
-- New script: `scripts/hintz_to_bin.sh`
+- CLI/package entrypoint for `hintz`
+- `hintzCompiler/compiler.py`
+- install/layout helper scripts
 - optional helper docs update in `README.md`
 
 ### Required tests
 - Add integration test input program(s) in `samples/`
 - Add pytest integration test:
   - `hintzCompiler/tests/test_mlir_e2e_binary.py`
-  - compile and assert executable exit code/output
+  - compile via the user-facing CLI and assert executable path/name/exit code/output
+- Add test for default output naming/location:
+  - compile `simple.hz` from a temp working directory
+  - assert `simple.out` is created in that working directory
+- Add CLI option tests:
+  - `hintz --help`
+  - `hintz --version`
+  - `hintz simple.hz --out custom.out`
 
 ### Exit criteria
-- One canonical sample compiles and runs end-to-end in local dev environment.
+- On Linux, one canonical sample can be compiled by running `hintz simple.hz`.
+- Default artifact is `simple.out` in the caller's current working directory.
+- The executable runs successfully and matches expected exit code/output.
 
 ### Progress notes
 - Pipeline wired in `hintzCompiler/compiler.py` with:
@@ -199,11 +227,54 @@ Status: `[~]`
   - tool discovery with `tools/` fallback
 - Added integration test: `hintzCompiler/tests/test_mlir_pipeline.py` (skips if tools missing).
 - Minimal sample (`return 1 + 2;`) compiles to binary and returns exit code `3`.
+- Not yet exposed as a stable installed `hintz` command.
+- Current default executable naming/path does not yet enforce `simple.out` in cwd.
 - Not yet working for real samples with variables/control flow (emitter lacks `load/store`).
 
 ---
 
-## Step 6: Expand Feature Coverage + Regression Suite
+## Step 6: Linux Packaging + Installer
+Status: `[ ]`
+
+### What this step covers
+- Make the Linux toolchain usable without manual path setup beyond installation.
+- Define how backend binaries are packaged, discovered, and versioned.
+- Add an installer that places the `hintz` CLI in a predictable location and configures access to packaged tools.
+- Validate that required host dependencies are present during install, especially `clang` for native executable generation.
+- Support installer destination selection with `--location`.
+
+### Planned code areas
+- `install.sh` (or equivalent Linux installer entrypoint)
+- packaged tool layout under repo/distribution artifacts
+- CLI bootstrap/tool discovery logic
+- release/install docs in `README.md`
+
+### Required tests
+- Installer smoke test in a clean temp prefix on Linux:
+  - install the compiler
+  - verify `hintz --help`
+  - verify packaged tool resolution works without manual `--hintz-opt/--mlir-opt/...` flags
+- Installer dependency test:
+  - if `clang` is missing, installer exits non-zero with a clear error
+- End-to-end install test:
+  - run installed `hintz simple.hz`
+  - assert `simple.out` is produced and runnable
+
+### Exit criteria
+- Linux install flow is documented and scripted.
+- Installed `hintz` command works without requiring developers to manually build or point at backend tools.
+- Packaged backend binaries are found through the intended install layout.
+- Installer clearly reports missing `clang` and refuses a broken install.
+- Installed `hintz` command uses host `clang` by default for final executable generation.
+- Installer supports `--location <path>` to choose the install root.
+
+### Notes / Open design questions
+- Decide whether packaged MLIR binaries live in-repo (`tools/`) for development only or in install/release artifacts for end users.
+- Decide whether installer should require `clang` only, or also verify related host tools needed for linking on supported Linux targets.
+
+---
+
+## Step 7: Expand Feature Coverage + Regression Suite
 Status: `[ ]`
 
 ### What this step covers
@@ -236,3 +307,7 @@ Status: `[ ]`
 - No control flow ops (if/while/for) in the dialect or emitter yet.
 - No comparison ops or non-`+` arithmetic ops.
 - End-to-end pipeline currently only works for constant `return` or `return a + b` where `a/b` are literals.
+- No installed `hintz` CLI UX yet for Linux.
+- No installer yet.
+- No finalized packaging strategy for packaged MLIR/LLVM tool binaries on Linux.
+- No installer-time validation for required host `clang`.

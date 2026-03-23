@@ -77,7 +77,7 @@
   </header>
 
   <form method="post">
-    <textarea id="code-input" name="code" rows="20" cols="80">{{ request.form.code or '' }}</textarea><br>
+    <textarea id="code-input" name="code" rows="20" cols="80">{{ request.form.code or default_code }}</textarea><br>
     <div class="actions">
       <button id="random-sample-btn" type="button" title="Load random sample from tests">🎲 Random Sample</button>
       <button type="submit" name="action" value="ast">Show AST</button>
@@ -87,6 +87,7 @@
       <button type="submit" name="action" value="dmt">Show DOM</button>
       <button type="submit" name="action" value="toSSA">Run toSSA</button>
       <button type="submit" name="action" value="ssaDCE">Run ssaDCE</button>
+      <button type="submit" name="action" value="mlir">Show MLIR</button>
     </div>
   </form>
 

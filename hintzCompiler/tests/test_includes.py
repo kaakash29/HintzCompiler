@@ -12,7 +12,7 @@ class TestCompiler(unittest.TestCase):
     def test_include_simplest(self):
  
         # Now preprocess the file
-        fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "..", "includes")
+        fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "..", "hintzlib")
         preprocessor = Preprocessor(include_paths=[fullIncludePath])
 
         # Write the source file that uses the include
@@ -37,7 +37,7 @@ class TestCompiler(unittest.TestCase):
 
     def test_simple_pound_defines(self):
         # Now preprocess the file
-        fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "..", "includes")
+        fullIncludePath = os.path.join(os.path.dirname(__file__), "..", "..", "hintzlib")
         preprocessor = Preprocessor(include_paths=[fullIncludePath])
 
         # Write the source file that uses the include
@@ -58,4 +58,3 @@ class TestCompiler(unittest.TestCase):
         block = cast(Block, mainF.body)
 
         self.assertTrue(any(stmt.__class__.__name__ == "Assignment" for stmt in block.statements))
-

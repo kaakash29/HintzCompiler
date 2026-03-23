@@ -1,0 +1,11 @@
+{
+  "include": [
+    "hintzCompiler"
+  ],
+  "extraPaths": [
+    ".",
+    "./hintzCompiler"
+  ],
+  "venvPath": "/home/aakash/venvs",
+  "venv": "hintz311"
+}

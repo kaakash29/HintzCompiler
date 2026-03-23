@@ -14,6 +14,7 @@ from hintzCompiler.src.ssaDCE import SSAAwareDeadCodeElimination
 from hintzCompiler.src.dominanceFrontier import DominanceFrontiers
 from hintzCompiler.src.hintz_dumper import HintzCfgDumper
 from hintzCompiler.src.readWriteAnalyzer import ReadWriteAnalyzer
+from hintzCompiler.src.mlir_emitter import emit_mlir
 
 # Global cache (keyed by source code string)
 from hashlib import sha256
@@ -57,6 +58,14 @@ def _load_random_samples_from_tests():
 
 SAMPLE_PROGRAMS = _load_random_samples_from_tests()
 
+DEFAULT_SAMPLE_PROGRAM = textwrap.dedent(
+    """
+    int main() {
+        return 1 + 2;
+    }
+    """
+).strip()
+
 def _rwa_as_text(cctx):
     if len(cctx.cfgs) == 0:
         return "No functions found. Read/Write analysis requires a function."
@@ -82,6 +91,8 @@ def index():
             ast = cctx._ast
             if action == "ast":
                 ir_output = pprint.pformat(ast, indent=2)
+            elif action == "mlir":
+                ir_output = emit_mlir(cctx)
             elif action == "rwa":
                 ir_output = _rwa_as_text(cctx)
 
@@ -175,7 +186,12 @@ def index():
         except Exception as e:
             ir_output = f"❌ Error: {str(e)}"
 
-    return render_template("index.html", ir_output=ir_output, cfg_generated=cfg_generated)
+    return render_template(
+        "index.html",
+        ir_output=ir_output,
+        cfg_generated=cfg_generated,
+        default_code=DEFAULT_SAMPLE_PROGRAM,
+    )
 
 @app.route("/random-sample", methods=["GET"])
 def random_sample():
