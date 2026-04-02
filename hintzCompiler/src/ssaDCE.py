@@ -15,6 +15,7 @@ class SSAAwareDeadCodeElimination():
         self._cfg = cfg
         self._rootStmtIDList : List[int] = []
         self._markedStmtIDList : List[int] = []
+        self._markedStmtIDSet : set[int] = set()
         self._rwa : ReadWriteAnalyzer = ReadWriteAnalyzer(cfg)
 
     def doit(self):
@@ -46,6 +47,10 @@ class SSAAwareDeadCodeElimination():
             self._rootStmtIDList.append(stmt._cfgNodeId)
 
     def traverseBackwardsInDataFlow(self, liveStmtId):
+        if liveStmtId in self._markedStmtIDSet:
+            return
+
+        self._markedStmtIDSet.add(liveStmtId)
         self._markedStmtIDList.append(liveStmtId)
         liveStmtReads = self._rwa.get_reads(liveStmtId)
         for eachLiveRead in liveStmtReads:
