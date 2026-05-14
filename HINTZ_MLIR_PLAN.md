@@ -1,313 +1,471 @@
 # Hintz MLIR Integration Plan
 
 ## Goal
-Build a reliable pipeline:
-1. Hintz frontend IR (`hintzCompiler/src/ir_nodes.py`)
-2. -> custom MLIR dialect (`hintz.*`)
-3. -> lowered MLIR core/LLVM dialect
-4. -> LLVM IR
-5. -> native binary
 
-Initial product requirement for delivery:
-- Linux first.
-- User-facing CLI should support `hintz simple.hz`.
-- User-facing CLI should use standard option forms:
+Build and stabilize this pipeline:
+
+1. Hintz frontend IR (`hintzCompiler/src/ir_nodes.py`)
+2. `->` custom Hintz MLIR dialect (`hintz.*`)
+3. `->` lowered MLIR core/LLVM dialects
+4. `->` LLVM IR
+5. `->` native executable
+
+This document is meant to be:
+
+- accurate to the current repo state
+- simple to follow
+- explicit about what is already done vs what is still missing
+
+---
+
+## Current Reality
+
+The repo has two different levels of completion:
+
+- The Python frontend is substantial and healthy.
+- The MLIR/LLVM backend is real, but only supports a minimal subset end-to-end.
+
+Today, the project can:
+
+- parse a meaningful C89-like subset into its own IR
+- build CFGs and basic block graphs
+- compute dominators and dominance frontiers
+- convert IR to SSA
+- run SSA-aware DCE
+- emit Hintz MLIR for straight-line scalar local-variable programs using:
+  - integer literals
+  - assignments
+  - variable reads
+  - `+`
+  - `return`
+- lower that supported subset to `arith`/`func`/`memref`
+- produce a native executable for the canonical tiny sample:
+  - `int main() { return 1 + 2; }`
+- produce a native executable for simple scalar-local programs such as:
+  - `int x; x = 3; return x;`
+  - `int x; int y; x = 1; y = x + 2; return y;`
+
+Today, the project still cannot broadly:
+
+- lower most arithmetic beyond `+`
+- lower comparisons
+- lower control flow (`if`, `while`, `for`, `switch`, `goto`)
+- lower function calls
+- compile real frontend samples end-to-end to binaries
+
+---
+
+## Status Legend
+
+- `[x]` done and verified
+- `[~]` partially done
+- `[ ]` not started
+
+---
+
+## Verified Baseline
+
+Current checked state in this repo:
+
+- Frontend tests:
+  - `cd /home/aakash/WORK/HintzCompiler`
+  - `pytest -q hintzCompiler/tests`
+  - Current result: `97 passed`
+- Focused pipeline/install tests:
+  - `pytest -q hintzCompiler/tests/test_mlir_pipeline.py hintzCompiler/tests/test_install_and_cli.py`
+  - Current result: passing when required tools are available
+- Focused SSA/DCE regression set:
+  - `pytest -q hintzCompiler/tests/test_ssa_dce.py hintzCompiler/tests/test_to_ssa.py`
+  - Current result: passing
+- Minimal end-to-end native compile:
+  - `int main() { return 1 + 2; }`
+  - Produces an executable that exits with code `3`
+- Straight-line scalar-local end-to-end native compile:
+  - `int x; int y; x = 1; y = x + 2; return y;`
+  - Produces an executable that exits with code `3`
+
+Important note:
+
+- `samples/exampleOfForLoop.hz` used to crash in SSA DCE due to recursive phi-cycle traversal.
+- That frontend bug is now fixed.
+- The sample still does not compile end-to-end through MLIR because backend coverage is still too limited.
+
+---
+
+## What Is Already Done
+
+### Step 0: Baseline Validation
+Status: `[x]`
+
+Done:
+
+- repo tests are passing
+- dialect tool builds
+- dialect is visible as `hintz`
+
+Exit criteria: met.
+
+---
+
+### Step 1: Dialect Naming + Layout Consistency
+Status: `[x]`
+
+Done:
+
+- textual dialect namespace is `hintz`
+- tool name is `hintz-opt`
+- dialect tests align with `hintz` naming
+
+Caveat:
+
+- some paths and class names still use `Standalone` because this started from the MLIR standalone template
+
+Exit criteria: met.
+
+---
+
+### Step 2: Minimal Hintz Dialect Ops
+Status: `[~]`
+
+Goal of this step:
+
+- define the smallest useful op set that can represent the current frontend subset
+
+Implemented:
+
+- `hintz.const`
+- `hintz.add`
+- `hintz.alloca`
+- `hintz.store`
+- `hintz.load`
+- `hintz.return`
+
+Verified by:
+
+- dialect parser/printer tests
+- lowering tests
+
+Still missing:
+
+- more arithmetic:
+  - `-`
+  - `*`
+  - `/`
+- comparisons
+- any control-flow-related op set needed by the chosen lowering strategy
+- call-related ops if frontend function calls are meant to lower soon
+
+Exit criteria for this step:
+
+- the dialect can represent the current supported straight-line scalar subset, not just the `return 1 + 2;` toy case
+- this is now true for:
+  - scalar local storage
+  - assignments
+  - variable reads
+  - `+`
+  - `return`
+
+Recommended next scope:
+
+1. comparisons
+2. `- * /`
+3. only then control flow / calls
+
+---
+
+### Step 3: Frontend Hintz IR -> Hintz MLIR Emitter
+Status: `[~]`
+
+Goal of this step:
+
+- emit textual `hintz` MLIR from frontend IR
+
+Implemented:
+
+- CLI flag `--emit-mlir`
+- emitter module exists
+- deterministic emission for the supported straight-line subset
+
+Currently supported by the emitter:
+
+- integer literals
+- scalar local assignments
+- scalar local variable reads
+- binary `+`
+- value-returning `return`
+- declarations are ignored
+
+Currently not supported by the emitter:
+
+- comparisons
+- unary ops
+- function calls
+- `if`
+- `while`
+- `do while`
+- `for`
+- `switch`
+- labels / gotos / breaks
+
+Current reality:
+
+- many frontend programs can parse and convert to CFG/SSA
+- only a much smaller subset can emit MLIR
+
+Exit criteria for this step:
+
+- the emitter handles the same subset that Step 2 made representable in the dialect
+
+Recommended next scope:
+
+1. arithmetic and comparisons
+2. structured control flow
+3. calls if needed
+
+---
+
+### Step 4: Lowering Passes (Hintz Dialect -> Core MLIR)
+Status: `[~]`
+
+Goal of this step:
+
+- lower `hintz.*` ops into downstream MLIR dialects suitable for LLVM lowering
+
+Implemented:
+
+- `hintz.const` -> `arith.constant`
+- `hintz.add` -> `arith.addi`
+- `hintz.alloca` -> `memref.alloca`
+- `hintz.store` -> `memref.store`
+- `hintz.load` -> `memref.load`
+- `hintz.return` -> `func.return`
+
+Still missing:
+
+- lowering for other arithmetic ops
+- lowering for comparisons
+- lowering for control flow
+- lowering for calls
+
+Exit criteria for this step:
+
+- all ops emitted by the frontend are fully eliminated by the lowering pipeline
+- resulting IR is valid for the downstream `mlir-opt` / `mlir-translate` flow
+
+Important dependency:
+
+- Step 4 should grow in lockstep with Step 2 and Step 3
+- do not add frontend-emitted ops without corresponding lowering coverage and tests
+
+---
+
+### Step 5: End-to-End Compile to Binary
+Status: `[~]`
+
+Goal of this step:
+
+- make `hintz <file.hz>` work for a meaningful supported subset
+
+What is already done:
+
+- CLI supports:
   - `-h`, `--help`
   - `-v`, `--version`
   - `-o`, `--out`
-- Default output should be `simple.out` in the current working directory.
-- Required backend tools (`hintz-opt`, `mlir-opt`, `mlir-translate`) should be installable as part of the Hintz distribution story.
-- `clang` is an explicit host dependency for native executable generation on Linux.
-- Repo should include an install script that installs the Hintz compiler and configures the runtime/tool lookup needed for the Linux workflow.
+- default no-flag compile path triggers executable generation
+- default executable naming is `./<source>.out` in the caller's current working directory
+- tool discovery supports:
+  - CLI flags
+  - environment variables
+  - repo-local `tools/`
+  - PATH
+- minimal integration test for native executable exists and passes when tools are available
+- straight-line scalar-local integration test exists and passes when tools are available
 
-This plan is test-gated. Each step has required tests. A step is marked done only when its tests pass.
+What is not done yet:
 
----
+- end-to-end support for real sample programs
+- broad coverage for loops / branches / calls
+- a clearly documented supported source-language subset for backend compilation
 
-## Current Baseline (Measured)
-- `hintz-mlir-dialect/build && ninja hintz-opt`: passes
-- `hintz-opt --show-dialects < /dev/null`: shows `hintz`
-- `PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests`: `87 passed`
+Current practical meaning of Step 5:
 
-## Status Legend
-- `[ ]` not started
-- `[~]` in progress
-- `[x]` completed and verified by tests
+- complete for the tiny canonical sample
+- complete for a narrow straight-line scalar subset
+- incomplete for the actual frontend language surface
 
----
+Exit criteria for this step:
 
-## Step 0: Baseline Validation
-Status: `[x]`
-
-### What this step covers
-- Confirm existing repo health before new implementation work.
-
-### Tests/Gates
-- `cd hintz-mlir-dialect/build && ninja hintz-opt`
-- `hintz-mlir-dialect/build/bin/hintz-opt --show-dialects < /dev/null`
-- `cd /home/aakash/WORK/HintzCompiler && PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests`
-
----
-
-## Step 1: Dialect Naming + Layout Consistency
-Status: `[x]`
-
-### What this step covers
-- Make naming consistent across source/tests/tooling so developers do not mix `standalone` vs `hintz`.
-- Keep current behavior intact while cleaning interfaces.
-
-### Planned code areas
-- `hintz-mlir-dialect/include/Standalone/*.td`
-- `hintz-mlir-dialect/lib/Standalone/*`
-- `hintz-mlir-dialect/python/*`
-- `hintz-mlir-dialect/test/*`
-
-### Required tests
-- Add/adjust dialect smoke tests:
-  - `hintz-mlir-dialect/test/Standalone/standalone-opt.mlir` (or renamed equivalent)
-  - verify checks expect `hintz` textual dialect
-- Run:
-  - `cd hintz-mlir-dialect/build && ninja hintz-opt check-standalone`
-
-### Exit criteria
-- No broken references due to naming mismatch.
-- Dialect tests pass with `hintz` namespace expectations.
-
-### Verification run
-- `cd hintz-mlir-dialect/build && ninja check-standalone` -> passed (`7/7` tests)
-- `hintz-mlir-dialect/build/bin/hintz-opt --show-dialects < /dev/null` -> includes `hintz`
-- `cd /home/aakash/WORK/HintzCompiler && PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests` -> `81 passed`
-
----
-
-## Step 2: Define Minimal Hintz Dialect Ops for Frontend Mapping
-Status: `[~]`
-
-### What this step covers
-- Add the smallest useful op set to represent current Hintz IR subset.
-- Initial scope:
-  - constants
-  - variable load/store model
-  - arithmetic (`+`, `-`, `*`, `/`)
-  - comparison
+- at least a small but non-trivial supported subset compiles end-to-end reliably
+- recommended minimum target:
+  - local variables
+  - assignments
+  - `+ - * /`
+  - comparisons
+  - `if`
+  - `while` or `for`
   - return
 
-### Planned code areas
-- `hintz-mlir-dialect/include/Standalone/StandaloneOps.td`
-- `hintz-mlir-dialect/lib/Standalone/StandaloneOps.cpp`
-- optional type updates in `StandaloneTypes.td`
+Recommended milestone sequence:
 
-### Required tests
-- New MLIR parser/printer tests in `hintz-mlir-dialect/test/Standalone/*.mlir`
-- Validate operation roundtrip (`hintz-opt input | hintz-opt`)
-- Run:
-  - `cd hintz-mlir-dialect/build && ninja hintz-opt check-standalone`
-
-### Exit criteria
-- New ops parse/print and verify correctly.
-- Test files demonstrate valid IR examples for each new op.
-
-### Progress notes
-- Added ops: `hintz.const`, `hintz.add`, `hintz.return`.
-- Added test: `hintz-mlir-dialect/test/Standalone/hintz-ops.mlir`.
-- `ninja check-standalone` passes (run outside sandbox due to multiprocessing semaphore permissions).
-- Not yet implemented: `load`, `store`, `cmp`, other arithmetic.
+1. compile branching programs
+2. compile loop programs
+3. only then advertise sample-directory coverage
 
 ---
 
-## Step 3: Hintz IR -> Hintz MLIR Emitter in Frontend Repo
+### Step 6: Linux Packaging + Installer
 Status: `[~]`
 
-### What this step covers
-- Implement emitter from Python Hintz IR nodes to textual `hintz` MLIR module.
-- Start with single-function integer programs.
+This step was previously marked as not started. That is no longer accurate.
 
-### Planned code areas
-- New module: `hintzCompiler/src/mlir_emitter.py`
-- CLI wiring in `hintzCompiler/compiler.py` (e.g., `--emit-mlir`)
+Already done:
 
-### Required unit tests
-- New tests under `hintzCompiler/tests/`:
-  - `test_mlir_emitter_basic.py`
-  - `test_mlir_emitter_control_flow.py` (initial minimal if/while subset)
-- Assertions:
-  - emitted text contains expected `hintz.*` ops
-  - deterministic output for fixed input
-- Run:
-  - `cd /home/aakash/WORK/HintzCompiler && PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests`
+- `install.sh` exists
+- install location can be selected with `--location`
+- installer checks for Python and `lark`
+- installer checks for `clang`
+- installer installs:
+  - `hintzCompiler`
+  - `hintzlib`
+  - bundled tool binaries
+- installer creates a `hintz` wrapper script
+- install/CLI tests exist and pass
 
-### Exit criteria
-- Frontend can emit valid, parseable hintz-MLIR text for the supported subset.
+Still left:
 
-### Progress notes
-- CFG-based MLIR emitter added (`hintzCompiler/src/mlir_emitter.py`).
-- CLI flag `--emit-mlir` added in `hintzCompiler/compiler.py`.
-- Tests added in `hintzCompiler/tests/test_mlir_emitter_basic.py`.
-- `PYTHONPATH=hintzCompiler pytest -q hintzCompiler/tests` -> `87 passed`.
-- Not yet supported: variables, control flow, function calls, non-`+` ops.
+- clarify and harden the tool distribution story
+- decide what is officially bundled vs externally required
+- document Linux install/runtime expectations more clearly
+- verify installed workflow once broader backend coverage exists
 
----
+Current recommendation:
 
-## Step 4: Lowering Passes (Hintz Dialect -> Core MLIR Dialects)
-Status: `[~]`
+- treat Step 6 as partially complete
+- do not spend major effort polishing installation further until backend feature coverage is larger
 
-### What this step covers
-- Implement conversion passes from `hintz` ops to `arith`/`func`/`cf` (and `scf` if needed).
-- Keep lowering staged and test each rewrite pattern.
+Exit criteria for this step:
 
-### Planned code areas
-- `hintz-mlir-dialect/include/Standalone/StandalonePasses.td`
-- `hintz-mlir-dialect/lib/Standalone/StandalonePasses.cpp`
-- pass registration in `standalone-opt/standalone-opt.cpp`
-
-### Required tests
-- New pass tests in `hintz-mlir-dialect/test/Standalone/*.mlir`:
-  - input with `hintz.*`
-  - `RUN: hintz-opt ... --convert-hintz-to-... | FileCheck`
-- Run:
-  - `cd hintz-mlir-dialect/build && ninja check-standalone`
-
-### Exit criteria
-- Supported `hintz` ops are fully eliminated after lowering pipeline.
-- Resulting IR uses only intended downstream dialects.
-
-### Progress notes
-- Added pass `--convert-hintz-to-arith-func` lowering:
-  - `hintz.const` -> `arith.constant`
-  - `hintz.add` -> `arith.addi`
-  - `hintz.return` -> `func.return`
-- Added test: `hintz-mlir-dialect/test/Standalone/hintz-lowering.mlir`.
-- `ninja check-standalone` passes (run outside sandbox due to multiprocessing semaphore permissions).
-- Not yet implemented: lowering for variables, control flow, comparisons, calls.
+- a fresh Linux install can build the supported subset without manual path surgery
+- install docs match reality
 
 ---
 
-## Step 5: End-to-End Compile to Binary
-Status: `[~]`
+## Main Remaining Work
 
-### What this step covers
-- Wire complete local compile flow:
-  - emit hintz-MLIR
-  - lower with `hintz-opt` and/or `mlir-opt`
-  - translate to LLVM IR (`mlir-translate`)
-  - compile with `clang`
-- Add first Linux user-facing CLI behavior:
-  - `hintz simple.hz`
-  - emits `simple.out` in the current working directory by default
-  - supports explicit output override through `-o` / `--out`
-  - exposes `-h` / `--help` and `-v` / `--version`
+If reduced to the real critical path, the project mainly needs:
 
-### Planned code areas
-- CLI/package entrypoint for `hintz`
-- `hintzCompiler/compiler.py`
-- install/layout helper scripts
-- optional helper docs update in `README.md`
-
-### Required tests
-- Add integration test input program(s) in `samples/`
-- Add pytest integration test:
-  - `hintzCompiler/tests/test_mlir_e2e_binary.py`
-  - compile via the user-facing CLI and assert executable path/name/exit code/output
-- Add test for default output naming/location:
-  - compile `simple.hz` from a temp working directory
-  - assert `simple.out` is created in that working directory
-- Add CLI option tests:
-  - `hintz --help`
-  - `hintz --version`
-  - `hintz simple.hz --out custom.out`
-
-### Exit criteria
-- On Linux, one canonical sample can be compiled by running `hintz simple.hz`.
-- Default artifact is `simple.out` in the caller's current working directory.
-- The executable runs successfully and matches expected exit code/output.
-
-### Progress notes
-- Pipeline wired in `hintzCompiler/compiler.py` with:
-  - `--emit-hintz-mlir`, `--emit-lowered-mlir`, `--emit-llvm`, `--emit-exe`
-  - tool discovery with `tools/` fallback
-- Added integration test: `hintzCompiler/tests/test_mlir_pipeline.py` (skips if tools missing).
-- Minimal sample (`return 1 + 2;`) compiles to binary and returns exit code `3`.
-- Not yet exposed as a stable installed `hintz` command.
-- Current default executable naming/path does not yet enforce `simple.out` in cwd.
-- Not yet working for real samples with variables/control flow (emitter lacks `load/store`).
+1. Add comparisons and more arithmetic to the Hintz dialect.
+2. Expand the Python MLIR emitter to match that richer expression subset.
+3. Add lowering for every newly emitted op.
+4. Add structured control flow support.
+5. Grow end-to-end tests one supported language feature at a time.
+6. Keep docs aligned with the actual supported subset.
 
 ---
 
-## Step 6: Linux Packaging + Installer
-Status: `[ ]`
+## Recommended Next Implementation Order
 
-### What this step covers
-- Make the Linux toolchain usable without manual path setup beyond installation.
-- Define how backend binaries are packaged, discovered, and versioned.
-- Add an installer that places the `hintz` CLI in a predictable location and configures access to packaged tools.
-- Validate that required host dependencies are present during install, especially `clang` for native executable generation.
-- Support installer destination selection with `--location`.
+This is the simplest path that keeps the project testable and easy to reason about.
 
-### Planned code areas
-- `install.sh` (or equivalent Linux installer entrypoint)
-- packaged tool layout under repo/distribution artifacts
-- CLI bootstrap/tool discovery logic
-- release/install docs in `README.md`
+### Phase A: Variables
 
-### Required tests
-- Installer smoke test in a clean temp prefix on Linux:
-  - install the compiler
-  - verify `hintz --help`
-  - verify packaged tool resolution works without manual `--hintz-opt/--mlir-opt/...` flags
-- Installer dependency test:
-  - if `clang` is missing, installer exits non-zero with a clear error
-- End-to-end install test:
-  - run installed `hintz simple.hz`
-  - assert `simple.out` is produced and runnable
+Status: `[x]`
 
-### Exit criteria
-- Linux install flow is documented and scripted.
-- Installed `hintz` command works without requiring developers to manually build or point at backend tools.
-- Packaged backend binaries are found through the intended install layout.
-- Installer clearly reports missing `clang` and refuses a broken install.
-- Installed `hintz` command uses host `clang` by default for final executable generation.
-- Installer supports `--location <path>` to choose the install root.
+Implemented:
 
-### Notes / Open design questions
-- Decide whether packaged MLIR binaries live in-repo (`tools/`) for development only or in install/release artifacts for end users.
-- Decide whether installer should require `clang` only, or also verify related host tools needed for linking on supported Linux targets.
+- variable read/write MLIR model using:
+  - `hintz.alloca`
+  - `hintz.store`
+  - `hintz.load`
+- emitter support for:
+  - `Assignment`
+  - `VarAccess`
+- lowering for that model to `memref`
+- end-to-end native compile coverage for the narrow scalar-local subset
+
+Add tests for:
+
+- `int x; x = 3; return x;`
+- `int x; int y; x = 1; y = x + 2; return y;`
+
+Result:
+
+- done and verified
+
+### Phase B: More Expressions
+
+Implement:
+
+- `-`
+- `*`
+- `/`
+- comparisons
+
+Add tests for:
+
+- arithmetic expression lowering
+- comparison-return or comparison-driven control tests
+
+### Phase C: Structured Control Flow
+
+Implement:
+
+- either direct control-flow ops in Hintz dialect, or a structured lowering strategy
+- emitter support for:
+  - `if`
+  - one loop form first:
+    - `while` recommended
+
+Add tests for:
+
+- simple `if/else`
+- simple counting loop
+
+### Phase D: Broader Coverage
+
+Only after A-C are stable, decide whether to support:
+
+- `for`
+- `do while`
+- `switch`
+- labels / gotos
+- function calls
+- arrays / structs
+
+These exist in the frontend, but they should not be treated as near-term backend requirements unless there is a clear roadmap for them.
 
 ---
 
-## Step 7: Expand Feature Coverage + Regression Suite
-Status: `[ ]`
+## Testing Rules
 
-### What this step covers
-- Broaden support for more IR nodes (if/while/for/calls).
-- Lock behavior with regression tests to avoid breakage.
+For each new backend feature:
 
-### Required tests
-- Add targeted emitter and lowering tests per new IR node family.
-- Maintain:
-  - `pytest` suite green
-  - `check-standalone` green
+1. add or update dialect op tests
+2. add or update lowering tests
+3. add or update frontend emitter tests
+4. add or update end-to-end tests
+5. then mark progress in this document
 
-### Exit criteria
-- Every newly supported IR node has:
-  - emitter test
-  - lowering test
-  - at least one end-to-end scenario if semantically meaningful
+Do not mark a step complete just because the code exists.
+Mark it complete only when the intended feature subset is covered by tests and works through the pipeline.
 
 ---
 
-## Execution Rules for This Plan
-- Only mark a step `[x]` after all listed tests for that step pass.
-- If a test fails, keep step as `[~]` or `[ ]` and log the blocker.
-- Prefer small, reviewable commits per step (no large mixed changes).
+## Known Constraints And Risks
+
+- The frontend supports more constructs than the backend can lower.
+- README-style examples can become misleading if they use unsupported samples.
+- Step descriptions drift quickly unless updated after tests are added.
+- The best way to avoid confusion is to define a narrow supported backend subset and keep all docs/examples inside that boundary.
 
 ---
 
-## Known Blockers / Gaps
-- No `hintz.load` / `hintz.store` yet, so variables cannot be emitted or lowered.
-- No control flow ops (if/while/for) in the dialect or emitter yet.
-- No comparison ops or non-`+` arithmetic ops.
-- End-to-end pipeline currently only works for constant `return` or `return a + b` where `a/b` are literals.
-- No installed `hintz` CLI UX yet for Linux.
-- No installer yet.
-- No finalized packaging strategy for packaged MLIR/LLVM tool binaries on Linux.
-- No installer-time validation for required host `clang`.
+## Definition Of Success
+
+This plan should be considered successful when:
+
+- the supported backend subset is explicitly defined
+- that subset compiles from `.hz` source to working native executable
+- the docs only advertise what is actually supported
+- new features are added in small, test-gated increments

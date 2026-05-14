@@ -251,6 +251,7 @@ def _run_mlir_pipeline(args, cctx: CompilationContext) -> None:
             mlir_opt,
             lowered_mlir_path,
             "--convert-arith-to-llvm",
+            "--finalize-memref-to-llvm",
             "--convert-func-to-llvm",
             "--reconcile-unrealized-casts",
         ],

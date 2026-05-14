@@ -13,4 +13,18 @@ module {
         // CHECK: hintz.return %[[SUM]] : i64
         hintz.return %sum : i64
     }
+
+    // CHECK-LABEL: func.func @scalar_slot_roundtrip() -> i64
+    func.func @scalar_slot_roundtrip() -> i64 {
+        // CHECK: %[[SLOT:.*]] = hintz.alloca : memref<i64>
+        %slot = hintz.alloca : memref<i64>
+        // CHECK: %[[VALUE:.*]] = hintz.const 9 : i64
+        %value = hintz.const 9 : i64
+        // CHECK: hintz.store %[[VALUE]], %[[SLOT]] : i64, memref<i64>
+        hintz.store %value, %slot : i64, memref<i64>
+        // CHECK: %[[LOAD:.*]] = hintz.load %[[SLOT]] : memref<i64> -> i64
+        %load = hintz.load %slot : memref<i64> -> i64
+        // CHECK: hintz.return %[[LOAD]] : i64
+        hintz.return %load : i64
+    }
 }

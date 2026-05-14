@@ -1,7 +1,7 @@
 # Copyright (c) 2024–2025 Kumar Aakash. Released under the MIT License.
 
-from dataclasses import dataclass
-from typing import Iterable, List, Sequence
+from dataclasses import dataclass, field
+from typing import Dict, Iterable, List, Sequence
 
 from hintzCompiler.src.ir_nodes import (
     IRNode,
@@ -38,6 +38,7 @@ class _EmitState:
     lines: List[str]
     indent: int
     next_value_id: int
+    var_slots: Dict[str, str] = field(default_factory=dict)
 
 
 class MLIREmitter:
@@ -60,6 +61,7 @@ class MLIREmitter:
     def _emit_function_from_cfg(self, cfg) -> None:
         fcn: Function = cfg.fcn
         self._saw_return = False
+        self._state.var_slots.clear()
         args = ", ".join(f"%arg{i}: i64" for i in range(len(fcn.params)))
         self._emit_line(f"func.func @{fcn.name}({args}) -> i64 {{")
         self._state.indent += 1
@@ -85,6 +87,18 @@ class MLIREmitter:
 
     def _emit_stmt(self, stmt: IRNode) -> None:
         if isinstance(stmt, Declaration):
+            # The frontend rewrites locals into SSA-style names (`x1`, `x2`, ...).
+            # Storage is therefore created lazily when a concrete SSA value is used.
+            return
+
+        if isinstance(stmt, Assignment):
+            if not isinstance(stmt.target, VarAccess):
+                raise MLIREmitterError(
+                    "Only scalar variable assignments are supported in MLIR emission."
+                )
+            value = self._emit_expr(stmt.value)
+            slot = self._ensure_var_slot(stmt.target.name)
+            self._emit_line(f"hintz.store {value}, {slot} : i64, memref<i64>")
             return
 
         if isinstance(stmt, Return):
@@ -106,9 +120,7 @@ class MLIREmitter:
                 Break,
                 Goto,
                 Label,
-                Assignment,
                 Call,
-                VarAccess,
                 FunctionCall,
                 FieldAccess,
                 ArrayAccess,
@@ -127,6 +139,11 @@ class MLIREmitter:
     def _emit_expr(self, expr: IRNode) -> str:
         if isinstance(expr, Literal):
             return self._emit_const(expr)
+        if isinstance(expr, VarAccess):
+            slot = self._lookup_var_slot(expr.name)
+            name = self._fresh_value()
+            self._emit_line(f"{name} = hintz.load {slot} : memref<i64> -> i64")
+            return name
         if isinstance(expr, BinaryOp):
             op = self._normalize_op(expr.op)
             if op != "+":
@@ -163,6 +180,24 @@ class MLIREmitter:
         name = f"%{self._state.next_value_id}"
         self._state.next_value_id += 1
         return name
+
+    def _ensure_var_slot(self, var_name: str) -> str:
+        slot = self._state.var_slots.get(var_name)
+        if slot is not None:
+            return slot
+
+        slot = self._fresh_value()
+        self._state.var_slots[var_name] = slot
+        self._emit_line(f"{slot} = hintz.alloca : memref<i64>")
+        return slot
+
+    def _lookup_var_slot(self, var_name: str) -> str:
+        slot = self._state.var_slots.get(var_name)
+        if slot is None:
+            raise MLIREmitterError(
+                f"Read of variable '{var_name}' is unsupported before assignment."
+            )
+        return slot
 
     def _emit_line(self, text: str) -> None:
         self._state.lines.append(("    " * self._state.indent) + text)

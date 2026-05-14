@@ -9,6 +9,7 @@
 //===----------------------------------------------------------------------===//
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+#include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/IR/DialectRegistry.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/Rewrite/FrozenRewritePatternSet.h"
@@ -75,6 +76,37 @@ public:
   }
 };
 
+class HintzAllocaLowering : public OpRewritePattern<AllocaOp> {
+public:
+  using OpRewritePattern<AllocaOp>::OpRewritePattern;
+  LogicalResult matchAndRewrite(AllocaOp op,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<memref::AllocaOp>(op, op.getSlot().getType());
+    return success();
+  }
+};
+
+class HintzStoreLowering : public OpRewritePattern<StoreOp> {
+public:
+  using OpRewritePattern<StoreOp>::OpRewritePattern;
+  LogicalResult matchAndRewrite(StoreOp op,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<memref::StoreOp>(op, op.getValue(), op.getSlot(),
+                                                 ValueRange{});
+    return success();
+  }
+};
+
+class HintzLoadLowering : public OpRewritePattern<LoadOp> {
+public:
+  using OpRewritePattern<LoadOp>::OpRewritePattern;
+  LogicalResult matchAndRewrite(LoadOp op,
+                                PatternRewriter &rewriter) const final {
+    rewriter.replaceOpWithNewOp<memref::LoadOp>(op, op.getSlot(), ValueRange{});
+    return success();
+  }
+};
+
 class HintzReturnLowering : public OpRewritePattern<ReturnOp> {
 public:
   using OpRewritePattern<ReturnOp>::OpRewritePattern;
@@ -93,12 +125,14 @@ public:
       StandaloneConvertHintzToArithFunc>::StandaloneConvertHintzToArithFuncBase;
 
   void getDependentDialects(DialectRegistry &registry) const override {
-    registry.insert<arith::ArithDialect, func::FuncDialect>();
+    registry.insert<arith::ArithDialect, func::FuncDialect,
+                    memref::MemRefDialect>();
   }
 
   void runOnOperation() final {
     RewritePatternSet patterns(&getContext());
-    patterns.add<HintzConstLowering, HintzAddLowering, HintzReturnLowering>(
+    patterns.add<HintzConstLowering, HintzAddLowering, HintzAllocaLowering,
+                 HintzStoreLowering, HintzLoadLowering, HintzReturnLowering>(
         &getContext());
     FrozenRewritePatternSet patternSet(std::move(patterns));
     if (failed(applyPatternsAndFoldGreedily(getOperation(), patternSet)))

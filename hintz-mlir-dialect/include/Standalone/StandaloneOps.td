@@ -65,6 +65,41 @@ def Standalone_AddOp : Standalone_Op<"add", [Pure, SameOperandsAndResultType]> {
     let assemblyFormat = "$lhs `,` $rhs attr-dict `:` type($lhs)";
 }
 
+def Standalone_AllocaOp : Standalone_Op<"alloca"> {
+    let summary = "Allocate storage for one scalar variable slot";
+    let description = [{
+        Produces a stack slot that can hold a single integer value.
+    }];
+
+    let results = (outs AnyMemRef:$slot);
+
+    let assemblyFormat = "attr-dict `:` type($slot)";
+}
+
+def Standalone_StoreOp : Standalone_Op<"store"> {
+    let summary = "Store an integer into a scalar variable slot";
+    let description = [{
+        Writes an integer value into a slot produced by `hintz.alloca`.
+    }];
+
+    let arguments = (ins I64:$value, AnyMemRef:$slot);
+    let results = (outs);
+
+    let assemblyFormat = "$value `,` $slot attr-dict `:` type($value) `,` type($slot)";
+}
+
+def Standalone_LoadOp : Standalone_Op<"load"> {
+    let summary = "Load an integer from a scalar variable slot";
+    let description = [{
+        Reads an integer value from a slot produced by `hintz.alloca`.
+    }];
+
+    let arguments = (ins AnyMemRef:$slot);
+    let results = (outs I64:$result);
+
+    let assemblyFormat = "$slot attr-dict `:` type($slot) `->` type($result)";
+}
+
 def Standalone_ReturnOp : Standalone_Op<"return", [Terminator]> {
     let summary = "Return from function";
     let description = [{

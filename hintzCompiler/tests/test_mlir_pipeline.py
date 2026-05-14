@@ -47,3 +47,41 @@ def test_mlir_pipeline_to_exe(tmp_path):
 
     result = subprocess.run([exe_path], check=False)
     assert result.returncode == 3
+
+
+@pytest.mark.skipif(not _have_pipeline_tools(), reason="MLIR/LLVM tools not found")
+def test_mlir_pipeline_scalar_variables_to_exe(tmp_path):
+    source = tmp_path / "scalar_vars.hz"
+    source.write_text(
+        """
+        int main() {
+            int x;
+            int y;
+            x = 1;
+            y = x + 2;
+            return y;
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    out_base = tmp_path / "scalar_vars"
+    cmd = [
+        sys.executable,
+        "-m",
+        "hintzCompiler.compiler",
+        "--emit-exe",
+        "--emit-llvm",
+        "--emit-lowered-mlir",
+        "--emit-hintz-mlir",
+        "--out",
+        str(out_base),
+        str(source),
+    ]
+    subprocess.run(cmd, check=True)
+
+    exe_path = str(out_base)
+    assert os.path.exists(exe_path)
+
+    result = subprocess.run([exe_path], check=False)
+    assert result.returncode == 3
