@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ ! -x "${REPO_ROOT}/.venv/bin/python" ]]; then
+  echo 'Run ./scripts/setup-dev.sh first to create the Python environment.' >&2
+  exit 1
+fi
+export PYTHONPATH="${REPO_ROOT}${PYTHONPATH:+:${PYTHONPATH}}"
+export PATH="${REPO_ROOT}/tools:${REPO_ROOT}/.venv/bin:${PATH}"
+export HINTZ_OPT="${REPO_ROOT}/hintz-mlir-dialect/build/bin/hintz-opt"
+export MLIR_OPT="${REPO_ROOT}/tools/mlir-opt"
+export MLIR_TRANSLATE="${REPO_ROOT}/tools/mlir-translate"
+export CLANG="${REPO_ROOT}/tools/clang"
+exec "${REPO_ROOT}/.venv/bin/python" -m hintzCompiler.compiler "$@"

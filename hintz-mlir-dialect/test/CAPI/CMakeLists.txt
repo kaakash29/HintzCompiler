@@ -1,21 +1,11 @@
 # BEGINNER NOTE: This builds/runs C API tests that verify the dialect works through the C interface.
-# Here we create a single aggregate shared library with the parts of the CAPI
-# that we want to bundle together. Then we link a simple C executable
-# against it to demonstrate that it does have the fully self contained
-# core MLIR library and our own standalone dialect.
-add_mlir_aggregate(StandaloneCAPITestLib
-  SHARED
-  EMBED_LIBS
-  MLIRCAPIIR
-  # TODO: Remove this in favor of showing fine grained dialect registration
-  # (once available).
-  MLIRCAPIRegisterEverything
-  StandaloneCAPI
-)
+# Link the C API libraries directly so installed LLVM/MLIR distributions work
+# even when they do not ship MLIR_INSTALL_AGGREGATE_OBJECTS.
 
 add_llvm_executable(standalone-capi-test
   standalone-capi-test.c
 )
 llvm_update_compile_flags(standalone-capi-test)
+set_target_properties(standalone-capi-test PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(standalone-capi-test
-  PRIVATE StandaloneCAPITestLib)
+  PRIVATE StandaloneCAPI MLIRCAPIIR MLIRCAPIRegisterEverything)

@@ -1,16 +1,22 @@
 # Testing
 
-Run all frontend tests:
+After `./scripts/setup-dev.sh`, run the full required gates:
 
 ```bash
-pytest -q hintzCompiler/tests
+./scripts/check.sh
 ```
 
-Pipeline integration test:
-- Located at `hintzCompiler/tests/test_mlir_pipeline.py`
-- Skips automatically if MLIR/LLVM tools are missing
+This builds current dialect sources, runs Python and dialect tests, verifies
+native compilation (including the installed CLI), and checks a sample executable
+returns 42. Missing tools or skipped Python tests cause failure. The optional
+MLIR Python-binding smoke test is explicitly disabled for this SDK configuration.
+Reports and pipeline artifacts are written to `tools/check-results/`.
 
-## Notes
+For frontend-only development, this narrower command remains available:
 
-- The test suite expects the repo layout as checked in.
-- The web testbed has its own tests in `hintzCompiler/tests/test_web_samples.py`.
+```bash
+.venv/bin/python -m pytest -q hintzCompiler/tests
+```
+
+Some integration tests skip without the native toolchain; this is not equivalent
+to the full verification command. See [Building](building.md) for setup details.

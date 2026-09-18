@@ -1,5 +1,5 @@
 // BEGINNER NOTE: This MLIR test file is input for automated checks of dialect behavior and tooling.
-// RUN: hintz-opt %s --convert-hintz-to-arith-func | FileCheck %s
+// RUN: hintz-opt %s --convert-hintz-to-arith-func | FileCheck %s --implicit-check-not=hintz.
 
 module {
   func.func @main() -> i64 {
@@ -14,11 +14,12 @@ module {
 }
 
 // CHECK: func.func @main() -> i64 {
-// CHECK: %[[SLOT:.*]] = memref.alloca() : memref<i64>
-// CHECK: %[[ONE:.*]] = arith.constant 1 : i64
+// Constants may be hoisted by the greedy rewriter; their order is immaterial.
+// CHECK-DAG: %[[SLOT:.*]] = memref.alloca() : memref<i64>
+// CHECK-DAG: %[[ONE:.*]] = arith.constant 1 : i64
+// CHECK-DAG: %[[TWO:.*]] = arith.constant 2 : i64
 // CHECK: memref.store %[[ONE]], %[[SLOT]][] : memref<i64>
 // CHECK: %[[LOAD:.*]] = memref.load %[[SLOT]][] : memref<i64>
-// CHECK: %[[TWO:.*]] = arith.constant 2 : i64
 // CHECK: %[[SUM:.*]] = arith.addi %[[LOAD]], %[[TWO]] : i64
 // CHECK: return %[[SUM]] : i64
 // CHECK-NOT: hintz.

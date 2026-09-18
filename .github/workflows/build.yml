@@ -1,0 +1,32 @@
+name: Fresh checkout build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-pipeline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install host prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build graphviz python3-venv
+      - name: Bootstrap from a fresh checkout
+        run: ./scripts/setup-dev.sh --local-llvm
+      - name: Verify repeated setup
+        run: ./scripts/setup-dev.sh --local-llvm
+      - name: Run all required checks
+        run: ./scripts/check.sh
+      - name: Upload reports and intermediate representations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-results
+          path: tools/check-results/
+          if-no-files-found: ignore

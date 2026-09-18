@@ -16,4 +16,7 @@ add_mlir_dialect_library(MLIRStandalone
         MLIRIR
         MLIRInferTypeOpInterface
         MLIRFuncDialect
+        MLIRArithDialect
+        MLIRMemRefDialect
+        MLIRTransforms
         )

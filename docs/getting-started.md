@@ -1,42 +1,23 @@
 # Getting Started
 
-## Install
-
-From the repo root:
+From a fresh clone on Ubuntu 24.04 / Linux Mint 22 (x86-64):
 
 ```bash
-pip install .
+./scripts/setup-dev.sh
+./scripts/check.sh
+./scripts/hintz samples/scalar_pipeline.hz --out /tmp/hintz-scalar
+/tmp/hintz-scalar
+echo $?  # 42
 ```
 
-If you want graph output (CFG/BBG), install Graphviz system binaries:
+No environment activation is required. See [Building](building.md) for host
+prerequisites, SDK selection, repeatable setup and troubleshooting.
+
+To inspect Hintz MLIR without compiling an executable:
 
 ```bash
-sudo apt-get install graphviz
+./scripts/hintz --emit-mlir samples/scalar_pipeline.hz
 ```
 
-## Quick Start
-
-Emit Hintz MLIR for a sample program:
-
-```bash
-hintz --emit-mlir samples/exampleOfForLoop.hz
-```
-
-End-to-end binary (minimal example):
-
-```bash
-cat > /tmp/hintz_simple.hz <<'EOFSAMPLE'
-int main() {
-    return 1 + 2;
-}
-EOFSAMPLE
-
-hintz \
-  --emit-hintz-mlir --emit-lowered-mlir --emit-llvm --emit-exe \
-  /tmp/hintz_simple.hz
-
-/tmp/hintz_simple
-echo $?
-```
-
-Expected exit code: `3`
+The backend currently supports straight-line integer programs; the frontend has
+broader language support. See [Pipeline](pipeline.md) for the compilation stages.

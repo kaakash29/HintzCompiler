@@ -1,0 +1,23 @@
+# Verified development environment; update deliberately alongside the CI gates.
+setuptools==68.1.2
+wheel==0.42.0
+lark==1.3.1
+graphviz==0.21
+ordered-set==4.1.0
+Flask==3.1.3
+blinker==1.9.0
+click==8.1.6
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==2.1.5
+Werkzeug==3.1.8
+pytest==9.1.1
+iniconfig==2.3.0
+packaging==24.0
+pluggy==1.6.0
+Pygments==2.17.2
+lit==23.1.1
+# Python 3.10 compatibility dependencies:
+exceptiongroup==1.3.0; python_version < '3.11'
+tomli==2.2.1; python_version < '3.11'
+typing_extensions==4.15.0; python_version < '3.11'

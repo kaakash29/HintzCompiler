@@ -4,6 +4,7 @@ Welcome to the Hintz documentation. Start with **Getting Started** if you’re n
 
 ## Getting Started
 - `docs/getting-started.md`
+- [Build the native toolchain and run all test gates](building.md)
 
 ## Web Testbed
 - `docs/web-testbed.md`

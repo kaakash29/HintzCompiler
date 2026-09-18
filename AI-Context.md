@@ -11,7 +11,29 @@ This file is a durable handoff context for future Codex sessions so work can con
 ## Current Progress Snapshot
 - Step 0 in `HINTZ_MLIR_PLAN.md`: done.
 - Step 1 (dialect naming/layout consistency): done and test-verified.
-- Step 2+ (new dialect op set + frontend emitter + lowering + end-to-end binary): pending.
+- Steps 2–6: partial. Integer constants, addition and scalar local storage lower
+  through MLIR to working native executables; broader language support remains.
+
+## Local Build Verification (2026-09-18)
+- Updated checkout to remote revision `dbc0086`.
+- LLVM/MLIR 19.1.1 SDK extracted into ignored `tools/llvm/`; Python dependencies
+  and editable CLI installed in `.venv/`.
+- `scripts/setup-dev.sh` bootstraps the pinned Python environment and LLVM SDK;
+  `--local-llvm` forces a repository-local SDK, `--llvm-prefix` selects an existing SDK.
+- `scripts/build-mlir.sh` builds the dialect and creates tool wrappers.
+- `scripts/hintz` selects the local Python environment and tools without activation.
+- `scripts/check.sh` runs all required gates and rejects skipped Python tests.
+- Python suite: 103 passed, including native and installed-CLI integration tests.
+- Dialect suite: 8 passed; optional MLIR Python-binding test unsupported because
+  those bindings are disabled (not required by the native pipeline).
+- `samples/scalar_pipeline.hz` compiles through every stage and exits with 42.
+- See `docs/building.md` for reproducible setup and remaining backend work.
+- `.github/workflows/build.yml` bootstraps a fresh Ubuntu 24.04 checkout, repeats
+  setup, and runs the same required gates. Dependencies are pinned in `dev/`.
+- Verified setup, repeated setup and all required gates in a separate fresh Git
+  clone with no existing venv, SDK or build outputs (2026-09-18). GitHub-hosted CI
+  has been added but has not yet run remotely.
+- Older machine-specific commands below are historical; use the build guide.
 
 ## Verified Baseline Commands
 - Frontend unit tests:
@@ -60,14 +82,12 @@ User has fish aliases configured in `~/.config/fish/config.fish`:
 - Homebrew shellenv loaded in fish.
 
 ## What to Do Next (Recommended)
-1. Execute Step 2 from `HINTZ_MLIR_PLAN.md`:
-   - Define minimal op set in `StandaloneOps.td` for frontend mapping.
-   - Add dialect parser/printer tests for each new op.
-   - Gate: `ninja check-standalone`.
-2. Execute Step 3:
-   - Add `hintzCompiler/src/mlir_emitter.py`.
-   - Add CLI flag in `hintzCompiler/compiler.py` to emit hintz-MLIR text.
-   - Add unit tests for emitter output.
+1. Extend the partial stages in `HINTZ_MLIR_PLAN.md` together: dialect operations,
+   frontend emission, lowering and executable integration tests.
+2. Implement control flow/SSA joins, function calls/parameters, additional
+   operators and type/ABI handling beyond the current straight-line i64 subset.
+3. Keep both the Python and dialect test gates passing; do not mark partial
+   stages complete solely because the minimal end-to-end pipeline works.
 
 ## Working Rules From User
 - Do not push commits automatically; user controls pushes.

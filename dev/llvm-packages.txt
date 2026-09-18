@@ -1,0 +1,14 @@
+# Ubuntu 24.04 LLVM/MLIR 19 SDK, pinned to the verified distro package revision.
+libmlir-19-dev=1:19.1.1-1ubuntu1~24.04.2
+libmlir-19=1:19.1.1-1ubuntu1~24.04.2
+mlir-19-tools=1:19.1.1-1ubuntu1~24.04.2
+llvm-19-dev=1:19.1.1-1ubuntu1~24.04.2
+llvm-19-tools=1:19.1.1-1ubuntu1~24.04.2
+llvm-19=1:19.1.1-1ubuntu1~24.04.2
+llvm-19-runtime=1:19.1.1-1ubuntu1~24.04.2
+llvm-19-linker-tools=1:19.1.1-1ubuntu1~24.04.2
+libllvm19=1:19.1.1-1ubuntu1~24.04.2
+clang-19=1:19.1.1-1ubuntu1~24.04.2
+libclang-cpp19=1:19.1.1-1ubuntu1~24.04.2
+libclang-common-19-dev=1:19.1.1-1ubuntu1~24.04.2
+libclang1-19=1:19.1.1-1ubuntu1~24.04.2
